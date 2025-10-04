@@ -71,8 +71,9 @@ Concurrently – Chạy backend & frontend cùng lúc
 
 Morgan – Ghi log request HTTP phục vụ debug
 
-```bash
 📂 Cấu trúc thư mục
+
+```bash
 SevenStore/
 │── backend/ # Node.js API
 │── frontend/ # React UI
