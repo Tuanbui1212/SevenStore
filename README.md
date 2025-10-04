@@ -34,15 +34,42 @@ npm start
 
 👉 Lệnh này sẽ chạy đồng thời:
 
-Backend: cd backend && npm start
-Frontend: cd frontend && npm start
+- Backend: cd backend && npm start
+- Frontend: cd frontend && npm start
 
 Mặc định:
 
 - Backend: http://localhost:5000
 - Frontend: http://localhost:3000
 
-⚙️ File môi trường
+📦 Các thư viện chính sử dụng
+🖥️ Frontend
+
+React – Xây dựng giao diện người dùng
+
+React Router DOM – Điều hướng giữa các trang
+
+SCSS – Quản lý CSS có cấu trúc, dễ mở rộng
+
+clsx – Gộp className động
+
+Fetch API / Axios – Gửi request đến server
+
+⚙️ Backend
+
+Express.js – Xây dựng API server
+
+Mongoose – Làm việc với MongoDB
+
+Cors – Cho phép truy cập từ frontend
+
+Dotenv – Đọc biến môi trường từ .env
+
+Nodemon – Tự động reload server khi code thay đổi
+
+Concurrently – Chạy backend & frontend cùng lúc
+
+Morgan – Ghi log request HTTP phục vụ debug
 
 ```bash
 📂 Cấu trúc thư mục
