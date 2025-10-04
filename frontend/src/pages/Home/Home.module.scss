@@ -1,0 +1,232 @@
+@import "../../components/GlobalStyles/variables";
+
+.slider {
+  position: relative;
+  margin-top: 40px;
+
+  .slider_img {
+    img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      transition: opacity 0.5s ease;
+      opacity: 1;
+
+      &.fadeOut {
+        opacity: 0;
+      }
+    }
+  }
+
+  .slider_btn {
+    position: absolute;
+    opacity: 0.5;
+    background-color: $black-color;
+    color: $white-color;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+  }
+
+  .slider_btn_pre {
+    left: 15px;
+  }
+
+  .slider_btn_next {
+    right: 15px;
+  }
+}
+
+.content {
+  margin-top: 48px;
+  margin-bottom: 18px;
+  .title {
+    font-weight: bold;
+    font-size: 2.8rem;
+    text-transform: uppercase;
+  }
+
+  .title__center {
+    text-align: center;
+  }
+}
+
+.new_prouct {
+  position: relative;
+
+  &:hover .btn {
+    display: block;
+  }
+
+  .btn {
+    display: none;
+    border-radius: 50%;
+    color: $black-color;
+    background-color: $white-color;
+    opacity: 1;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+    font-size: 2.4rem;
+    padding: 15px;
+  }
+  .btn_left {
+    left: -15px;
+  }
+
+  .btn_right {
+    right: -15px;
+  }
+
+  .list_new_product {
+    display: flex;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: -10px;
+    padding-top: 10px;
+    scroll-behavior: smooth; // cuộn mượt
+    padding-bottom: 8px;
+    scroll-behavior: smooth; // cuộn mượt
+    scrollbar-width: none; // ẩn scrollbar (Firefox)
+
+    .product_item {
+      display: inline-block !important;
+      text-decoration: none;
+      color: $black-color;
+      text-transform: uppercase;
+      transition: transform 0.3s ease;
+      .product_img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .product_info {
+        font-size: 1.6rem;
+        .product_top {
+          display: flex;
+          justify-content: space-between;
+          font-weight: 600;
+          line-height: 36px;
+        }
+        .product_description {
+          color: $description-color;
+        }
+      }
+      &:hover {
+        transform: translateY(-10px);
+      }
+    }
+  }
+}
+
+.finder {
+  width: 100%;
+  background-color: $background-color;
+  text-align: center;
+  display: flex;
+  padding: 20px;
+
+  .finder__content {
+    margin-top: 70px;
+    h3 {
+      font-size: 6.8rem;
+      line-height: 1.2; // thêm khoảng cách dòng
+      margin: 0;
+      font-weight: bold;
+    }
+
+    span {
+      display: block;
+      font-size: 2.6rem;
+      line-height: 1.2;
+      width: 77%;
+      margin: 20px auto;
+    }
+
+    button {
+      background-color: $black-color;
+      color: $white-color;
+      border: 0px;
+      border-radius: 30px;
+      padding: 15px 20px;
+      font-size: 2.6rem;
+      font-weight: 500;
+      margin-top: 10px;
+
+      &:hover {
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+.sport {
+  img {
+    width: 100%;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+
+  p {
+    margin: 10px 0px;
+    font-size: 2.6rem;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+  }
+}
+
+.sale_img {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    background-color: $black-color;
+    opacity: 0.4;
+    top: 0;
+    right: 12px;
+    left: 12px;
+    bottom: 0;
+  }
+
+  .sale_title {
+    position: absolute;
+    bottom: 20px;
+    left: 36px;
+    color: $white-color;
+    z-index: 10;
+    h3 {
+      margin: 10px 0px;
+      font-size: 2.4rem;
+    }
+    p {
+      font-size: 2rem;
+    }
+  }
+
+  button {
+    position: absolute;
+    bottom: 20px;
+    right: 36px;
+    background-color: rgba(0, 0, 0, 0.6);
+    font-size: 2rem;
+    border: 0px;
+    border-radius: 30px;
+    color: $white-color;
+    padding: 16px 32px;
+    z-index: 3;
+
+    &:hover {
+      background-color: $description-color;
+      opacity: 0.4;
+    }
+  }
+}

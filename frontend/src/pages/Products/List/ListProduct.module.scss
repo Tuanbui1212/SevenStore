@@ -1,0 +1,124 @@
+@import "../../../components/GlobalStyles/variables";
+.tableWrapper {
+  padding: 20px;
+}
+
+.tableControls {
+  display: flex;
+  justify-content: space-between;
+
+  input {
+    font-size: 1.6rem;
+    padding: 10px 10px;
+    width: 370px;
+    border-radius: 8px;
+    border: 1px solid $text-color;
+  }
+
+  button {
+    padding: 12px 36px;
+    background-color: $black-color;
+    color: $white-color;
+    font-size: 1.6rem;
+    border: 0px;
+    border-radius: 8px;
+  }
+}
+
+.table {
+  margin-top: 24px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableTitle {
+  background-color: $background-sidebar;
+  border-radius: 8px;
+  border-collapse: collapse;
+}
+
+.tableHeader {
+  font-size: 1.6rem;
+  font-weight: 600;
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  &:first-child {
+    border-top-left-radius: 8px;
+  }
+  &:last-child {
+    border-top-right-radius: 8px;
+  }
+}
+
+.tableRow {
+  border-bottom: 1px solid $description-color;
+}
+
+.tableCell {
+  font-size: 1.6rem;
+  padding: 12px;
+  border: none;
+
+  button {
+    padding: 8px;
+    margin-left: 5px;
+    background-color: transparent;
+    border: none;
+    color: $black-color;
+    font-size: 1.6rem;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+
+    &:hover {
+      transform: translateY(-3px);
+    }
+  }
+}
+
+.tableBrand {
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.tableStatus {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 1.4rem;
+  font-weight: 500;
+  border-radius: 20px;
+  border: 1px solid #069855;
+  color: #069855;
+  background-color: #e6f5ee;
+  text-align: center;
+  min-width: 80px;
+  margin: 12px 0px;
+  cursor: default;
+}
+
+.tableStatus.fullTime {
+  border-color: #d39c1d;
+  color: #d39c1d;
+  background-color: #fbf5e8;
+}
+
+.pagination {
+  display: flex;
+  margin-top: 10px;
+  justify-content: right;
+  gap: 4px;
+
+  button {
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    font-size: 1.2rem;
+    border-radius: 3px;
+    border: 2px solid $background-sidebar;
+    background-color: $white-color;
+
+    &.activePage {
+      background-color: $background-sidebar;
+    }
+  }
+}
