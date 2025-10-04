@@ -35,23 +35,16 @@ npm start
 👉 Lệnh này sẽ chạy đồng thời:
 
 Backend: cd backend && npm start
-
 Frontend: cd frontend && npm start
 
 Mặc định:
 
-Backend: http://localhost:5000
-
-Frontend: http://localhost:3000
+- Backend: http://localhost:5000
+- Frontend: http://localhost:3000
 
 ⚙️ File môi trường
 
-Tạo file .env trong thư mục backend (dựa theo .env.example nếu có):
-
-PORT=5000
-MONGODB_URI=mongodb+srv://your_connection_string
-JWT_SECRET=your_secret_key
-
+```bash
 📂 Cấu trúc thư mục
 SevenStore/
 │── backend/ # Node.js API
@@ -59,13 +52,12 @@ SevenStore/
 │── .gitignore
 │── package.json
 │── README.md
+```
 
 💻 Công nghệ sử dụng
 
 Frontend: React, React Router, SCSS
-
 Backend: Node.js, Express, MongoDB
-
 Tool: concurrently, nodemon
 
 ✍️ Tác giả: Tuan Bui
