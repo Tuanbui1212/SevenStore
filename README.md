@@ -11,7 +11,7 @@ Clone repo về:
 ```bash
 git clone https://github.com/Tuanbui1212/SevenStore.git
 cd SevenStore
-```
+``` 
 
 Cài đặt dependencies cho toàn dự án:
 
