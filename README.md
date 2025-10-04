@@ -57,7 +57,9 @@ SevenStore/
 💻 Công nghệ sử dụng
 
 Frontend: React, React Router, SCSS
+
 Backend: Node.js, Express, MongoDB
+
 Tool: concurrently, nodemon
 
 ✍️ Tác giả: Tuan Bui
