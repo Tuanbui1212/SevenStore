@@ -52,6 +52,42 @@ class ProductController {
       )
       .catch(next);
   }
+
+  //[Delete] /dashboard/products/trash/:id Xóa thông tin
+  //[Delete] /dashboard/products/trash/:id Xóa thông tin truc tiep trong database
+  delete(req, res, next) {
+    Product.deleteOne({ _id: req.params.id }, req.body)
+      .then(() =>
+        res.status(200).json({ message: "Product delete successfully" })
+      )
+      .catch(next);
+  }
+
+  // [Delete] /dashboard/products/:id Xóa thông tin mềm
+  deleteSoft(req, res, next) {
+    Product.delete({ _id: req.params.id }, req.body)
+      .then(() =>
+        res.status(200).json({ message: "Product delete successfully" })
+      )
+      .catch(next);
+  }
+
+  //[GET] /dashboard/products/trash Danh sach da xoa
+  trashEmpolyee(req, res, next) {
+    Employee.findWithDeleted({ deleted: true })
+      .lean()
+      .then((trashProducts) => res.json({ trashProducts }))
+      .catch(next);
+  }
+
+  //[PATCH]/dashboard/products/:id/restore Khoi Phuc
+  restore(req, res, next) {
+    Product.restore({ _id: req.params.id })
+      .then(() =>
+        res.status(200).json({ message: "Product restore successfully" })
+      )
+      .catch(next);
+  }
 }
 
 module.exports = new ProductController();

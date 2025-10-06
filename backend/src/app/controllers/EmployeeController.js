@@ -6,10 +6,22 @@ const {
 
 class EmployeeController {
   show(req, res, next) {
-    Employee.find()
-      .then((employees) => {
-        res.json({ employees: muntipleMongooseToObject(employees) });
-      })
+    // Employee.find()
+    //   .then((employees) => {
+    //     res.json({ employees: muntipleMongooseToObject(employees) });
+    //   })
+    //   .catch(next);
+
+    Promise.all([
+      Employee.find().lean(),
+      Employee.countDocumentsWithDeleted({ deleted: true }),
+    ])
+      .then(([employees, deletedCount]) =>
+        res.json({
+          deletedCount,
+          employees,
+        })
+      )
       .catch(next);
   }
 
@@ -44,21 +56,38 @@ class EmployeeController {
       .catch(next);
   }
 
-  //[Delete] /dashboard/employee/:id Xóa thông tin
-  //[Delete] /dashboard/employee/:id Xóa thông tin truc tiep trong database
-  // delete(req, res, next) {
-  //   Employee.deleteOne({ _id: req.params.id }, req.body)
-  //     .then(() =>
-  //       res.status(200).json({ message: "Employee delete successfully" })
-  //     )
-  //     .catch(next);
-  // }
+  //[Delete] /dashboard/employee/trash/:id Xóa thông tin
+  //[Delete] /dashboard/employee/trash/:id Xóa thông tin truc tiep trong database
+  delete(req, res, next) {
+    Employee.deleteOne({ _id: req.params.id }, req.body)
+      .then(() =>
+        res.status(200).json({ message: "Employee delete successfully" })
+      )
+      .catch(next);
+  }
 
   // [Delete] /dashboard/employee/:id Xóa thông tin mềm
   deleteSoft(req, res, next) {
     Employee.delete({ _id: req.params.id }, req.body)
       .then(() =>
         res.status(200).json({ message: "Employee delete successfully" })
+      )
+      .catch(next);
+  }
+
+  //[GET] /dashboard/employee/trash Danh sach da xoa
+  trashEmpolyee(req, res, next) {
+    Employee.findWithDeleted({ deleted: true })
+      .lean()
+      .then((trashEmpolyee) => res.json({ trashEmpolyee }))
+      .catch(next);
+  }
+
+  //[PATCH]/dashboard/employee/:id/restore Khoi Phuc
+  restore(req, res, next) {
+    Employee.restore({ _id: req.params.id })
+      .then(() =>
+        res.status(200).json({ message: "Employee restore successfully" })
       )
       .catch(next);
   }

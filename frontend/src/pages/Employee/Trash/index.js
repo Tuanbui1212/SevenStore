@@ -1,24 +1,24 @@
-import styles from "./Employee.module.scss";
+import styles from "./TrashEmployee.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Employee() {
+function TrashEmployee() {
   const [employee, setEmployee] = useState([]);
-  const [countDelete, setCountDelete] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [restoreId, setRestoreId] = useState(null);
   const pageSize = 6; // số dòng mỗi trang
 
   const navigate = useNavigate();
 
   const fetchEmployees = () => {
-    fetch("http://localhost:5000/dashboard/employee")
+    fetch("http://localhost:5000/dashboard/employee/trash")
       .then((res) => res.json())
       .then((data) => {
-        const formattedEmployees = data.employees.map((employee) => {
+        const formattedEmployees = data.trashEmpolyee.map((employee) => {
           if (!employee.date) {
             return employee;
           }
@@ -32,7 +32,7 @@ function Employee() {
             date: formattedDate,
           };
         });
-        setCountDelete(data.deletedCount);
+
         setEmployee(formattedEmployees);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
@@ -42,10 +42,31 @@ function Employee() {
     fetchEmployees();
   }, []);
 
+  const handleRestore = () => {
+    if (!restoreId) return;
+
+    fetch(
+      `http://localhost:5000/dashboard/employee/trash/${restoreId}/restore`,
+      {
+        method: "PATCH",
+      }
+    )
+      .then((res) => res.json())
+      .then(() => {
+        alert("✅ Khôi phục thành công!");
+        fetchEmployees(); // load lại danh sách
+      })
+      .catch(() => alert("❌ Có lỗi xảy ra khi khôi phục!"))
+      .finally(() => {
+        setDeleteId(null);
+        setShowModal(false);
+      });
+  };
+
   const handleDelete = () => {
     if (!deleteId) return;
 
-    fetch(`http://localhost:5000/dashboard/employee/${deleteId}`, {
+    fetch(`http://localhost:5000/dashboard/employee/trash/${deleteId}`, {
       method: "DELETE",
     })
       .then((res) => res.json())
@@ -97,22 +118,12 @@ function Employee() {
           placeholder="Search by name..."
           className={styles.searchInput}
         />
-        <div>
-          <button
-            className={styles.searchButton}
-            style={{ display: countDelete === 0 ? "none" : "inline-block" }}
-            onClick={() => navigate("/dashboard/employee/trash")}
-          >
-            <i className="fa-solid fa-trash"></i>
-            Trash ({countDelete})
-          </button>
-          <button
-            className={styles.searchButton}
-            onClick={() => navigate("/dashboard/employee/create")}
-          >
-            ADD
-          </button>
-        </div>
+        <button
+          className={styles.searchButton}
+          onClick={() => navigate("/dashboard/employee")}
+        >
+          BACK
+        </button>
       </div>
 
       <table className={styles.table}>
@@ -147,10 +158,12 @@ function Employee() {
               <td className={styles.tableCell}>
                 <button
                   onClick={() => {
-                    navigate(`/dashboard/employee/${e._id}`);
+                    setShowModal(true);
+                    setRestoreId(e._id);
+                    setModalMessage("Bạn có chắc chắn muốn khôi phục không ?");
                   }}
                 >
-                  <i className="fa-solid fa-pen-to-square"></i>
+                  <i className="fa-solid fa-window-restore"></i>
                 </button>
                 <button
                   onClick={() => {
@@ -205,7 +218,17 @@ function Employee() {
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <p>{modalMessage}</p>
-            <button onClick={handleDelete}>Có</button>
+            <button
+              onClick={
+                modalMessage.includes("khôi phục")
+                  ? handleRestore
+                  : modalMessage.includes("xóa")
+                  ? handleDelete
+                  : () => {}
+              }
+            >
+              Có
+            </button>
             <button
               onClick={() => {
                 setShowModal(false);
@@ -220,4 +243,4 @@ function Employee() {
   );
 }
 
-export default Employee;
+export default TrashEmployee;

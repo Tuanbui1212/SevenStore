@@ -1,57 +1,78 @@
-import styles from "./Employee.module.scss";
+import styles from "./TrashProduct.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Employee() {
-  const [employee, setEmployee] = useState([]);
-  const [countDelete, setCountDelete] = useState(0);
+function TrashProduct() {
+  const [product, setProduct] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
+  const [restoreId, setRestoreId] = useState(null);
   const pageSize = 6; // số dòng mỗi trang
 
   const navigate = useNavigate();
 
-  const fetchEmployees = () => {
-    fetch("http://localhost:5000/dashboard/employee")
+  const fetchProduct = () => {
+    fetch("http://localhost:5000/dashboard/product/trash")
       .then((res) => res.json())
       .then((data) => {
-        const formattedEmployees = data.employees.map((employee) => {
-          if (!employee.date) {
-            return employee;
+        const formattedProducts = data.trashProduct.map((product) => {
+          if (!product.date) {
+            return product;
           }
 
-          const formattedDate = new Date(employee.date)
+          const formattedDate = new Date(product.date)
             .toISOString()
             .split("T")[0];
 
           return {
-            ...employee,
+            ...product,
             date: formattedDate,
           };
         });
-        setCountDelete(data.deletedCount);
-        setEmployee(formattedEmployees);
+
+        setProduct(formattedProducts);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   };
 
   useEffect(() => {
-    fetchEmployees();
+    fetchProduct();
   }, []);
+
+  const handleRestore = () => {
+    if (!restoreId) return;
+
+    fetch(
+      `http://localhost:5000/dashboard/product/trash/${restoreId}/restore`,
+      {
+        method: "PATCH",
+      }
+    )
+      .then((res) => res.json())
+      .then(() => {
+        alert("✅ Khôi phục thành công!");
+        fetchProduct(); // load lại danh sách
+      })
+      .catch(() => alert("❌ Có lỗi xảy ra khi khôi phục!"))
+      .finally(() => {
+        setDeleteId(null);
+        setShowModal(false);
+      });
+  };
 
   const handleDelete = () => {
     if (!deleteId) return;
 
-    fetch(`http://localhost:5000/dashboard/employee/${deleteId}`, {
+    fetch(`http://localhost:5000/dashboard/product/trash/${deleteId}`, {
       method: "DELETE",
     })
       .then((res) => res.json())
       .then(() => {
         alert("✅ Xóa thành công!");
-        fetchEmployees(); // load lại danh sách
+        fetchProduct(); // load lại danh sách
       })
       .catch(() => alert("❌ Có lỗi xảy ra khi xóa!"))
       .finally(() => {
@@ -61,9 +82,9 @@ function Employee() {
   };
 
   // Tính toán phân trang
-  const totalPages = Math.ceil(employee.length / pageSize);
+  const totalPages = Math.ceil(product.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const currentData = employee.slice(startIndex, startIndex + pageSize);
+  const currentData = product.slice(startIndex, startIndex + pageSize);
 
   // Tạo danh sách trang hiển thị (có dấu ...)
   const getPageNumbers = () => {
@@ -97,22 +118,12 @@ function Employee() {
           placeholder="Search by name..."
           className={styles.searchInput}
         />
-        <div>
-          <button
-            className={styles.searchButton}
-            style={{ display: countDelete === 0 ? "none" : "inline-block" }}
-            onClick={() => navigate("/dashboard/employee/trash")}
-          >
-            <i className="fa-solid fa-trash"></i>
-            Trash ({countDelete})
-          </button>
-          <button
-            className={styles.searchButton}
-            onClick={() => navigate("/dashboard/employee/create")}
-          >
-            ADD
-          </button>
-        </div>
+        <button
+          className={styles.searchButton}
+          onClick={() => navigate("/dashboard/products")}
+        >
+          BACK
+        </button>
       </div>
 
       <table className={styles.table}>
@@ -120,42 +131,34 @@ function Employee() {
           <tr>
             <th className={styles.tableHeader}>ID</th>
             <th className={styles.tableHeader}>Name</th>
-            <th className={styles.tableHeader}>Role</th>
-            <th className={styles.tableHeader}>Status</th>
+            <th className={styles.tableHeader}>Price</th>
+            <th className={styles.tableHeader}>Category</th>
             <th className={styles.tableHeader}>Date</th>
             <th className={styles.tableHeader}></th>
           </tr>
         </thead>
         <tbody>
-          {currentData.map((e, index) => (
+          {currentData.map((p, index) => (
             <tr key={index} className={styles.tableRow}>
               <td className={styles.tableCell}>{index + 1}</td>
-              <td className={styles.tableCell}>{e.name}</td>
-              <td className={styles.tableCell}>{e.role}</td>
-              <td
-                className={clsx(
-                  styles.tableCell,
-                  styles.tableStatus,
-                  e.status === "Full-Time" && styles.fullTime,
-                  e.status === "Part-Time" && styles.partTime
-                )}
-              >
-                {e.status}
-              </td>
-
-              <td className={styles.tableCell}>{e.date}</td>
+              <td className={styles.tableCell}>{p.name}</td>
+              <td className={styles.tableCell}>{p.price}</td>
+              <td className={styles.tableCell}>{p.category}</td>
+              <td className={styles.tableCell}>{p.date}</td>
               <td className={styles.tableCell}>
                 <button
                   onClick={() => {
-                    navigate(`/dashboard/employee/${e._id}`);
+                    setShowModal(true);
+                    setRestoreId(p._id);
+                    setModalMessage("Bạn có chắc chắn muốn khôi phục không ?");
                   }}
                 >
-                  <i className="fa-solid fa-pen-to-square"></i>
+                  <i className="fa-solid fa-window-restore"></i>
                 </button>
                 <button
                   onClick={() => {
                     setShowModal(true);
-                    setDeleteId(e._id);
+                    setDeleteId(p._id);
                     setModalMessage("Bạn có chắc chắn muốn xóa không ?");
                   }}
                 >
@@ -205,7 +208,17 @@ function Employee() {
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <p>{modalMessage}</p>
-            <button onClick={handleDelete}>Có</button>
+            <button
+              onClick={
+                modalMessage.includes("khôi phục")
+                  ? handleRestore
+                  : modalMessage.includes("xóa")
+                  ? handleDelete
+                  : () => {}
+              }
+            >
+              Có
+            </button>
             <button
               onClick={() => {
                 setShowModal(false);
@@ -220,4 +233,4 @@ function Employee() {
   );
 }
 
-export default Employee;
+export default TrashProduct;

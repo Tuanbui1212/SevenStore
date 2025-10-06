@@ -10,6 +10,9 @@ router.get("/products/:id", ProductController.edit);
 router.put("/products/:id", ProductController.update);
 
 router.post("/employee/create", EmployeeController.create);
+router.get("/employee/trash", EmployeeController.trashEmpolyee);
+router.delete("/employee/trash/:id", EmployeeController.delete);
+router.patch("/employee/trash/:id/restore", EmployeeController.restore);
 router.get("/employee/:id", EmployeeController.edit);
 router.put("/employee/:id", EmployeeController.update);
 router.delete("/employee/:id", EmployeeController.deleteSoft);

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 function Products() {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [countDelete, setCountDelete] = useState(0);
   const pageSize = 6; // số dòng mỗi trang
 
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ function Products() {
 
           return { ...product, total };
         });
+        setCountDelete(data.deleteCount);
         setProducts(newList);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
@@ -64,12 +66,22 @@ function Products() {
           placeholder="Search by name..."
           className={styles.searchInput}
         />
-        <button
-          className={styles.searchButton}
-          onClick={() => navigate("/dashboard/products/create")}
-        >
-          ADD
-        </button>
+        <div>
+          <button
+            className={styles.searchButton}
+            style={{ display: countDelete === 0 ? "none" : "inline-block" }}
+            onClick={() => navigate("/dashboard/employee/trash")}
+          >
+            <i className="fa-solid fa-trash"></i>
+            Trash ({countDelete})
+          </button>
+          <button
+            className={styles.searchButton}
+            onClick={() => navigate("/dashboard/employee/create")}
+          >
+            ADD
+          </button>
+        </div>
       </div>
 
       <table className={styles.table}>
