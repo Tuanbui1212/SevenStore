@@ -6,11 +6,11 @@ const Schema = mongoose.Schema;
 
 const Employee = new Schema(
   {
-    name: { type: String, maxLength: 255, require: true },
-    status: { type: String, maxLength: 255, require: true },
-    role: { type: String, maxLength: 255, require: true },
-    date: { type: Date, require: true },
-    type: { type: String, maxLength: 255, require: true },
+    name: { type: String, maxLength: 255, required: true },
+    status: { type: String, maxLength: 255, required: true },
+    role: { type: String, maxLength: 255, required: true },
+    date: { type: Date, required: true },
+    type: { type: String, maxLength: 255, required: true },
   },
   {
     timestamps: true,

@@ -5,11 +5,14 @@ import { useNavigate } from "react-router-dom";
 
 function Employee() {
   const [employee, setEmployee] = useState([]);
-  const [countDelete, setCountDelete] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
+
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
+  
   const [deleteId, setDeleteId] = useState(null);
+  const [countDelete, setCountDelete] = useState(0);
+  
+  const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6; // số dòng mỗi trang
 
   const navigate = useNavigate();

@@ -221,7 +221,7 @@ function Product() {
                           </span>
                         </div>
                         <span className={styles.productDescription}>
-                          {product.type}
+                          {product.description}
                         </span>
                       </div>
                     </Link>

@@ -204,7 +204,7 @@
 
 .productImage {
   width: 100%;
-  height: auto;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: 6px;
   margin-bottom: 8px;
@@ -226,6 +226,12 @@
   font-size: 1.6rem;
   font-weight: 600;
   color: #333;
+
+  /* Quan trọng nè 👇 */
+  white-space: nowrap; /* Không xuống dòng */
+  overflow: hidden; /* Ẩn phần vượt quá khung */
+  text-overflow: ellipsis; /* Hiện dấu ... */
+  padding-right: 10px;
 }
 
 .productPrice {

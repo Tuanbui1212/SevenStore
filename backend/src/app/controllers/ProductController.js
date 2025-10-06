@@ -4,7 +4,10 @@ class ProductController {
   show(req, res, next) {
     const { brand } = req.params;
 
-    Product.find({ brand: { $regex: brand, $options: "i" } })
+    const filter =
+      brand === "all" ? {} : { brand: { $regex: brand, $options: "i" } };
+
+    Product.find(filter)
       .lean()
       .then((newProduct) => {
         res.json({ newProduct });

@@ -54,7 +54,6 @@ function Product() {
     fetch(`http://localhost:5000/dashboard/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data.product.color);
         setFormData(data.product);
       })
       .catch((err) => console.error("Lỗi fetch:", err));

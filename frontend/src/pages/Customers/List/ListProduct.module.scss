@@ -4,30 +4,12 @@
 }
 
 .tableControls {
-  display: flex;
-  justify-content: space-between;
-
   input {
     font-size: 1.6rem;
     padding: 10px 10px;
     width: 370px;
     border-radius: 8px;
     border: 1px solid $text-color;
-  }
-
-  button {
-    padding: 12px 36px;
-    background-color: $black-color;
-    color: $white-color;
-    font-size: 1.6rem;
-    border: 0px;
-    border-radius: 8px;
-    margin-left: 6px;
-
-    i {
-      margin-left: -8px;
-      margin-right: 6px;
-    }
   }
 }
 
@@ -65,12 +47,6 @@
   font-size: 1.6rem;
   padding: 12px;
   border: none;
-
-  img {
-    width: 40px;
-    height: 40px;
-    object-fit: cover;
-  }
 
   button {
     padding: 8px;

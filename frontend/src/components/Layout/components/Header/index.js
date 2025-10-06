@@ -83,6 +83,17 @@ function Header() {
                 <li>
                   <Link className={clsx(styles.nav_item_brands)}>Salomon</Link>
                 </li>
+                <li>
+                  <Link
+                    to="/product/all"
+                    className={clsx(
+                      styles.nav_item_brands,
+                      styles.nav_item_primary
+                    )}
+                  >
+                    All
+                  </Link>
+                </li>
               </ul>
             </li>
             <li>

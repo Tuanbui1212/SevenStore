@@ -41,7 +41,7 @@ function Products() {
   const handleDelete = () => {
     if (!deleteId) return;
 
-    fetch(`http://localhost:5000/dashboard/products/trash/${deleteId}`, {
+    fetch(`http://localhost:5000/dashboard/products/${deleteId}/force`, {
       method: "DELETE",
     })
       .then((res) => res.json())
