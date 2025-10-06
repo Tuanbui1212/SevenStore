@@ -7,11 +7,15 @@ function Products() {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [countDelete, setCountDelete] = useState(0);
+  const [deleteId, setDeleteId] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
   const pageSize = 6; // số dòng mỗi trang
 
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // Lấy dữ liệu
+  const fetchProducts = () => {
     fetch("http://localhost:5000/dashboard/products")
       .then((res) => res.json())
       .then((data) => {
@@ -23,11 +27,34 @@ function Products() {
 
           return { ...product, total };
         });
-        setCountDelete(data.deleteCount);
+        setCountDelete(data.deletedCount);
         setProducts(newList);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
+  };
+
+  useEffect(() => {
+    fetchProducts();
   }, []);
+
+  //Xóa mềm
+  const handleDeleteSoft = () => {
+    if (!deleteId) return;
+
+    fetch(`http://localhost:5000/dashboard/products/${deleteId}`, {
+      method: "DELETE",
+    })
+      .then((res) => res.json())
+      .then(() => {
+        alert("✅ Xóa thành công!");
+        fetchProducts();
+      })
+      .catch(() => alert("❌ Có lỗi xảy ra khi xóa!"))
+      .finally(() => {
+        setDeleteId(null);
+        setShowModal(false);
+      });
+  };
 
   // Tính toán phân trang
   const totalPages = Math.ceil(products.length / pageSize);
@@ -70,14 +97,14 @@ function Products() {
           <button
             className={styles.searchButton}
             style={{ display: countDelete === 0 ? "none" : "inline-block" }}
-            onClick={() => navigate("/dashboard/employee/trash")}
+            onClick={() => navigate("/dashboard/products/trash")}
           >
             <i className="fa-solid fa-trash"></i>
             Trash ({countDelete})
           </button>
           <button
             className={styles.searchButton}
-            onClick={() => navigate("/dashboard/employee/create")}
+            onClick={() => navigate("/dashboard/products/create")}
           >
             ADD
           </button>
@@ -87,10 +114,10 @@ function Products() {
       <table className={styles.table}>
         <thead className={styles.tableTitle}>
           <tr>
-            <th className={styles.tableHeader}>STT</th>
+            <th className={styles.tableHeader}>#</th>
             <th className={styles.tableHeader}>Name</th>
-            <th className={styles.tableHeader}>Unit</th>
             <th className={styles.tableHeader}>Quantity</th>
+            <th className={styles.tableHeader}>Status</th>
             <th className={styles.tableHeader}>Brand</th>
             <th className={styles.tableHeader}>Price</th>
             <th className={styles.tableHeader}></th>
@@ -98,8 +125,8 @@ function Products() {
         </thead>
         <tbody>
           {currentData.map((product, index) => (
-            <tr key={index} className={styles.tableRow}>
-              <td className={styles.tableCell}>{index + 1}</td>
+            <tr key={product._id} className={styles.tableRow}>
+              <td className={styles.tableCell}>{startIndex + index + 1}</td>
               <td className={styles.tableCell}>{product.name}</td>
               <td className={styles.tableCell}>{product.total}</td>
               <td
@@ -115,8 +142,8 @@ function Products() {
               <td className={clsx(styles.tableCell, styles.tableBrand)}>
                 {product.brand}
               </td>
-              <td className={clsx(styles.tableCell, styles.tableBrand)}>
-                {Number(product.cost).toLocaleString("vi-VN")}
+              <td className={clsx(styles.tableCell, styles.tablePrice)}>
+                {Number(product.cost).toLocaleString("vi-VN")} đ
               </td>
               <td className={styles.tableCell}>
                 <button
@@ -126,7 +153,13 @@ function Products() {
                 >
                   <i className="fa-solid fa-pen-to-square"></i>
                 </button>
-                <button>
+                <button
+                  onClick={() => {
+                    setShowModal(true);
+                    setDeleteId(product._id);
+                    setModalMessage("Bạn có chắc chắn muốn xóa không ?");
+                  }}
+                >
                   <i className="fa-solid fa-trash"></i>
                 </button>
               </td>
@@ -167,6 +200,23 @@ function Products() {
           <i className="fa-solid fa-caret-right"></i>
         </button>
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className={styles.overlay}>
+          <div className={styles.modal}>
+            <p>{modalMessage}</p>
+            <button onClick={handleDeleteSoft}>Có</button>
+            <button
+              onClick={() => {
+                setShowModal(false);
+              }}
+            >
+              Không
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

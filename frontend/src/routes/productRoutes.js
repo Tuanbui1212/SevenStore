@@ -24,6 +24,7 @@ export const productRoutes = [
   },
   {
     path: "/dashboard/products/:id",
+    component: EditProducts,
     layout: OnlyHeader,
   },
 ];

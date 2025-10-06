@@ -1,8 +1,4 @@
 const Product = require("../models/Product");
-const {
-  mongooseToObject,
-  muntipleMongooseToObject,
-} = require("../../util/mongoose");
 
 class ProductController {
   show(req, res, next) {
@@ -16,12 +12,25 @@ class ProductController {
       .catch(next);
   }
 
+  //[GET]/dashboard/products
   showList(req, res, next) {
-    Product.find()
-      .lean()
-      .then((listProduct) => {
-        res.json({ listProduct });
-      })
+    // Product.find()
+    //   .lean()
+    //   .then((listProduct) => {
+    //     res.json({ listProduct });
+    //   })
+    //   .catch(next);
+
+    Promise.all([
+      Product.find().lean(),
+      Product.countDocumentsWithDeleted({ deleted: true }),
+    ])
+      .then(([listProduct, deletedCount]) =>
+        res.json({
+          deletedCount,
+          listProduct,
+        })
+      )
       .catch(next);
   }
 
@@ -73,8 +82,8 @@ class ProductController {
   }
 
   //[GET] /dashboard/products/trash Danh sach da xoa
-  trashEmpolyee(req, res, next) {
-    Employee.findWithDeleted({ deleted: true })
+  trashProduct(req, res, next) {
+    Product.findWithDeleted({ deleted: true })
       .lean()
       .then((trashProducts) => res.json({ trashProducts }))
       .catch(next);

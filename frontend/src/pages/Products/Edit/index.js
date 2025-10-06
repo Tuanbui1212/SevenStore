@@ -1,4 +1,4 @@
-import styles from "./CreatProduct.module.scss";
+import styles from "./EditProduct.module.scss";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import clsx from "clsx";
@@ -22,6 +22,8 @@ function Product() {
 
     status: "",
     cost: "",
+    description: "",
+    color: "",
   });
 
   const handleChange = (e) => {
@@ -52,7 +54,7 @@ function Product() {
     fetch(`http://localhost:5000/dashboard/products/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+        console.log(data.product.color);
         setFormData(data.product);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
@@ -77,7 +79,7 @@ function Product() {
         setModalMessage("Sửa thành công");
         setShowModal(true);
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi thêm nhân viên"));
+      .catch(() => alert("❌ Cập nhật thất bại"));
   };
 
   return (
@@ -99,6 +101,18 @@ function Product() {
               value={formData.name}
               onChange={handleChange}
               placeholder="Nhập tên sản phẩm"
+            />
+          </div>
+
+          <div className={clsx(styles.formGroup, styles.formColor)}>
+            <label htmlFor="color">Color</label>
+            <input
+              id="color"
+              name="color"
+              type="text"
+              value={formData.color}
+              onChange={handleChange}
+              placeholder="Nhập màu"
             />
           </div>
 
@@ -125,6 +139,17 @@ function Product() {
               value={formData.brand}
               onChange={handleChange}
               placeholder="Nhập thương hiệu"
+            />
+          </div>
+          <div className={clsx(styles.formGroup, styles.formDescription)}>
+            <label htmlFor="description">Description</label>
+            <input
+              id="description"
+              name="description"
+              type="text"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Mô tả"
             />
           </div>
           <div className={clsx(styles.formGroup, styles.formStatus)}>

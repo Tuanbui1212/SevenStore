@@ -58,7 +58,7 @@
 
 .tableCell {
   font-size: 1.6rem;
-  padding: 10px;
+  padding: 12px;
   border: none;
 
   button {
@@ -77,15 +77,24 @@
   }
 }
 
+.tableBrand {
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.tablePrice {
+  font-weight: 500;
+}
+
 .tableStatus {
   display: inline-block;
-  padding: 4px 12px;
+  padding: 6px 12px;
   font-size: 1.4rem;
   font-weight: 500;
   border-radius: 20px;
-  border: 1px solid #6c63ff;
-  color: #6c63ff;
-  background-color: rgba(108, 99, 255, 0.1);
+  border: 1px solid #069855;
+  color: #069855;
+  background-color: #e6f5ee;
   text-align: center;
   min-width: 80px;
   margin: 12px 0px;
@@ -93,15 +102,9 @@
 }
 
 .tableStatus.fullTime {
-  border-color: #4caf50;
-  color: #4caf50;
-  background-color: rgba(76, 175, 80, 0.1);
-}
-
-.tableStatus.partTime {
-  border-color: #2196f3;
-  color: #2196f3;
-  background-color: rgba(33, 150, 243, 0.1);
+  border-color: #d39c1d;
+  color: #d39c1d;
+  background-color: #fbf5e8;
 }
 
 .pagination {

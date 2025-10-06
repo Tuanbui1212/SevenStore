@@ -85,7 +85,7 @@
   gap: 10px;
 
   input {
-    width: calc(100% / 3 - 10px);
+    width: calc(100% / 3 - 8px);
   }
 }
 
@@ -96,7 +96,7 @@
   gap: 10px;
 
   input {
-    width: calc(100% / 5 - 10px);
+    width: calc(100% / 5 - 8px);
   }
 }
 
@@ -106,10 +106,15 @@
   gap: 10px;
 
   .formName {
-    width: 50%;
+    width: 40%;
   }
+
+  .formColor {
+    width: 25%;
+  }
+
   .formCost {
-    width: calc(50% - 10px);
+    width: calc(35% - 20px);
   }
 }
 
@@ -119,10 +124,15 @@
   gap: 10px;
 
   .formBrand {
-    width: 60%;
+    width: 30%;
   }
+
+  .formDescription {
+    width: 40%;
+  }
+
   .formStatus {
-    width: calc(40% - 10px);
+    width: calc(30% - 20px);
   }
 }
 

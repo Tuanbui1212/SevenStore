@@ -3,76 +3,51 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function TrashProduct() {
-  const [product, setProduct] = useState([]);
+function Products() {
+  const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [modalMessage, setModalMessage] = useState("");
+  const [restoreId, setRestoreId] = useState("");
+  const [deleteId, setDeleteId] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
-  const [restoreId, setRestoreId] = useState(null);
+  const [modalMessage, setModalMessage] = useState("");
   const pageSize = 6; // số dòng mỗi trang
 
   const navigate = useNavigate();
 
-  const fetchProduct = () => {
-    fetch("http://localhost:5000/dashboard/product/trash")
+  // Lấy dữ liệu
+  const fetchProducts = () => {
+    fetch("http://localhost:5000/dashboard/products/trash")
       .then((res) => res.json())
       .then((data) => {
-        const formattedProducts = data.trashProduct.map((product) => {
-          if (!product.date) {
-            return product;
-          }
+        const newList = data.trashProducts.map((product) => {
+          const total = Object.values(product.size).reduce(
+            (sum, value) => sum + value,
+            0
+          );
 
-          const formattedDate = new Date(product.date)
-            .toISOString()
-            .split("T")[0];
-
-          return {
-            ...product,
-            date: formattedDate,
-          };
+          return { ...product, total };
         });
 
-        setProduct(formattedProducts);
+        setProducts(newList);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   };
 
   useEffect(() => {
-    fetchProduct();
+    fetchProducts();
   }, []);
 
-  const handleRestore = () => {
-    if (!restoreId) return;
-
-    fetch(
-      `http://localhost:5000/dashboard/product/trash/${restoreId}/restore`,
-      {
-        method: "PATCH",
-      }
-    )
-      .then((res) => res.json())
-      .then(() => {
-        alert("✅ Khôi phục thành công!");
-        fetchProduct(); // load lại danh sách
-      })
-      .catch(() => alert("❌ Có lỗi xảy ra khi khôi phục!"))
-      .finally(() => {
-        setDeleteId(null);
-        setShowModal(false);
-      });
-  };
-
+  //Xóa that
   const handleDelete = () => {
     if (!deleteId) return;
 
-    fetch(`http://localhost:5000/dashboard/product/trash/${deleteId}`, {
+    fetch(`http://localhost:5000/dashboard/products/trash/${deleteId}`, {
       method: "DELETE",
     })
       .then((res) => res.json())
       .then(() => {
         alert("✅ Xóa thành công!");
-        fetchProduct(); // load lại danh sách
+        fetchProducts();
       })
       .catch(() => alert("❌ Có lỗi xảy ra khi xóa!"))
       .finally(() => {
@@ -81,10 +56,28 @@ function TrashProduct() {
       });
   };
 
+  const handleRestore = () => {
+    if (!restoreId) return;
+
+    fetch(`http://localhost:5000/dashboard/products/${restoreId}/restore`, {
+      method: "PATCH",
+    })
+      .then((res) => res.json())
+      .then(() => {
+        alert("✅ Khôi phục thành công!");
+        fetchProducts();
+      })
+      .catch(() => alert("❌ Có lỗi xảy ra khi khôi phục!"))
+      .finally(() => {
+        setDeleteId(null);
+        setShowModal(false);
+      });
+  };
+
   // Tính toán phân trang
-  const totalPages = Math.ceil(product.length / pageSize);
+  const totalPages = Math.ceil(products.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const currentData = product.slice(startIndex, startIndex + pageSize);
+  const currentData = products.slice(startIndex, startIndex + pageSize);
 
   // Tạo danh sách trang hiển thị (có dấu ...)
   const getPageNumbers = () => {
@@ -129,27 +122,42 @@ function TrashProduct() {
       <table className={styles.table}>
         <thead className={styles.tableTitle}>
           <tr>
-            <th className={styles.tableHeader}>ID</th>
+            <th className={styles.tableHeader}>#</th>
             <th className={styles.tableHeader}>Name</th>
+            <th className={styles.tableHeader}>Quantity</th>
+            <th className={styles.tableHeader}>Status</th>
+            <th className={styles.tableHeader}>Brand</th>
             <th className={styles.tableHeader}>Price</th>
-            <th className={styles.tableHeader}>Category</th>
-            <th className={styles.tableHeader}>Date</th>
             <th className={styles.tableHeader}></th>
           </tr>
         </thead>
         <tbody>
-          {currentData.map((p, index) => (
-            <tr key={index} className={styles.tableRow}>
-              <td className={styles.tableCell}>{index + 1}</td>
-              <td className={styles.tableCell}>{p.name}</td>
-              <td className={styles.tableCell}>{p.price}</td>
-              <td className={styles.tableCell}>{p.category}</td>
-              <td className={styles.tableCell}>{p.date}</td>
+          {currentData.map((product, index) => (
+            <tr key={product._id} className={styles.tableRow}>
+              <td className={styles.tableCell}>{startIndex + index + 1}</td>
+              <td className={styles.tableCell}>{product.name}</td>
+              <td className={styles.tableCell}>{product.total}</td>
+              <td
+                className={clsx(
+                  styles.tableCell,
+                  styles.tableStatus,
+                  product.total === 0 && styles.fullTime
+                )}
+              >
+                {product.total > 0 ? "Available" : "Out of Stock"}
+              </td>
+
+              <td className={clsx(styles.tableCell, styles.tableBrand)}>
+                {product.brand}
+              </td>
+              <td className={clsx(styles.tableCell, styles.tablePrice)}>
+                {Number(product.cost).toLocaleString("vi-VN")} đ
+              </td>
               <td className={styles.tableCell}>
                 <button
                   onClick={() => {
                     setShowModal(true);
-                    setRestoreId(p._id);
+                    setRestoreId(product._id);
                     setModalMessage("Bạn có chắc chắn muốn khôi phục không ?");
                   }}
                 >
@@ -158,7 +166,7 @@ function TrashProduct() {
                 <button
                   onClick={() => {
                     setShowModal(true);
-                    setDeleteId(p._id);
+                    setDeleteId(product._id);
                     setModalMessage("Bạn có chắc chắn muốn xóa không ?");
                   }}
                 >
@@ -233,4 +241,4 @@ function TrashProduct() {
   );
 }
 
-export default TrashProduct;
+export default Products;

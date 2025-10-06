@@ -21,11 +21,13 @@ function Employee() {
 
     status: "",
     cost: "",
+    description: "",
+    color: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Nếu là size (dùng data-size để xác định)
+    // Nếu là size bắt đầu bằng "size"
     if (name.startsWith("size")) {
       setFormData((prev) => ({
         ...prev,
@@ -95,6 +97,18 @@ function Employee() {
             />
           </div>
 
+          <div className={clsx(styles.formGroup, styles.formColor)}>
+            <label htmlFor="color">Color</label>
+            <input
+              id="color"
+              name="color"
+              type="text"
+              value={formData.color}
+              onChange={handleChange}
+              placeholder="Nhập màu"
+            />
+          </div>
+
           <div className={clsx(styles.formGroup, styles.formCost)}>
             <label htmlFor="cost">Cost</label>
             <input
@@ -120,6 +134,17 @@ function Employee() {
               placeholder="Nhập thương hiệu"
             />
           </div>
+          <div className={clsx(styles.formGroup, styles.formDescription)}>
+            <label htmlFor="description">Description</label>
+            <input
+              id="description"
+              name="description"
+              type="text"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Mô tả"
+            />
+          </div>
           <div className={clsx(styles.formGroup, styles.formStatus)}>
             <label htmlFor="status">Status</label>
             <select
@@ -128,7 +153,7 @@ function Employee() {
               value={formData.status}
               onChange={handleChange}
             >
-              <option value="">-- Trạng thái --</option>
+              <option value="null">-- Trạng thái --</option>
               <option value="New">New</option>
               <option value="Hot">Hot</option>
             </select>
