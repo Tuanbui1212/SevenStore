@@ -7,5 +7,5 @@ export const mainRoutes = [
   { path: "/", component: Home },
   { path: "/search", component: Search },
   { path: "/product/:brand", component: Product },
-  { path: "/:slug", component: ProductDetail },
+  { path: "/product/:brand/:slug", component: ProductDetail },
 ];

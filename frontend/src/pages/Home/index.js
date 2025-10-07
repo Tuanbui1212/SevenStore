@@ -35,16 +35,16 @@ function Home() {
   const images = [slider01, slider02, slider03];
 
   const brands = [
-    { name: "Nike", image: nike_img },
-    { name: "Bape", image: bape_img },
-    { name: "New Balance", image: newBalance_img },
-    { name: "Adidas", image: adidas_img },
-    { name: "Tiger", image: tiger_img },
-    { name: "Converse", image: converse_img },
-    { name: "Vans", image: vans_img },
-    { name: "Asics", image: asics_img },
+    { name: "nike", image: nike_img },
+    { name: "bape", image: bape_img },
+    { name: "new balance", image: newBalance_img },
+    { name: "adidas", image: adidas_img },
+    { name: "tiger", image: tiger_img },
+    { name: "converse", image: converse_img },
+    { name: "vans", image: vans_img },
+    { name: "asics", image: asics_img },
     { name: "puma", image: puma_img },
-    { name: "Reebok", image: reebok_img },
+    { name: "reebok", image: reebok_img },
   ];
 
   const scrollLeft = () => {
@@ -253,7 +253,7 @@ function Home() {
         <div ref={scrollRefBrand} className={clsx(styles.list_new_product)}>
           {brands.map((img_brand) => (
             <Link
-              to={`/product/brand/${img_brand.name}`}
+              to={`/product/${img_brand.name}`}
               key={img_brand.name}
               className={clsx(
                 "col",

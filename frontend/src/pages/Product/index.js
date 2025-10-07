@@ -203,7 +203,7 @@ function Product() {
                     )}
                   >
                     <Link
-                      to={`/product/${product._id}`}
+                      to={`/product/${product.brand}/${product.slug}`}
                       className={styles.productLink}
                     >
                       <img

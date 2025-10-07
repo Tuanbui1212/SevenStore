@@ -60,7 +60,11 @@ function Employee() {
         v === "" ? 0 : Number(v),
       ])
     );
-    const finalData = { ...formData, size: normalizedSize };
+    const finalData = {
+      ...formData,
+      size: normalizedSize,
+      cost: Number(formData.cost) || 0,
+    };
 
     fetch("http://localhost:5000/dashboard/products/create", {
       method: "POST",
@@ -72,7 +76,7 @@ function Employee() {
         setModalMessage("Thêm thành công");
         setShowModal(true);
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi thêm nhân viên"));
+      .catch(() => alert("❌ Có lỗi xảy ra khi thêm sản phẩm"));
   };
 
   return (
@@ -155,6 +159,7 @@ function Employee() {
             >
               <option value="null">-- Trạng thái --</option>
               <option value="New">New</option>
+              <option value="BestSeller">Best Seller</option>
               <option value="Hot">Hot</option>
             </select>
           </div>

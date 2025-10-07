@@ -15,15 +15,18 @@ class ProductController {
       .catch(next);
   }
 
-  //[GET]/dashboard/products
-  showList(req, res, next) {
-    // Product.find()
-    //   .lean()
-    //   .then((listProduct) => {
-    //     res.json({ listProduct });
-    //   })
-    //   .catch(next);
+  //[GET]/product/:brand/:slug
+  showDetail(req, res, next) {
+    const { slug } = req.params;
 
+    Product.findOne({ slug: { $regex: slug, $options: "i" } })
+      .lean()
+      .then((productDetail) => res.json({ productDetail }))
+      .catch(next);
+  }
+
+  //[GET]/dashboard/products/:brand/:slug
+  showList(req, res, next) {
     Promise.all([
       Product.find().lean(),
       Product.countDocumentsWithDeleted({ deleted: true }),
