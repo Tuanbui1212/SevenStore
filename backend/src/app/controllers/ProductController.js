@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 
 class ProductController {
+  //[GET]/product/:brand/
   show(req, res, next) {
     const { brand } = req.params;
 

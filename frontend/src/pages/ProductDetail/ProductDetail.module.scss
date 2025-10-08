@@ -54,6 +54,20 @@
     font-weight: 500;
   }
 
+  .description__title {
+    h1 {
+      font-size: 2.4rem;
+      font-weight: 600;
+      background-color: $white-color;
+    }
+
+    span {
+      color: #565656;
+      font-size: 1.6rem;
+      font-weight: 400;
+    }
+  }
+
   .status__product {
     display: inline-block;
     padding: 4px 8px;
@@ -75,11 +89,39 @@
     margin-top: 10px;
     font-weight: 600;
   }
+}
 
-  .color__product {
-    margin-top: 36px;
+.color__selector {
+  margin-top: 36px;
+  .color__title {
     font-size: 2.6rem;
     font-weight: 600;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .color__description {
+    display: block;
+    font-size: 1.8rem;
+    color: #797979;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+  .color__grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+
+    .color__active {
+      border: 1px solid $black-color;
+    }
+
+    img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border: none;
+    }
   }
 }
 
@@ -249,30 +291,23 @@
   }
 }
 
+.content {
+  display: block;
+  margin-top: 80px;
+  margin-bottom: 18px;
+  .title {
+    font-weight: bold;
+    font-size: 2.8rem;
+    text-transform: uppercase;
+  }
+
+  .title__center {
+    text-align: center;
+  }
+}
+
 .new_prouct {
   position: relative;
-
-  &:hover .btn {
-    display: block;
-  }
-
-  .btn {
-    display: none;
-    border-radius: 50%;
-    color: $black-color;
-    background-color: $white-color;
-    opacity: 1;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-    font-size: 2.4rem;
-    padding: 15px;
-  }
-  .btn_left {
-    left: -15px;
-  }
-
-  .btn_right {
-    right: -15px;
-  }
 
   .list_new_product {
     display: flex;
@@ -283,8 +318,6 @@
     padding-top: 10px;
     scroll-behavior: smooth; // cuộn mượt
     padding-bottom: 8px;
-    scroll-behavior: smooth; // cuộn mượt
-    scrollbar-width: none; // ẩn scrollbar (Firefox)
 
     .product_item {
       display: inline-block !important;
@@ -292,9 +325,11 @@
       color: $black-color;
       text-transform: uppercase;
       transition: transform 0.3s ease;
+
       .product_img {
         width: 100%;
-        height: auto;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
         display: block;
       }
 
@@ -306,13 +341,22 @@
           font-weight: 600;
           line-height: 36px;
         }
+
         .product_description {
           color: $description-color;
         }
       }
       &:hover {
-        transform: translateY(-10px);
+        transform: translateY(-3px);
       }
     }
   }
+}
+
+.list_new_product::-webkit-scrollbar {
+  height: 6px;
+}
+.list_new_product::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
 }

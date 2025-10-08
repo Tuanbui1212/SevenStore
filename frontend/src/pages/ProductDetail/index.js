@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { Link } from "react-router";
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 
 import styles from "./ProductDetail.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
@@ -13,10 +13,9 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    fetch("http://localhost:5000/")
+    fetch(`http://localhost:5000/product/${brand}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("API trả về:", data.newProduct);
         setProducts(data.newProduct);
       })
       .catch((err) => console.error(err));
@@ -27,7 +26,6 @@ function ProductDetail() {
       .then((res) => res.json())
       .then((data) => {
         setProduct(data.productDetail);
-        console.log(data.productDetail);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [brand, slug]);
@@ -91,7 +89,28 @@ function ProductDetail() {
               <span className={clsx(styles.price__product)}>
                 {Number(product.cost).toLocaleString("vi-VN")} đ
               </span>
-              <span className={clsx(styles.color__product)}>Color</span>
+
+              <div className={clsx(styles.color__selector)}>
+                <span className={clsx(styles.color__title)}>Color</span>
+                <span className={clsx(styles.color__description)}>
+                  {product.color}
+                </span>
+                <div className={clsx(styles.color__grid)}>
+                  {products
+                    .filter((p) => p.name === product.name)
+                    .map((p, index) => (
+                      <Link key={index} to={`/product/${p.brand}/${p.slug}`}>
+                        <img
+                          className={
+                            p.slug === product.slug && styles.color__active
+                          }
+                          src={p.image.image1}
+                          alt=""
+                        />
+                      </Link>
+                    ))}
+                </div>
+              </div>
 
               <div className={styles.size__selector}>
                 <div className={styles.size__title}>Size</div>
@@ -123,7 +142,13 @@ function ProductDetail() {
                   >
                     -
                   </button>
-                  <input value={quantity} />
+                  <input
+                    value={quantity}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val >= 0) setQuantity(val);
+                    }}
+                  />
                   <button
                     onClick={() => setQuantity((q) => q + 1)}
                     disabled={quantity < 0}
@@ -136,45 +161,56 @@ function ProductDetail() {
                   <i className="fa-solid fa-bag-shopping"></i> Buy Now
                 </button>
               </div>
+
+              <div className={clsx("row mt-36", styles.description__title)}>
+                <h1>Miễn phí vận chuyển và trả hàng </h1>
+                <span>
+                  Miễn phí vận chuyển tiêu chuẩn cho đơn đặt hàng trên 1.200.000
+                  VND.
+                </span>
+
+                <span>
+                  Tìm hiểu thêm Bạn có thể trả lại (các) mặt hàng* trong vòng 14
+                  ngày kể từ ngày bạn nhận được đơn đặt hàng. Nhấp vào đây để
+                  xem Chính Sách Trả Hàng.
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="row mt-36">
-          <div className={clsx("row", styles.content)}>
-            <span className={clsx("col", "col-12", styles.title)}>
-              YOU MAY ALSO LIKE
-            </span>
-          </div>
+        <div className={clsx("row", styles.content)}>
+          <span className={clsx("col", "col-12", styles.title)}>
+            YOU MAY ALSO LIKE
+          </span>
+        </div>
 
-          <div className={clsx("row", styles.new_prouct)}>
-            <div className={clsx(styles.list_new_product)}>
-              {products.map((product) => (
-                <Link
-                  to={`/product/${product._id}`}
-                  className={clsx("col", "col-3", styles.product_item)}
-                >
-                  <img
-                    src={product.image.image1}
-                    alt="Sneaker"
-                    className={styles.product_img}
-                  />
-                  <div className={styles.product_info}>
-                    <div className={styles.product_top}>
-                      <span className={styles.product_name}>
-                        {product.name}
-                      </span>
-                      <span className={styles.product_price}>
-                        {Number(product.cost).toLocaleString("vi-VN")}
-                      </span>
-                    </div>
-                    <span className={styles.product_description}>
-                      {product.type}
+        <div className={clsx("row", styles.new_prouct)}>
+          <div className={clsx(styles.list_new_product)}>
+            {products.map((product, index) => (
+              <Link
+                key={index}
+                to={`/product/${product._id}`}
+                className={clsx("col", "col-3", styles.product_item)}
+              >
+                <img
+                  src={product.image.image1}
+                  alt="Sneaker"
+                  className={styles.product_img}
+                />
+                <div className={styles.product_info}>
+                  <div className={styles.product_top}>
+                    <span className={styles.product_name}>{product.name}</span>
+                    <span className={styles.product_price}>
+                      {Number(product.cost).toLocaleString("vi-VN")}
                     </span>
                   </div>
-                </Link>
-              ))}
-            </div>
+                  <span className={styles.product_description}>
+                    {product.type}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
