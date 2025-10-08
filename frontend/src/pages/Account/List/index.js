@@ -103,7 +103,7 @@ function Account() {
               <td className={styles.tableCell}>
                 <button
                   onClick={() => {
-                    navigate(`/dashboard/acount/${a._id}`);
+                    navigate(`/dashboard/account/${a._id}`);
                   }}
                 >
                   <i className="fa-solid fa-pen-to-square"></i>

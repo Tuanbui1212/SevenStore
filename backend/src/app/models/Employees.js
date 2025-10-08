@@ -10,7 +10,6 @@ const Employee = new Schema(
     status: { type: String, maxLength: 255, required: true },
     role: { type: String, maxLength: 255, required: true },
     date: { type: Date, required: true },
-    type: { type: String, maxLength: 255, required: true },
   },
   {
     timestamps: true,

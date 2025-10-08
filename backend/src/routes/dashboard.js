@@ -34,5 +34,7 @@ router.put("/customers/:id", CustomerController.update);
 // -- Account --
 router.get("/account", AccountController.show);
 router.post("/account/create", AccountController.create);
+router.get("/account/:id", AccountController.edit);
+router.post("/account/:id", AccountController.update);
 
 module.exports = router;

@@ -1,0 +1,170 @@
+@import "../../components/GlobalStyles/variables";
+
+.authWrapper {
+  margin-top: 60px;
+}
+
+.authCol {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.authBox {
+  background: $white-color;
+  padding: 2.2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  text-align: left;
+  width: 100%;
+}
+
+.authTabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+
+  button {
+    background: none;
+    border: none;
+    font-size: 2.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin: 0 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &.active {
+      color: #111827;
+      border-bottom: 2px solid #111827;
+    }
+
+    &:hover {
+      color: #111827;
+    }
+  }
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+
+  p {
+    font-size: 1.4rem;
+    color: #4b5563;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  label {
+    margin-top: 10px;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+    font-size: 1.4rem;
+    color: $black-color;
+
+    span {
+      color: #ef4444;
+    }
+  }
+
+  input {
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 1.4rem;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: $black-color;
+    }
+  }
+}
+
+.authOptions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.remember {
+  font-size: 1.3rem;
+  color: #374151;
+
+  input {
+    margin-right: 6px;
+  }
+}
+
+.forgot {
+  color: #2563eb;
+  font-size: 1.3rem;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.btnLogin {
+  background: #111827;
+  color: white;
+  padding: 1rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.8rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+
+  &:hover {
+    background: #1f2937;
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: $white-color;
+  padding: 20px;
+  border-radius: 10px;
+  min-width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  text-align: center;
+
+  p {
+    margin-bottom: 15px;
+    font-size: 16px;
+  }
+
+  button {
+    background-color: $background-success;
+    color: $white-color;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.4rem;
+    margin: 0px 3px;
+
+    &:hover {
+      background: $hide-color;
+    }
+  }
+
+  button:last-child {
+    background: $background-danger;
+  }
+}
