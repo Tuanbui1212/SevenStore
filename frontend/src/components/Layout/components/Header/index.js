@@ -183,7 +183,10 @@ function Header() {
                 <Link className={styles.user_item}>Hỗ trợ</Link>
               </li>
               <li>
-                <Link className={clsx(styles.user_login, styles.user_item)}>
+                <Link
+                  to={"/login"}
+                  className={clsx(styles.user_login, styles.user_item)}
+                >
                   Đăng nhập
                 </Link>
               </li>

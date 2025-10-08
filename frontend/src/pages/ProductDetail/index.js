@@ -124,7 +124,6 @@ function ProductDetail() {
                             styles.size__box,
                             values === 0 && styles.disabled
                           )}
-                          onClick={() => console.log(Math.random())}
                           disabled={values === 0}
                         >
                           {name.replace("size", "")}

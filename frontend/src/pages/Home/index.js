@@ -67,7 +67,6 @@ function Home() {
     fetch("http://localhost:5000/")
       .then((res) => res.json())
       .then((data) => {
-        console.log("API trả về:", data.newProduct);
         setProducts(data.newProduct);
       })
       .catch((err) => console.error(err));
@@ -140,8 +139,9 @@ function Home() {
           <i className="fa-solid fa-arrow-left"></i>
         </button>
         <div ref={scrollRef} className={clsx(styles.list_new_product)}>
-          {products.map((product) => (
+          {products.map((product, index) => (
             <Link
+              key={index}
               to={`/product/${product._id}`}
               className={clsx("col", "col-3", styles.product_item)}
             >

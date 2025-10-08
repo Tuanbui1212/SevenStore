@@ -4,6 +4,7 @@ const router = express.Router();
 const EmployeeController = require("../app/controllers/EmployeeController.js");
 const ProductController = require("../app/controllers/ProductController.js");
 const CustomerController = require("../app/controllers/CustomerController.js");
+const AccountController = require("../app/controllers/AccountController.js");
 
 // -- Product --
 router.get("/products", ProductController.showList);
@@ -29,5 +30,9 @@ router.delete("/employee/:id", EmployeeController.deleteSoft);
 router.get("/customers", CustomerController.show);
 router.get("/customers/:id", CustomerController.edit);
 router.put("/customers/:id", CustomerController.update);
+
+// -- Account --
+router.get("/account", AccountController.show);
+router.post("/account/create", AccountController.create);
 
 module.exports = router;
