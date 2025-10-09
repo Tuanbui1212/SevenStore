@@ -42,7 +42,7 @@ const AuthForm = () => {
           //localStorage.setItem("user", JSON.stringify(data.user));
           //localStorage.setItem("token", data.token);
 
-          navigate("/dashboard");
+          navigate(data.redirectUrl);
         } else {
           setModalMessage(data.message || "Đăng nhập thất bại");
           setShowModal(true);
