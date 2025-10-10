@@ -142,7 +142,7 @@ function Home() {
           {products.map((product, index) => (
             <Link
               key={index}
-              to={`/product/${product._id}`}
+              to={`/product/${product.brand}/${product.slug}`}
               className={clsx("col", "col-3", styles.product_item)}
             >
               <img

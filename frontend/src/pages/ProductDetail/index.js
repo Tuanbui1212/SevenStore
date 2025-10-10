@@ -136,12 +136,13 @@ function ProductDetail() {
               <div className={clsx(styles.actions__buy)}>
                 <div className={clsx(styles.quantity)}>
                   <button
-                    onClick={() => setQuantity((q) => q - 1)}
+                    onClick={() => setQuantity((q) => Number(q) - 1)}
                     disabled={quantity <= 0}
                   >
                     -
                   </button>
                   <input
+                    type="number"
                     value={quantity}
                     onChange={(e) => {
                       const val = e.target.value;
@@ -149,7 +150,7 @@ function ProductDetail() {
                     }}
                   />
                   <button
-                    onClick={() => setQuantity((q) => q + 1)}
+                    onClick={() => setQuantity((q) => Number(q) + 1)}
                     disabled={quantity < 0}
                   >
                     +

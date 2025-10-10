@@ -160,7 +160,7 @@ function Employee() {
               <option value="null">-- Trạng thái --</option>
               <option value="New">New</option>
               <option value="BestSeller">Best Seller</option>
-              <option value="Hot">Hot</option>
+              <option value="Sale">Sale</option>
             </select>
           </div>
         </div>

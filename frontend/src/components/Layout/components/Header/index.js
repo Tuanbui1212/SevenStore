@@ -8,6 +8,9 @@ import noItem from "../../../../assets/images/no-item.jpg";
 function Header() {
   const [open, setOpen] = useState(false);
 
+  const success = localStorage.getItem("success");
+  const role = localStorage.getItem("role");
+
   return (
     <>
       <header className={clsx(styles.header)}>
@@ -120,11 +123,13 @@ function Header() {
               </Link>
             </li>
 
-            <li>
-              <Link className={clsx(styles.nav_item)} to="/dashboard/employee">
-                Dashboard
-              </Link>
-            </li>
+            {success && role === "admin" && (
+              <li>
+                <Link className={clsx(styles.nav_item)} to="/dashboard">
+                  Dashboard
+                </Link>
+              </li>
+            )}
           </ul>
 
           <div className={clsx(styles.nav_left_icon)}>
@@ -182,20 +187,41 @@ function Header() {
               <li>
                 <Link className={styles.user_item}>Hỗ trợ</Link>
               </li>
-              <li>
-                <Link
-                  to={"/login"}
-                  className={clsx(styles.user_login, styles.user_item)}
-                >
-                  Đăng nhập
-                </Link>
-              </li>
-              <li className={styles.user_title}>
-                Bạn chưa có tài khoản ?
-                <Link className={clsx(styles.user_register)}>
-                  Đăng ký tại đây
-                </Link>
-              </li>
+              {!success && (
+                <li>
+                  <Link
+                    to={"/login"}
+                    className={clsx(styles.user_login, styles.user_item)}
+                  >
+                    Đăng nhập
+                  </Link>
+                </li>
+              )}
+
+              {success && (
+                <li>
+                  <Link
+                    to={"/login"}
+                    className={clsx(styles.user_login, styles.user_item)}
+                    onClick={() => {
+                      localStorage.removeItem("role");
+                      localStorage.removeItem("success");
+                      //localStorage.removeItem("token");
+                    }}
+                  >
+                    Đăng xuất
+                  </Link>
+                </li>
+              )}
+
+              {!success && (
+                <li className={styles.user_title}>
+                  Bạn chưa có tài khoản ?
+                  <Link to="/login" className={clsx(styles.user_register)}>
+                    Đăng ký tại đây
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         </div>

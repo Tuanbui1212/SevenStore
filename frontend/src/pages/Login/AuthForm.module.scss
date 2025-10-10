@@ -109,7 +109,7 @@
 }
 
 .btnLogin {
-  background: #111827;
+  background: $black-color;
   color: white;
   padding: 1rem 0.8rem;
   border: none;
@@ -120,6 +120,14 @@
 
   &:hover {
     background: #1f2937;
+  }
+
+  &.disable {
+    opacity: 0.4;
+    cursor: default;
+    &:hover {
+      background: $black-color;
+    }
   }
 }
 

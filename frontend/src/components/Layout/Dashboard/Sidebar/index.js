@@ -7,6 +7,7 @@ import Admin from "../../../../assets/images/elements.png";
 
 function Sidebar() {
   const location = useLocation();
+  const role = localStorage.getItem("role");
 
   return (
     <>
@@ -17,17 +18,19 @@ function Sidebar() {
         </Link>
 
         <ul className={styles.sidebarMenu}>
-          <li>
-            <Link
-              to="/dashboard/employee"
-              className={clsx(
-                styles.sidebarItem,
-                location.pathname === "/dashboard/employee" && styles.active
-              )}
-            >
-              <span className={styles.sidebarText}>Employee</span>
-            </Link>
-          </li>
+          {role === "admin" && (
+            <li>
+              <Link
+                to="/dashboard/employee"
+                className={clsx(
+                  styles.sidebarItem,
+                  location.pathname === "/dashboard/employee" && styles.active
+                )}
+              >
+                <span className={styles.sidebarText}>Employee</span>
+              </Link>
+            </li>
+          )}
           <li>
             <Link
               to="/dashboard/products"
@@ -72,17 +75,20 @@ function Sidebar() {
               <span className={styles.sidebarText}>Stats</span>
             </Link>
           </li>
-          <li>
-            <Link
-              to="/dashboard/account"
-              className={clsx(
-                styles.sidebarItem,
-                location.pathname === "/dashboard/account" && styles.active
-              )}
-            >
-              <span className={styles.sidebarText}>Account</span>
-            </Link>
-          </li>
+          {role === "admin" && (
+            <li>
+              <Link
+                to="/dashboard/account"
+                className={clsx(
+                  styles.sidebarItem,
+                  location.pathname === "/dashboard/account" && styles.active
+                )}
+              >
+                <span className={styles.sidebarText}>Account</span>
+              </Link>
+            </li>
+          )}
+
           <li>
             <Link
               to="/dashboard/management"

@@ -6,7 +6,7 @@ const Account = new Schema(
   {
     name: { type: String, maxLength: 255, required: true, trim: true },
     user: { type: String, maxLength: 255, required: true, trim: true },
-    password: { type: Number, required: true, trim: true },
+    password: { type: String, required: true, trim: true },
     role: { type: String, maxLength: 255, required: true, trim: true },
     cart: { type: Object },
   },

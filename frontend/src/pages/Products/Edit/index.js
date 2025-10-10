@@ -159,9 +159,10 @@ function Product() {
               value={formData.status}
               onChange={handleChange}
             >
-              <option value="">-- Trạng thái --</option>
+              <option value="null">-- Trạng thái --</option>
               <option value="New">New</option>
-              <option value="Hot">Hot</option>
+              <option value="BestSeller">Best Seller</option>
+              <option value="Sale">Sale</option>
             </select>
           </div>
         </div>

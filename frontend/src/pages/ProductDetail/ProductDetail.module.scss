@@ -226,6 +226,19 @@
     font-size: 1.6rem;
     font-weight: 500;
     border: none;
+    outline: none;
+  }
+
+  /* Ẩn mũi tên trên Chrome, Safari, Edge, Opera */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Ẩn mũi tên trên Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
 }
 .add__cart {

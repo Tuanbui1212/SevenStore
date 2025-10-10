@@ -40,6 +40,9 @@ const AuthForm = () => {
       .then((data) => {
         if (data.success) {
           //localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("success", data.success);
+          localStorage.setItem("role", data.role);
+          localStorage.setItem("id", data.id);
           //localStorage.setItem("token", data.token);
 
           navigate(data.redirectUrl);
@@ -63,10 +66,29 @@ const AuthForm = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ formData }),
-    });
-
-    console.log(formData);
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setModalMessage(data.message);
+        setShowModal(true);
+        if (data.message.includes("thành công")) {
+          setActiveTab("login");
+          setFormData({
+            name: "",
+            user: "",
+            password: "",
+            role: "customer",
+            cart: {},
+          });
+        }
+      })
+      .catch((err) => {
+        console.error("Lỗi khi gửi request:", err);
+        setModalMessage("Đăng ký thất bại.");
+        setShowModal(true);
+      });
   };
+
   return (
     <div className={clsx("container", styles.authWrapper)}>
       <div className={clsx("row", styles.authRow)}>
@@ -99,6 +121,7 @@ const AuthForm = () => {
                 </label>
                 <input
                   type="text"
+                  value={username}
                   onChange={(e) => {
                     setUsername(e.target.value);
                   }}
@@ -109,6 +132,7 @@ const AuthForm = () => {
                   Password <span>*</span>
                 </label>
                 <input
+                  value={password}
                   type="password"
                   onChange={(e) => {
                     setPassword(e.target.value);
@@ -175,7 +199,17 @@ const AuthForm = () => {
                   for other purposes described in our privacy policy.
                 </p>
 
-                <button type="submit" className={styles.btnLogin}>
+                <button
+                  type="submit"
+                  className={clsx(
+                    styles.btnLogin,
+                    (!formData.name || !formData.user || !formData.password) &&
+                      styles.disable
+                  )}
+                  disabled={
+                    !formData.name || !formData.user || !formData.password
+                  }
+                >
                   Register
                 </button>
               </form>

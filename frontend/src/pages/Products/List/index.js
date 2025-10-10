@@ -137,10 +137,22 @@ function Products() {
                 className={clsx(
                   styles.tableCell,
                   styles.tableStatus,
-                  product.total === 0 && styles.fullTime
+                  product.total === 0 && styles.out,
+                  product.total > 0 &&
+                    product.status === "null" &&
+                    styles.available,
+                  product.total > 0 &&
+                    product.status === "BestSeller" &&
+                    styles.bestseller,
+                  product.total > 0 && product.status === "New" && styles.new,
+                  product.total > 0 && product.status === "Sale" && styles.sale
                 )}
               >
-                {product.total > 0 ? "Available" : "Out of Stock"}
+                {product.total > 0
+                  ? product.status === "null"
+                    ? "Available"
+                    : product.status
+                  : "Out of Stock"}
               </td>
 
               <td className={clsx(styles.tableCell, styles.tableBrand)}>
