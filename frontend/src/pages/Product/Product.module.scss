@@ -83,7 +83,7 @@
         background: #f1f1f1;
       }
 
-      input[type="radio"] {
+      input[type="checkbox"] {
         margin-right: 8px;
         accent-color: $text-color;
       }
@@ -95,6 +95,8 @@
     }
   }
 }
+
+//
 
 /* Màu */
 .colorGrid {
@@ -128,7 +130,7 @@
   margin-bottom: 12px;
 
   input {
-    width: 80px;
+    max-width: 90px;
     padding: 6px 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -178,11 +180,34 @@
   & .productGrid {
     display: flex;
     flex-wrap: wrap;
-    //gap: 16px;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  color: white;
+  font-weight: bold;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 1rem;
+  z-index: 10;
+  text-transform: uppercase;
+
+  &.new {
+    background-color: $black-color;
+  }
+  &.sale {
+    background-color: $primary-color;
+  }
+  &.BestSeller {
+    background-color: red;
   }
 }
 
 .productCard {
+  position: relative;
   margin-top: 12px;
   background: #fff;
   cursor: pointer;

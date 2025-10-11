@@ -4,13 +4,34 @@ class ProductController {
   //[GET]/product/:brand/
   show(req, res, next) {
     const { brand } = req.params;
+    const { color, type, min, max } = req.query;
 
-    const filter =
-      brand === "all" ? {} : { brand: { $regex: brand, $options: "i" } };
+    let filter = {};
+
+    if (brand === "sale") {
+      filter.status = { $regex: "sale", $options: "i" };
+    } else if (brand === "NEW ARRIVALS") {
+      filter.status = { $regex: "new", $options: "i" };
+    } else if (brand !== "all") {
+      filter.brand = { $regex: brand, $options: "i" };
+    }
+
+    if (color) {
+      filter.color = { $regex: color, $options: "i" };
+    }
+    if (type) {
+      filter.name = { $regex: type, $options: "i" };
+    }
+    if (min || max) {
+      filter.cost = {};
+      if (min) filter.cost.$gte = Number(min);
+      if (max) filter.cost.$lte = Number(max);
+    }
 
     Product.find(filter)
       .lean()
       .then((newProduct) => {
+        console.log(`Found ${newProduct.length} products with filter:`, filter);
         res.json({ newProduct });
       })
       .catch(next);

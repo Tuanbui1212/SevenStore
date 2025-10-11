@@ -111,6 +111,12 @@
           justify-content: space-between;
           font-weight: 600;
           line-height: 36px;
+
+          .product_name {
+            white-space: nowrap;
+            overflow: hidden;
+            margin-right: 30px;
+          }
         }
         .product_description {
           color: $description-color;

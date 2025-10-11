@@ -29,7 +29,10 @@ function Header() {
               </Link>
             </li>
             <li>
-              <Link className={clsx(styles.nav_item)} to="/">
+              <Link
+                className={clsx(styles.nav_item)}
+                to="/product/NEW ARRIVALS"
+              >
                 NEW ARRIVALS
               </Link>
             </li>
@@ -117,7 +120,7 @@ function Header() {
             <li>
               <Link
                 className={clsx(styles.nav_item, styles.nav_item_primary)}
-                to="/"
+                to="/product/sale"
               >
                 Sale Up to 50%
               </Link>
@@ -206,7 +209,7 @@ function Header() {
                     onClick={() => {
                       localStorage.removeItem("role");
                       localStorage.removeItem("success");
-                      //localStorage.removeItem("token");
+                      localStorage.removeItem("id");
                     }}
                   >
                     Đăng xuất

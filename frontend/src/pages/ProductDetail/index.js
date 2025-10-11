@@ -1,16 +1,19 @@
 import clsx from "clsx";
 import { Link } from "react-router";
-import { useParams } from "react-router-dom";
-import { use, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 import styles from "./ProductDetail.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 
 function ProductDetail() {
   const { brand, slug } = useParams();
+  const navigate = useNavigate();
+
   const [product, setProduct] = useState([]);
   const [products, setProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
+  const [selectedSize, setSelectedSize] = useState(null);
 
   useEffect(() => {
     fetch(`http://localhost:5000/product/${brand}`)
@@ -19,7 +22,7 @@ function ProductDetail() {
         setProducts(data.newProduct);
       })
       .catch((err) => console.error(err));
-  }, []);
+  }, [brand]);
 
   useEffect(() => {
     fetch(`http://localhost:5000/product/${brand}/${slug}`)
@@ -29,6 +32,12 @@ function ProductDetail() {
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [brand, slug]);
+
+  const handleAddCrat = () => {
+    if (localStorage.getItem("success") !== "true") navigate("/login");
+
+    console.log(selectedSize);
+  };
 
   return (
     <>
@@ -101,9 +110,9 @@ function ProductDetail() {
                     .map((p, index) => (
                       <Link key={index} to={`/product/${p.brand}/${p.slug}`}>
                         <img
-                          className={
+                          className={clsx(
                             p.slug === product.slug && styles.color__active
-                          }
+                          )}
                           src={p.image.image1}
                           alt=""
                         />
@@ -122,9 +131,15 @@ function ProductDetail() {
                           key={index}
                           className={clsx(
                             styles.size__box,
-                            values === 0 && styles.disabled
+                            values === 0 && styles.disabled,
+                            selectedSize === name && styles.selected
                           )}
                           disabled={values === 0}
+                          onClick={() =>
+                            selectedSize === name
+                              ? setSelectedSize(null)
+                              : setSelectedSize(name)
+                          }
                         >
                           {name.replace("size", "")}
                         </button>
@@ -137,7 +152,7 @@ function ProductDetail() {
                 <div className={clsx(styles.quantity)}>
                   <button
                     onClick={() => setQuantity((q) => Number(q) - 1)}
-                    disabled={quantity <= 0}
+                    disabled={quantity <= 1}
                   >
                     -
                   </button>
@@ -156,7 +171,12 @@ function ProductDetail() {
                     +
                   </button>
                 </div>
-                <button className={clsx(styles.add__cart)}>Add to cart</button>
+                <button
+                  className={clsx(styles.add__cart)}
+                  onClick={handleAddCrat}
+                >
+                  Add to cart
+                </button>
                 <button className={clsx(styles.buy__now)}>
                   <i className="fa-solid fa-bag-shopping"></i> Buy Now
                 </button>
@@ -190,7 +210,7 @@ function ProductDetail() {
             {products.map((product, index) => (
               <Link
                 key={index}
-                to={`/product/${product._id}`}
+                to={`/product/brand/${product.slug}`}
                 className={clsx("col", "col-3", styles.product_item)}
               >
                 <img

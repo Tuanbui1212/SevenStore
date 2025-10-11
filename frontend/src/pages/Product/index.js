@@ -23,36 +23,39 @@ const colors = [
 ];
 
 const priceOptions = [
-  { min: 49, max: 100 },
-  { min: 100, max: 200 },
-  { min: 300, max: 400 },
-  { min: 500, max: 600 },
+  { min: 1000000, max: 2000000 },
+  { min: 2000000, max: 3000000 },
+  { min: 3000000, max: 4000000 },
+  { min: 4000000, max: 9999999 },
 ];
 
 function Product() {
   const { brand } = useParams(); // Lấy brand từ URL
   const [products, setProducts] = useState([]);
+
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedType, setSelectedType] = useState("");
-
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
-  // state toggle
   const [openType, setOpenType] = useState(false);
   const [openColor, setOpenColor] = useState(false);
   const [openPrice, setOpenPrice] = useState(false);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/product/${brand}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data.newProduct);
-      })
-      .catch((err) => console.error("Lỗi fetch:", err));
-  }, [brand]);
+    let url = `http://localhost:5000/product/${brand}?`;
 
+    if (selectedColor) url += `color=${selectedColor}&`;
+    if (selectedType) url += `type=${selectedType}&`;
+    if (minPrice) url += `min=${minPrice}&`;
+    if (maxPrice) url += `max=${maxPrice}&`;
+
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => setProducts(data.newProduct || []))
+      .catch((err) => console.error("Lỗi:", err));
+  }, [brand, selectedColor, selectedType, minPrice, maxPrice]);
   return (
     <>
       <div className="container">
@@ -96,11 +99,15 @@ function Product() {
                     <li key={idx} className={styles.type__Item}>
                       <label className={styles.type__link}>
                         <input
-                          type="radio"
+                          type="checkbox"
                           name="type"
                           value={type}
                           checked={selectedType === type}
-                          onChange={() => setSelectedType(type)}
+                          onChange={() =>
+                            selectedType === type
+                              ? setSelectedType("")
+                              : setSelectedType(type)
+                          }
                         />
                         <span>{type}</span>
                       </label>
@@ -131,7 +138,11 @@ function Product() {
                         selectedColor === color && styles.selected
                       )}
                       style={{ backgroundColor: color }}
-                      onClick={() => setSelectedColor(color)}
+                      onClick={() => {
+                        const newColor = selectedColor === color ? "" : color;
+                        setSelectedColor(newColor);
+                        //handleSubmitColor(newColor);
+                      }}
                     />
                   ))}
                 </div>
@@ -154,16 +165,22 @@ function Product() {
                   <div className={styles.inputGroup}>
                     <input
                       type="number"
-                      placeholder="0$"
+                      placeholder="0đ"
                       value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val >= 0) setMinPrice(val);
+                      }}
                     />
                     <span>—</span>
                     <input
                       type="number"
-                      placeholder="0$"
+                      placeholder="0đ"
                       value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val >= 0) setMaxPrice(val);
+                      }}
                     />
                   </div>
 
@@ -171,16 +188,27 @@ function Product() {
                     {priceOptions.map((option, index) => (
                       <label key={index} className={styles.option}>
                         <input
-                          type="radio"
+                          type="checkbox"
                           name="price"
-                          checked={selectedPrice === index}
+                          checked={
+                            selectedPrice === index &&
+                            minPrice === option.min &&
+                            maxPrice === option.max
+                          }
                           onChange={() => {
-                            setSelectedPrice(index);
-                            setMinPrice(option.min);
-                            setMaxPrice(option.max);
+                            setSelectedPrice(
+                              (prev) => (prev === index ? "" : index) // click lại => bỏ chọn
+                            );
+                            setMinPrice((prev) =>
+                              selectedPrice === index ? "" : option.min
+                            );
+                            setMaxPrice((prev) =>
+                              selectedPrice === index ? "" : option.max
+                            );
                           }}
                         />
-                        {option.min.toFixed(2)}$ - {option.max.toFixed(2)}$
+                        {Number(option.min).toLocaleString("vi-VN")}đ -{" "}
+                        {Number(option.max).toLocaleString("vi-VN")}đ
                       </label>
                     ))}
                   </div>
@@ -206,6 +234,18 @@ function Product() {
                       to={`/product/${product.brand}/${product.slug}`}
                       className={styles.productLink}
                     >
+                      {product.status !== "null" && (
+                        <span
+                          className={clsx(styles.badge, {
+                            [styles.new]: product.status === "New",
+                            [styles.sale]: product.status === "Sale",
+                            [styles.BestSeller]:
+                              product.status === "BestSeller",
+                          })}
+                        >
+                          {product.status}
+                        </span>
+                      )}
                       <img
                         src={product.image.image1}
                         alt="Sneaker"
