@@ -2,14 +2,33 @@ import styles from "./Header.module.scss";
 import clsx from "clsx";
 import "../../../GlobalStyles/GlobalStyles.scss";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import noItem from "../../../../assets/images/no-item.jpg";
 
 function Header() {
   const [open, setOpen] = useState(false);
+  const [carts, setCarts] = useState({});
 
   const success = localStorage.getItem("success");
   const role = localStorage.getItem("role");
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+
+    if (!user) return;
+    let url = `http://localhost:5000/cart?`;
+
+    if (user) url += `user=${encodeURIComponent(user)}`;
+
+    fetch(url)
+      .then((res) => res.json())
+      .then((data) => {
+        setCarts(data.cart || []);
+
+        console.log(data.cart || []);
+      })
+      .catch((err) => console.log(err));
+  }, []);
 
   return (
     <>
@@ -161,21 +180,59 @@ function Header() {
               )}
             ></i>
           </div>
+
+          {/* Cart */}
           <div className={clsx(styles.header_cart)}>
             <i className="fa-solid fa-cart-shopping"></i>
 
             <div className={clsx(styles.header_cart_wrapper)}>
               <h4 className={clsx(styles.heading_cart)}>Sản phẩm đã thêm</h4>
               <div className={clsx(styles.cart_no_item)}>
-                <img
-                  className={clsx(styles.img_cart_no_item)}
-                  src={noItem}
-                  alt="noitem"
-                />
-                <span>Chưa có sản phẩm nào</span>
+                {carts && carts.length > 0 ? (
+                  <ul className={clsx(styles.cartList)}>
+                    {carts.map((item, index) => (
+                      <li key={index} className={clsx(styles.cartItem)}>
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className={clsx(styles.cartImg)}
+                        />
+                        <div className={clsx(styles.cartInfo)}>
+                          <div className={clsx(styles.cartInfoLeft)}>
+                            <span className={clsx(styles.cartName)}>
+                              {item.name}
+                            </span>
+                            <span className={clsx(styles.cartSize)}>
+                              Size: {item.size.replace("size", "")}
+                            </span>
+                            <span className={clsx(styles.cartQuantity)}>
+                              SL: {item.quantity}
+                            </span>
+                          </div>
+
+                          <div className={clsx(styles.cartInfoRight)}>
+                            <span className={clsx(styles.cartPrice)}>
+                              {item.cost} ₫
+                            </span>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <>
+                    <img
+                      className={clsx(styles.img_cart_no_item)}
+                      src={noItem}
+                      alt="noitem"
+                    />
+                    <span>Chưa có sản phẩm nào</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
+
           <div className={clsx(styles.header_user)}>
             <i className="fa-regular fa-user"></i>
 
@@ -210,6 +267,7 @@ function Header() {
                       localStorage.removeItem("role");
                       localStorage.removeItem("success");
                       localStorage.removeItem("id");
+                      localStorage.removeItem("user");
                     }}
                   >
                     Đăng xuất

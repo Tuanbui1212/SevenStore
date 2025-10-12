@@ -42,6 +42,7 @@ class SiteController {
             id: account._id,
             message: "Đăng nhập thành công",
             redirectUrl: Url,
+            user: account.user,
           });
         } else {
           return res.json({
@@ -49,29 +50,6 @@ class SiteController {
             message: "Sai mật khẩu",
           });
         }
-
-        // if (password !== account.password) {
-        //   return res.json({
-        //     success: false,
-        //     message: "Sai mật khẩu",
-        //   });
-        // }
-
-        // ✅ Tạo token nếu đăng nhập đúng
-        // const token = jwt.sign(
-        //   { id: account._id, role: account.role },
-        //   "secret_key",
-        //   { expiresIn: "1h" }
-        // );
-
-        // ✅ Trả về token ở đây thôi
-        // return res.json({
-        //   success: true,
-        //   message: "Đăng nhập thành công",
-        //   token,
-        //   role: account.role,
-        //   redirectUrl: "/",
-        // });
       })
       .catch(next);
   }

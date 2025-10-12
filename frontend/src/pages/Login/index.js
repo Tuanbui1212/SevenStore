@@ -12,7 +12,7 @@ const AuthForm = () => {
     user: "",
     password: "",
     role: "customer",
-    cart: {},
+    cart: [],
   });
 
   const [showModal, setShowModal] = useState(false);
@@ -39,7 +39,7 @@ const AuthForm = () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          //localStorage.setItem("user", JSON.stringify(data.user));
+          localStorage.setItem("user", data.user);
           localStorage.setItem("success", data.success);
           localStorage.setItem("role", data.role);
           localStorage.setItem("id", data.id);
@@ -78,7 +78,7 @@ const AuthForm = () => {
             user: "",
             password: "",
             role: "customer",
-            cart: {},
+            cart: [],
           });
         }
       })

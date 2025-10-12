@@ -8,6 +8,7 @@ function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [countDelete, setCountDelete] = useState(0);
   const [deleteId, setDeleteId] = useState(null);
+  
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const pageSize = 6; // số dòng mỗi trang

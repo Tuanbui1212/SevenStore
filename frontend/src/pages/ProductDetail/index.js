@@ -15,6 +15,16 @@ function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
 
+  const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
+  const [formData, setFormData] = useState({
+    id: "",
+    size: "",
+    quantity: null,
+    cost: null,
+  });
+
   useEffect(() => {
     fetch(`http://localhost:5000/product/${brand}`)
       .then((res) => res.json())
@@ -36,8 +46,44 @@ function ProductDetail() {
   const handleAddCrat = () => {
     if (localStorage.getItem("success") !== "true") navigate("/login");
 
-    console.log(selectedSize);
+    if (!selectedSize) {
+      setModalMessage("Bạn cần phải chọn size");
+      setShowModal(true);
+      return;
+    }
+
+    setFormData({
+      id: product._id,
+      size: selectedSize,
+      quantity: quantity,
+      cost: product.cost,
+      name: product.name,
+      image: product.image.image1,
+    });
   };
+
+  useEffect(() => {
+    if (!formData.id) return;
+
+    const user = localStorage.getItem("user");
+
+    if (!user) return;
+    let url = `http://localhost:5000/cart?`;
+
+    if (user) url += `user=${encodeURIComponent(user)}`;
+
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setModalMessage(data.message);
+        setShowModal(true);
+      })
+      .catch();
+  }, [formData]);
 
   return (
     <>
@@ -115,6 +161,12 @@ function ProductDetail() {
                           )}
                           src={p.image.image1}
                           alt=""
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setSelectedSize(null);
+                            navigate(`/product/${p.brand}/${p.slug}`);
+                          }}
                         />
                       </Link>
                     ))}
@@ -177,7 +229,10 @@ function ProductDetail() {
                 >
                   Add to cart
                 </button>
-                <button className={clsx(styles.buy__now)}>
+                <button
+                  className={clsx(styles.buy__now)}
+                  onClick={() => console.log(formData)}
+                >
                   <i className="fa-solid fa-bag-shopping"></i> Buy Now
                 </button>
               </div>
@@ -234,6 +289,22 @@ function ProductDetail() {
           </div>
         </div>
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className={styles.overlay}>
+          <div className={styles.modal}>
+            <p>{modalMessage}</p>
+            <button
+              onClick={() => {
+                setShowModal(false);
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

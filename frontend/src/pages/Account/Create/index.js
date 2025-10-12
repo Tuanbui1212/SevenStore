@@ -14,7 +14,7 @@ function Account() {
     name: "",
     user: "",
     password: "",
-    cart: {},
+    cart: [],
     role: "staff",
   });
 
@@ -71,7 +71,7 @@ function Account() {
           name: "",
           user: "",
           password: "",
-          cart: {},
+          cart: [],
           role: "staff",
         });
       })
