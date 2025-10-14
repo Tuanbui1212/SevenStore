@@ -18,7 +18,6 @@ class CartController {
           return res.status(404).json({ message: "Không tìm thấy tài khoản" });
         }
 
-        // Tìm sản phẩm trong giỏ
         const existingItem = account.cart.find(
           (item) => item.id === formData.id && item.size === formData.size
         );
@@ -60,7 +59,11 @@ class CartController {
           return res.status(404).json({ message: "Không tìm thấy tài khoản" });
         }
 
-        const cart = account.cart.map((item) => ({
+        const sortedCart = account.cart.sort(
+          (a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0)
+        );
+
+        const cart = sortedCart.map((item) => ({
           id: item.id,
           name: item.name,
           size: item.size,

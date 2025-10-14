@@ -1,18 +1,19 @@
 import styles from "./Header.module.scss";
 import clsx from "clsx";
 import "../../../GlobalStyles/GlobalStyles.scss";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import noItem from "../../../../assets/images/no-item.jpg";
 
 function Header() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [carts, setCarts] = useState({});
 
   const success = localStorage.getItem("success");
   const role = localStorage.getItem("role");
 
-  useEffect(() => {
+  const fetchCart = () => {
     const user = localStorage.getItem("user");
 
     if (!user) return;
@@ -24,10 +25,13 @@ function Header() {
       .then((res) => res.json())
       .then((data) => {
         setCarts(data.cart || []);
-
-        console.log(data.cart || []);
+        console.log(data.cart);
       })
       .catch((err) => console.log(err));
+  };
+
+  useEffect(() => {
+    fetchCart();
   }, []);
 
   return (
@@ -182,7 +186,11 @@ function Header() {
           </div>
 
           {/* Cart */}
-          <div className={clsx(styles.header_cart)}>
+          <div
+            className={clsx(styles.header_cart)}
+            onMouseEnter={fetchCart}
+            onClick={() => navigate("/cart")}
+          >
             <i className="fa-solid fa-cart-shopping"></i>
 
             <div className={clsx(styles.header_cart_wrapper)}>
@@ -230,6 +238,11 @@ function Header() {
                   </>
                 )}
               </div>
+
+              <Link to={"/cart"} className={clsx(styles.link_cart)}>
+                {" "}
+                Xem rỏ hàng{" "}
+              </Link>
             </div>
           </div>
 

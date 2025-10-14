@@ -183,6 +183,10 @@
 
 .header_cart {
   position: relative;
+
+  i {
+    cursor: pointer;
+  }
   .header_cart_wrapper {
     display: none;
     width: 400px;
@@ -224,6 +228,20 @@
   }
   &:hover .header_cart_wrapper {
     display: block;
+  }
+}
+
+.link_cart {
+  display: block;
+  margin-top: 10px;
+  text-decoration: none;
+  text-align: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  color: $primary-color;
+
+  &:hover {
+    opacity: 0.4;
   }
 }
 
