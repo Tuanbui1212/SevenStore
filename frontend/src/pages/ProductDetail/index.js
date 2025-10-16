@@ -14,6 +14,7 @@ function ProductDetail() {
   const [products, setProducts] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [sizeInStock, setSizeInStock] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -23,6 +24,8 @@ function ProductDetail() {
     size: "",
     quantity: null,
     cost: null,
+    brand: "",
+    slug: "",
   });
 
   useEffect(() => {
@@ -47,7 +50,7 @@ function ProductDetail() {
     if (localStorage.getItem("success") !== "true") navigate("/login");
 
     if (!selectedSize) {
-      setModalMessage("Bạn cần phải chọn size");
+      setModalMessage("You need to select a size.");
       setShowModal(true);
       return;
     }
@@ -59,6 +62,8 @@ function ProductDetail() {
       cost: product.cost,
       name: product.name,
       image: product.image.image1,
+      brand: product.brand,
+      slug: product.slug,
     });
   };
 
@@ -175,6 +180,7 @@ function ProductDetail() {
 
               <div className={styles.size__selector}>
                 <div className={styles.size__title}>Size</div>
+                {selectedSize && <p>Remaining quantity: {sizeInStock}</p>}
                 <div className={styles.size__grid}>
                   {product.size &&
                     Object.entries(product.size).map(
@@ -187,11 +193,13 @@ function ProductDetail() {
                             selectedSize === name && styles.selected
                           )}
                           disabled={values === 0}
-                          onClick={() =>
+                          onClick={() => {
+                            setSizeInStock(values);
+                            setQuantity(1);
                             selectedSize === name
                               ? setSelectedSize(null)
-                              : setSelectedSize(name)
-                          }
+                              : setSelectedSize(name);
+                          }}
                         >
                           {name.replace("size", "")}
                         </button>
@@ -218,7 +226,7 @@ function ProductDetail() {
                   />
                   <button
                     onClick={() => setQuantity((q) => Number(q) + 1)}
-                    disabled={quantity < 0}
+                    disabled={!sizeInStock || quantity >= sizeInStock}
                   >
                     +
                   </button>
@@ -265,7 +273,7 @@ function ProductDetail() {
             {products.map((product, index) => (
               <Link
                 key={index}
-                to={`/product/brand/${product.slug}`}
+                to={`/product/${product.brand}/${product.slug}`}
                 className={clsx("col", "col-3", styles.product_item)}
               >
                 <img

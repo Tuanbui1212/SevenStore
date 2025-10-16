@@ -8,10 +8,10 @@ function Employee() {
 
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
-  
+
   const [deleteId, setDeleteId] = useState(null);
   const [countDelete, setCountDelete] = useState(0);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6; // số dòng mỗi trang
 
@@ -121,7 +121,7 @@ function Employee() {
       <table className={styles.table}>
         <thead className={styles.tableTitle}>
           <tr>
-            <th className={styles.tableHeader}>ID</th>
+            <th className={styles.tableHeader}>#</th>
             <th className={styles.tableHeader}>Name</th>
             <th className={styles.tableHeader}>Role</th>
             <th className={styles.tableHeader}>Status</th>
@@ -159,7 +159,7 @@ function Employee() {
                   onClick={() => {
                     setShowModal(true);
                     setDeleteId(e._id);
-                    setModalMessage("Bạn có chắc chắn muốn xóa không ?");
+                    setModalMessage("Are you sure you want to delete this?");
                   }}
                 >
                   <i className="fa-solid fa-trash"></i>
@@ -208,13 +208,13 @@ function Employee() {
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <p>{modalMessage}</p>
-            <button onClick={handleDelete}>Có</button>
+            <button onClick={handleDelete}>Yes</button>
             <button
               onClick={() => {
                 setShowModal(false);
               }}
             >
-              Không
+              No
             </button>
           </div>
         </div>

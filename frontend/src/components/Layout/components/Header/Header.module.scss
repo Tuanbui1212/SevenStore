@@ -417,6 +417,7 @@
 }
 
 .cartItem {
+  text-decoration: none;
   display: flex;
   align-items: center;
   margin-bottom: 12px;
@@ -427,6 +428,7 @@
 
   &:hover {
     background-color: rgb(0, 0, 0, 0.1);
+    border-radius: 10px;
   }
 }
 
@@ -436,6 +438,7 @@
   object-fit: cover;
   border-radius: 8px;
   margin-right: 10px;
+  margin-left: 2px;
 }
 
 .cartInfo {

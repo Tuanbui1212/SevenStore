@@ -10,6 +10,8 @@ const CartItemSchema = new Schema(
     cost: { type: Number, required: true, min: 0 },
     name: { type: String },
     image: { type: String },
+    brand: { type: String },
+    slug: { type: String },
   },
   { timestamps: true }
 );

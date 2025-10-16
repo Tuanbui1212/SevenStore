@@ -81,14 +81,27 @@ function Header() {
                   </Link>
                 </li>
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>Bape</Link>
+                  <Link
+                    to="/product/bape"
+                    className={clsx(styles.nav_item_brands)}
+                  >
+                    Bape
+                  </Link>
                 </li>
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>Adidas</Link>
+                  <Link
+                    to="/product/adidas"
+                    className={clsx(styles.nav_item_brands)}
+                  >
+                    Adidas
+                  </Link>
                 </li>
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>
-                    New Balence
+                  <Link
+                    to="/product/new-balance"
+                    className={clsx(styles.nav_item_brands)}
+                  >
+                    New Balance
                   </Link>
                 </li>
                 <li>
@@ -186,20 +199,20 @@ function Header() {
           </div>
 
           {/* Cart */}
-          <div
-            className={clsx(styles.header_cart)}
-            onMouseEnter={fetchCart}
-            onClick={() => navigate("/cart")}
-          >
+          <div className={clsx(styles.header_cart)} onMouseEnter={fetchCart}>
             <i className="fa-solid fa-cart-shopping"></i>
 
             <div className={clsx(styles.header_cart_wrapper)}>
-              <h4 className={clsx(styles.heading_cart)}>Sản phẩm đã thêm</h4>
+              <h4 className={clsx(styles.heading_cart)}>Added products</h4>
               <div className={clsx(styles.cart_no_item)}>
                 {carts && carts.length > 0 ? (
                   <ul className={clsx(styles.cartList)}>
                     {carts.map((item, index) => (
-                      <li key={index} className={clsx(styles.cartItem)}>
+                      <Link
+                        to={`/product/${item.brand}/${item.slug}`}
+                        key={index}
+                        className={clsx(styles.cartItem)}
+                      >
                         <img
                           src={item.image}
                           alt={item.name}
@@ -220,11 +233,11 @@ function Header() {
 
                           <div className={clsx(styles.cartInfoRight)}>
                             <span className={clsx(styles.cartPrice)}>
-                              {item.cost} ₫
+                              {Number(item.cost).toLocaleString("vi-VN")} ₫
                             </span>
                           </div>
                         </div>
-                      </li>
+                      </Link>
                     ))}
                   </ul>
                 ) : (
@@ -234,14 +247,14 @@ function Header() {
                       src={noItem}
                       alt="noitem"
                     />
-                    <span>Chưa có sản phẩm nào</span>
+                    <span>No products added yet</span>
                   </>
                 )}
               </div>
 
               <Link to={"/cart"} className={clsx(styles.link_cart)}>
                 {" "}
-                Xem rỏ hàng{" "}
+                View cart{" "}
               </Link>
             </div>
           </div>
