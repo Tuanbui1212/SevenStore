@@ -10,9 +10,9 @@ function Cart() {
   const [size, setSize] = useState([]);
   const [deleteId, setDeleteId] = useState([]);
 
-  const [checkedItems, setCheckedItems] = useState([]); // lưu id đã tick
-  const items = [1, 2, 3]; // ví dụ có 3 sản phẩm
-  const [checkAll, setCheckAll] = useState(false); // check all
+  const [checkedItems, setCheckedItems] = useState([]);
+  const [checkAll, setCheckAll] = useState(false);
+  const [formChecked, setFormChecked] = useState([]);
 
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -28,8 +28,7 @@ function Cart() {
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
-        setCarts(data.cart || []);
-        console.log(data.cart);
+        setCarts(data.cart);
       })
       .catch((err) => console.log(err));
   };
@@ -76,27 +75,15 @@ function Cart() {
       });
   };
 
-  const handleCheckAll = (e) => {
-    const checked = e.target.checked;
-    setCheckAll(checked);
-
-    // Nếu tick => chọn hết, nếu bỏ => bỏ hết
-    setCheckedItems(checked ? items : []);
+  const handleCheckAll = () => {
+    //setCheckAll(!checkAll);
+    setCheckedItems(!checkedItems);
   };
 
-  const handleCheck = (id) => {
-    if (checkedItems.includes(id)) {
-      // Bỏ tick
-      const newList = checkedItems.filter((item) => item !== id);
-      setCheckedItems(newList);
-      setCheckAll(false);
-    } else {
-      // Tick thêm
-      const newList = [...checkedItems, id];
-      setCheckedItems(newList);
-      if (newList.length === items.length) setCheckAll(true);
-    }
-  };
+  useEffect(() => {
+    console.log(formChecked);
+    console.log(checkedItems);
+  }, [formChecked, checkedItems]);
 
   return (
     <div className={clsx("container", styles.cartContainer)}>
@@ -107,8 +94,11 @@ function Cart() {
               <input
                 type="checkbox"
                 checked={checkAll}
-                onChange={handleCheckAll}
+                onChange={() => {
+                  handleCheckAll();
+                }}
               />
+
               <span>All</span>
             </div>
 
@@ -120,9 +110,16 @@ function Cart() {
                   <div className={styles.itemLeft}>
                     <input
                       type="checkbox"
-                      checked={checkedItems.includes(items.id)}
-                      onChange={() => handleCheck(items.id)}
                       className={styles.checkbox}
+                      checked={checkedItems.includes(items.id)}
+                      onChange={() => {
+                        setCheckedItems(
+                          (prev) =>
+                            prev.includes(items.id)
+                              ? prev.filter((id) => id !== items.id) // bỏ check
+                              : [...prev, items.id] // thêm check
+                        );
+                      }}
                     />
                     <Link
                       to={`/product/${items.brand}/${items.slug}`}

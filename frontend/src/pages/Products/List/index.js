@@ -8,10 +8,10 @@ function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [countDelete, setCountDelete] = useState(0);
   const [deleteId, setDeleteId] = useState(null);
-  
+
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const pageSize = 6; // số dòng mỗi trang
+  const pageSize = 5; // số dòng mỗi trang
 
   const navigate = useNavigate();
 
@@ -47,10 +47,10 @@ function Products() {
     })
       .then((res) => res.json())
       .then(() => {
-        alert("✅ Xóa thành công!");
+        alert("✅ Deleted successfully!");
         fetchProducts();
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi xóa!"))
+      .catch(() => alert("❌ An error occurred while deleting!"))
       .finally(() => {
         setDeleteId(null);
         setShowModal(false);

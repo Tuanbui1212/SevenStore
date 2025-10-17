@@ -25,7 +25,6 @@ function Header() {
       .then((res) => res.json())
       .then((data) => {
         setCarts(data.cart || []);
-        console.log(data.cart);
       })
       .catch((err) => console.log(err));
   };
