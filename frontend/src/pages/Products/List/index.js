@@ -3,6 +3,8 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import no_item from "../../../assets/images/no_img.jpg";
+
 function Products() {
   const [products, setProducts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -131,7 +133,7 @@ function Products() {
               <td className={styles.tableCell}>{startIndex + index + 1}</td>
               <td className={styles.tableCell}>{product.name}</td>
               <td className={styles.tableCell}>
-                <img src={product.image.image1} alt="" />
+                <img src={product.image.image1 || no_item} alt="" />
               </td>
               <td className={styles.tableCell}>{product.total}</td>
               <td

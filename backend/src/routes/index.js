@@ -3,6 +3,7 @@ const productRouter = require("./product");
 const dashboardRouter = require("./dashboard");
 const accountRouter = require("./account");
 const cartRouter = require("./cart");
+const paymentRouter = require("./payment");
 
 //const authMiddleware = require("../app/middlewares/authMiddleware");
 
@@ -11,6 +12,7 @@ function route(app) {
   app.use("/product", productRouter);
   app.use("/account", accountRouter);
   app.use("/cart", cartRouter);
+  app.use("/payment", paymentRouter);
   app.use("/", siteRouter);
 }
 

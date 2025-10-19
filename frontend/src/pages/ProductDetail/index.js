@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import styles from "./ProductDetail.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 
+import no_img from "../../assets/images/no_img.jpg";
+
 function ProductDetail() {
   const { brand, slug } = useParams();
   const navigate = useNavigate();
@@ -127,7 +129,7 @@ function ProductDetail() {
             {product.image &&
               Object.values(product.image).map((src, index) => (
                 <div key={index} className={clsx(styles.item__img__detail)}>
-                  <img src={src} alt={`product-image-${index}`} />
+                  <img src={src || no_img} alt={`product-image-${index}`} />
                 </div>
               ))}
           </div>
@@ -164,7 +166,7 @@ function ProductDetail() {
                           className={clsx(
                             p.slug === product.slug && styles.color__active
                           )}
-                          src={p.image.image1}
+                          src={p.image.image1 || no_img}
                           alt=""
                           onClick={(e) => {
                             e.stopPropagation();
@@ -277,7 +279,7 @@ function ProductDetail() {
                 className={clsx("col", "col-3", styles.product_item)}
               >
                 <img
-                  src={product.image.image1}
+                  src={product.image.image1 || no_img}
                   alt="Sneaker"
                   className={styles.product_img}
                 />

@@ -1,0 +1,244 @@
+import { useLocation } from "react-router-dom";
+import "../../components/GlobalStyles/GlobalStyles.scss";
+import styles from "./Payment.module.scss";
+import clsx from "clsx";
+import { Link } from "react-router-dom";
+import { useState } from "react";
+
+import momo from "../../assets/images/momo.png";
+import cod from "../../assets/images/cod.png";
+import vnPay from "../../assets/images/vnPay.png";
+
+function Payment() {
+  const location = useLocation();
+  const { checkedItems = [], totalCost = 0 } = location.state || {};
+  console.log(checkedItems);
+
+  const [formData, setFormData] = useState({
+    userId: "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    note: "",
+    totalPrice: "",
+    paymentMethod: "",
+  });
+
+  const [selected, setSelected] = useState("");
+
+  const methods = [
+    {
+      id: "cod",
+      name: "COD",
+      logo: cod,
+    },
+    {
+      id: "momo",
+      name: "MOMO",
+      logo: momo,
+    },
+    {
+      id: "vnpay",
+      name: "VNPAY",
+      logo: vnPay,
+    },
+  ];
+
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    setErrors((prev) => ({ ...prev, [name]: false }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const newErrors = {};
+    Object.keys(formData).forEach((key) => {
+      if (!formData[key].trim() && key !== "note") {
+        newErrors[key] = true;
+      }
+    });
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      console.log("Form hợp lệ:", formData);
+    }
+  };
+
+  return (
+    <div className={clsx("container")}>
+      {/* Breadcrumb */}
+      <div className={clsx("row mt-28", styles.breadcrumb)}>
+        <Link className={clsx("opacity-text", styles.breadcrumb__link)} to="/">
+          Home
+        </Link>
+        <span className={clsx("mx-5", styles.breadcrumb__divider)}> &gt; </span>
+        <span className={styles.breadcrumb__link}>Checkout</span>
+      </div>
+
+      <h1 className="mt-28">Billing Details</h1>
+
+      <div className={clsx("row mt-28")}>
+        <div className={clsx("col col-8", styles.formSection)}>
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <div className={styles.formGroup}>
+              <label htmlFor="name">Full Name *</label>
+              <input
+                id="name"
+                type="text"
+                name="name"
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className={clsx({ [styles.error]: errors.name })}
+              />
+            </div>
+
+            <div className={styles.formRow}>
+              <div className={styles.formGroup}>
+                <label htmlFor="email">Email *</label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  className={clsx({ [styles.error]: errors.email })}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="phone">Phone *</label>
+                <input
+                  id="phone"
+                  type="tel"
+                  name="phone"
+                  required
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className={clsx({ [styles.error]: errors.phone })}
+                />
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="city">City / Province *</label>
+              <input
+                id="city"
+                type="text"
+                name="city"
+                required
+                value={formData.city}
+                onChange={handleChange}
+                className={clsx({ [styles.error]: errors.city })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="address">Address *</label>
+              <input
+                id="address"
+                type="text"
+                name="address"
+                required
+                value={formData.address}
+                onChange={handleChange}
+                className={clsx({ [styles.error]: errors.address })}
+              />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="note">Order Note (optional)</label>
+              <textarea
+                id="note"
+                name="note"
+                placeholder="Order notes..."
+                value={formData.note}
+                onChange={handleChange}
+              ></textarea>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="paymentMethod">Payment Method</label>
+              {methods.map((method) => (
+                <label
+                  key={method.id}
+                  className={`${styles.methodItem} ${
+                    selected === method.id ? styles.selected : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="payment"
+                    value={method.id}
+                    checked={selected === method.id}
+                    onChange={() => setSelected(method.id)}
+                  />
+                  <img src={method.logo} alt={method.name} />
+                  <span>{method.name}</span>
+                </label>
+              ))}
+            </div>
+          </form>
+        </div>
+
+        {/* RIGHT: Order summary */}
+        <div className={clsx("col col-4", styles.summarySection)}>
+          <div className={styles.summaryCard}>
+            <h2>Order Summary</h2>
+
+            <div className={styles.itemsList}>
+              {checkedItems.length > 0 ? (
+                checkedItems.map((item, index) => (
+                  <div key={index} className={styles.itemRow}>
+                    <img src={item.image} alt={item.name} />
+                    <div>
+                      <p className={styles.itemName}>{item.name}</p>
+                      <p className={styles.itemPrice}>
+                        {item.cost.toLocaleString("vi-VN")}₫ × {item.quantity}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No products selected</p>
+              )}
+            </div>
+
+            <div className={styles.costInfo}>
+              <div className={styles.costRow}>
+                <span>Subtotal</span>
+                <span>{totalCost.toLocaleString("vi-VN")}₫</span>
+              </div>
+              <div className={styles.costRow}>
+                <span>Shipping</span>
+                <span>30.000₫</span>
+              </div>
+              <div className={clsx(styles.costRow, styles.totalRow)}>
+                <span>Total</span>
+                <span>{(totalCost + 30000).toLocaleString("vi-VN")}₫</span>
+              </div>
+            </div>
+
+            <button
+              className={styles.checkoutBtn}
+              onClick={handleSubmit}
+              type="submit"
+            >
+              Place Order
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Payment;

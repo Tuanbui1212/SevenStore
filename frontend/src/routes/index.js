@@ -4,16 +4,15 @@ import { customerRoutes } from "./customersRoutes";
 import { mainRoutes } from "./mainRoutes";
 import { accountRoutes } from "./accountRoutes";
 import { cartRoutes } from "./cartRouters";
+import { paymentRoutes } from "./payRouters";
 
-const publicRoutes = [
-  ...customerRoutes,
-  ...mainRoutes,
+const publicRoutes = [...mainRoutes, ...customerRoutes, ...productRoutes];
+
+const privateRoutes = [
+  ...paymentRoutes,
   ...employeeRoutes,
-  ...productRoutes,
   ...accountRoutes,
   ...cartRoutes,
 ];
-
-const privateRoutes = [];
 
 export { publicRoutes, privateRoutes };

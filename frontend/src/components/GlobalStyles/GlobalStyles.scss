@@ -68,6 +68,11 @@ body {
   display: none;
 }
 
+.error {
+  border-color: red !important;
+  background-color: #ffeaea;
+}
+
 @for $i from 1 through 12 {
   .col-#{$i} {
     flex: 0 0 (100% / 12 * $i);

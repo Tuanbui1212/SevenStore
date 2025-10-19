@@ -21,6 +21,8 @@ const AuthForm = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  const [errors, setErrors] = useState({});
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -29,64 +31,94 @@ const AuthForm = () => {
   const handleSubmitLogin = (e) => {
     e.preventDefault();
 
-    fetch("http://localhost:5000/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          localStorage.setItem("user", data.user);
-          localStorage.setItem("success", data.success);
-          localStorage.setItem("role", data.role);
-          localStorage.setItem("id", data.id);
-          //localStorage.setItem("token", data.token);
+    const newErrors = {};
+    const infor = { user: username, pass: password };
 
-          navigate(data.redirectUrl);
-        } else {
-          setModalMessage(data.message || "Đăng nhập thất bại");
-          setShowModal(true);
-        }
+    Object.keys(infor).forEach((key) => {
+      if (!infor[key]) {
+        newErrors[key] = true;
+      }
+    });
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
       })
-      .catch((err) => {
-        setModalMessage("Xay ra loi" + err);
-        setShowModal(true);
-      });
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            localStorage.setItem("user", data.user);
+            localStorage.setItem("success", data.success);
+            localStorage.setItem("role", data.role);
+            localStorage.setItem("id", data.id);
+
+            navigate(data.redirectUrl);
+          } else {
+            setModalMessage(data.message || "Đăng nhập thất bại");
+            setShowModal(true);
+          }
+        })
+        .catch((err) => {
+          setModalMessage("Xay ra loi" + err);
+          setShowModal(true);
+        });
+    }
   };
 
   const handleSubmitRegister = (e) => {
     e.preventDefault();
 
-    fetch("http://localhost:5000/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ formData }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
-        setShowModal(true);
-        if (data.message.includes("thành công")) {
-          setActiveTab("login");
-          setFormData({
-            name: "",
-            user: "",
-            password: "",
-            role: "customer",
-            cart: [],
-          });
-        }
+    const newErrors = {};
+
+    const infor = {
+      user: formData.user,
+      password: formData.password,
+      name: formData.name,
+    };
+
+    Object.keys(infor).forEach((key) => {
+      if (!formData[key].trim()) {
+        newErrors[key] = true;
+      }
+    });
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      fetch("http://localhost:5000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ formData }),
       })
-      .catch((err) => {
-        console.error("Lỗi khi gửi request:", err);
-        setModalMessage("Đăng ký thất bại.");
-        setShowModal(true);
-      });
+        .then((res) => res.json())
+        .then((data) => {
+          setModalMessage(data.message);
+          setShowModal(true);
+          if (data.message.includes("thành công")) {
+            setActiveTab("login");
+            setFormData({
+              name: "",
+              user: "",
+              password: "",
+              role: "customer",
+              cart: [],
+            });
+          }
+        })
+        .catch((err) => {
+          console.error("Lỗi khi gửi request:", err);
+          setModalMessage("Đăng ký thất bại.");
+          setShowModal(true);
+        });
+    }
   };
 
   return (
@@ -126,6 +158,7 @@ const AuthForm = () => {
                     setUsername(e.target.value);
                   }}
                   placeholder="Enter your username"
+                  className={clsx({ ["error"]: errors.user })}
                 />
 
                 <label>
@@ -138,6 +171,7 @@ const AuthForm = () => {
                     setPassword(e.target.value);
                   }}
                   placeholder="Enter your password"
+                  className={clsx({ ["error"]: errors.pass })}
                 />
 
                 <div className={styles.authOptions}>
@@ -170,6 +204,7 @@ const AuthForm = () => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your name"
+                  className={clsx({ ["error"]: errors.name })}
                 />
                 <label>
                   Username <span>*</span>
@@ -180,6 +215,7 @@ const AuthForm = () => {
                   value={formData.user}
                   onChange={handleChange}
                   placeholder="Enter your username"
+                  className={clsx({ ["error"]: errors.user })}
                 />
 
                 <label>
@@ -191,6 +227,7 @@ const AuthForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Create a password"
+                  className={clsx({ ["error"]: errors.password })}
                 />
 
                 <p>
@@ -199,17 +236,7 @@ const AuthForm = () => {
                   for other purposes described in our privacy policy.
                 </p>
 
-                <button
-                  type="submit"
-                  className={clsx(
-                    styles.btnLogin,
-                    (!formData.name || !formData.user || !formData.password) &&
-                      styles.disable
-                  )}
-                  disabled={
-                    !formData.name || !formData.user || !formData.password
-                  }
-                >
+                <button type="submit" className={clsx(styles.btnLogin)}>
                   Register
                 </button>
               </form>

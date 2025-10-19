@@ -5,6 +5,8 @@ import clsx from "clsx";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 import { Link } from "react-router-dom";
 
+import no_img from "../../assets/images/no_img.jpg";
+
 const types = ["High", "Hype", "Mid", "Low"];
 
 const colors = [
@@ -247,7 +249,7 @@ function Product() {
                         </span>
                       )}
                       <img
-                        src={product.image.image1}
+                        src={product.image.image1 || no_img}
                         alt="Sneaker"
                         className={styles.productImage}
                       />
