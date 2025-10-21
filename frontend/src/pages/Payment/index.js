@@ -12,21 +12,19 @@ import vnPay from "../../assets/images/vnPay.png";
 function Payment() {
   const location = useLocation();
   const { checkedItems = [], totalCost = 0 } = location.state || {};
-  console.log(checkedItems);
+  const [selected, setSelected] = useState("");
+
+  //console.log(checkedItems);
 
   const [formData, setFormData] = useState({
-    userId: "",
     name: "",
     email: "",
     phone: "",
     address: "",
     city: "",
     note: "",
-    totalPrice: "",
-    paymentMethod: "",
+    payment: "",
   });
-
-  const [selected, setSelected] = useState("");
 
   const methods = [
     {
@@ -56,6 +54,7 @@ function Payment() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const user = localStorage.getItem("user");
 
     const newErrors = {};
     Object.keys(formData).forEach((key) => {
@@ -68,6 +67,16 @@ function Payment() {
 
     if (Object.keys(newErrors).length === 0) {
       console.log("Form hợp lệ:", formData);
+      console.log("user: ", user);
+      console.log("item: ", checkedItems);
+
+      fetch("http://localhost:5000/payment", {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ formData, user, checkedItems }),
+      })
+        .then()
+        .catch();
     }
   };
 
@@ -86,7 +95,7 @@ function Payment() {
 
       <div className={clsx("row mt-28")}>
         <div className={clsx("col col-8", styles.formSection)}>
-          <form onSubmit={handleSubmit} className={styles.form}>
+          <form className={styles.form}>
             <div className={styles.formGroup}>
               <label htmlFor="name">Full Name *</label>
               <input
@@ -179,7 +188,10 @@ function Payment() {
                     name="payment"
                     value={method.id}
                     checked={selected === method.id}
-                    onChange={() => setSelected(method.id)}
+                    onChange={(e) => {
+                      setSelected(method.id);
+                      handleChange(e);
+                    }}
                   />
                   <img src={method.logo} alt={method.name} />
                   <span>{method.name}</span>
@@ -189,7 +201,6 @@ function Payment() {
           </form>
         </div>
 
-        {/* RIGHT: Order summary */}
         <div className={clsx("col col-4", styles.summarySection)}>
           <div className={styles.summaryCard}>
             <h2>Order Summary</h2>
