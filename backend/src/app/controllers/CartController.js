@@ -129,13 +129,9 @@ class CartController {
         if (!account) {
           return res.status(404).json({ message: "Account not found" });
         }
-
-        // Giữ lại các sản phẩm KHÔNG trùng deleteId + size
         account.cart = account.cart.filter(
           (item) => !(item.id === deleteId && item.size === size)
         );
-
-        // Lưu lại tài khoản sau khi xóa sản phẩm
         return account.save().then(() => {
           res.status(200).json({ message: "✅ Successfully deleted!" });
         });

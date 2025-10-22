@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 import styles from "./Payment.module.scss";
 import clsx from "clsx";
@@ -11,10 +11,12 @@ import vnPay from "../../assets/images/vnPay.png";
 
 function Payment() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { checkedItems = [], totalCost = 0 } = location.state || {};
   const [selected, setSelected] = useState("");
 
-  //console.log(checkedItems);
+  const [modalMessage, setModalMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -28,17 +30,17 @@ function Payment() {
 
   const methods = [
     {
-      id: "cod",
-      name: "COD",
+      id: "ShipCod",
+      name: "ShipCod",
       logo: cod,
     },
     {
-      id: "momo",
+      id: "Momo",
       name: "MOMO",
       logo: momo,
     },
     {
-      id: "vnpay",
+      id: "VnPay",
       name: "VNPAY",
       logo: vnPay,
     },
@@ -73,9 +75,14 @@ function Payment() {
       fetch("http://localhost:5000/payment", {
         method: "post",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formData, user, checkedItems }),
+        body: JSON.stringify({ formData, user, checkedItems, totalCost }),
       })
-        .then()
+        .then((res) => res.json())
+        .then((data) => {
+          navigate(data.url);
+          setModalMessage(data.message);
+          setShowModal(true);
+        })
         .catch();
     }
   };
@@ -248,6 +255,21 @@ function Payment() {
           </div>
         </div>
       </div>
+
+      {showModal && (
+        <div className={styles.overlay}>
+          <div className={styles.modal}>
+            <p>{modalMessage}</p>
+            <button
+              onClick={() => {
+                setShowModal(false);
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

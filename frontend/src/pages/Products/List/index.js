@@ -24,7 +24,7 @@ function Products() {
       .then((data) => {
         const newList = data.listProduct.map((product) => {
           const total = Object.values(product.size).reduce(
-            (sum, value) => sum + value,
+            (sum, value) => Number(sum) + Number(value),
             0
           );
 

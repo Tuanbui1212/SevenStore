@@ -5,6 +5,7 @@ const EmployeeController = require("../app/controllers/EmployeeController.js");
 const ProductController = require("../app/controllers/ProductController.js");
 const CustomerController = require("../app/controllers/CustomerController.js");
 const AccountController = require("../app/controllers/AccountController.js");
+const PaymentController = require("../app/controllers/PaymentController.js");
 
 // -- Product --
 router.get("/products", ProductController.showList);
@@ -36,5 +37,8 @@ router.get("/account", AccountController.show);
 router.post("/account/create", AccountController.create);
 router.get("/account/:id", AccountController.edit);
 router.post("/account/:id", AccountController.update);
+
+// -- Order --
+router.get("/orders", PaymentController.show);
 
 module.exports = router;

@@ -14,7 +14,7 @@ function Product() {
     name: "",
     brand: "",
     size: Object.fromEntries(
-      Array.from({ length: 10 }, (_, i) => [`size${36 + i}`, ""])
+      Array.from({ length: 10 }, (_, i) => [`size${36 + i}`, 0])
     ),
     image: Object.fromEntries(
       Array.from({ length: 6 }, (_, i) => [`image${i + 1}`, ""])
@@ -34,7 +34,7 @@ function Product() {
         ...prev,
         size: {
           ...prev.size,
-          [name]: value,
+          [name]: Number(value),
         },
       }));
     } else if (name.startsWith("image")) {
@@ -75,10 +75,10 @@ function Product() {
     })
       .then((res) => res.json())
       .then((data) => {
-        setModalMessage("Sửa thành công");
+        setModalMessage("Updated successfully");
         setShowModal(true);
       })
-      .catch(() => alert("❌ Cập nhật thất bại"));
+      .catch(() => alert("❌ Update failed"));
   };
 
   return (
@@ -221,12 +221,12 @@ function Product() {
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("thành công")) {
+                if (modalMessage.includes("Updated successfully")) {
                   navigate("/dashboard/products");
                 }
               }}
             >
-              Đóng
+              Close
             </button>
           </div>
         </div>

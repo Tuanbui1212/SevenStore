@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const Order = new Schema(
   {
+    user: { type: String, required: true, trim: true, maxLength: 255 },
     name: { type: String, required: true, trim: true, maxLength: 255 },
     phone: { type: String, required: true, trim: true },
     email: { type: String, required: true, trim: true },
@@ -16,16 +17,12 @@ const Order = new Schema(
     items: [
       {
         productId: { type: mongoose.Schema.Types.ObjectId, ref: "product" },
-        quantity: { type: Number, required: true, min: 1 },
+        quantity: { type: Number, required: true },
         price: { type: Number, required: true },
       },
     ],
 
     totalPrice: { type: Number, required: true },
-
-    status: {
-      type: String,
-    },
   },
   {
     timestamps: true,
