@@ -6,12 +6,6 @@ const {
 
 class EmployeeController {
   show(req, res, next) {
-    // Employee.find()
-    //   .then((employees) => {
-    //     res.json({ employees: muntipleMongooseToObject(employees) });
-    //   })
-    //   .catch(next);
-
     Promise.all([
       Employee.find().lean(),
       Employee.countDocumentsWithDeleted({ deleted: true }),

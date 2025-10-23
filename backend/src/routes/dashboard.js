@@ -40,5 +40,6 @@ router.post("/account/:id", AccountController.update);
 
 // -- Order --
 router.get("/orders", PaymentController.show);
+router.get("/orders/:id", PaymentController.showDetail);
 
 module.exports = router;

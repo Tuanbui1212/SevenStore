@@ -52,11 +52,12 @@ function TrashEmployee() {
       }
     )
       .then((res) => res.json())
-      .then(() => {
-        alert("✅ Khôi phục thành công!");
-        fetchEmployees(); // load lại danh sách
+      .then((data) => {
+        setModalMessage(data.message);
+        setShowModal(true);
+        fetchEmployees();
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi khôi phục!"))
+      .catch(() => alert("❌ An error occurred while restoring!"))
       .finally(() => {
         setDeleteId(null);
         setShowModal(false);
@@ -70,11 +71,12 @@ function TrashEmployee() {
       method: "DELETE",
     })
       .then((res) => res.json())
-      .then(() => {
-        alert("✅ Xóa thành công!");
-        fetchEmployees(); // load lại danh sách
+      .then((data) => {
+        setModalMessage(data.message);
+        setShowModal(true);
+        fetchEmployees();
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi xóa!"))
+      .catch(() => alert("❌ An error occurred while deleting!"))
       .finally(() => {
         setDeleteId(null);
         setShowModal(false);
@@ -160,7 +162,7 @@ function TrashEmployee() {
                   onClick={() => {
                     setShowModal(true);
                     setRestoreId(e._id);
-                    setModalMessage("Bạn có chắc chắn muốn khôi phục không ?");
+                    setModalMessage("Are you sure you want to restore?");
                   }}
                 >
                   <i className="fa-solid fa-window-restore"></i>
@@ -169,7 +171,7 @@ function TrashEmployee() {
                   onClick={() => {
                     setShowModal(true);
                     setDeleteId(e._id);
-                    setModalMessage("Bạn có chắc chắn muốn xóa không ?");
+                    setModalMessage("Are you sure you want to delete?");
                   }}
                 >
                   <i className="fa-solid fa-trash"></i>
@@ -218,24 +220,40 @@ function TrashEmployee() {
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <p>{modalMessage}</p>
-            <button
-              onClick={
-                modalMessage.includes("khôi phục")
-                  ? handleRestore
-                  : modalMessage.includes("xóa")
-                  ? handleDelete
-                  : () => {}
-              }
-            >
-              Có
-            </button>
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-            >
-              Không
-            </button>
+
+            {modalMessage.includes("Are you sure you want to restore?") ||
+            modalMessage.includes("Are you sure you want to delete?") ? (
+              <>
+                <button
+                  onClick={
+                    modalMessage.includes("Are you sure you want to restore?")
+                      ? handleRestore
+                      : modalMessage.includes(
+                          "Are you sure you want to delete?"
+                        )
+                      ? handleDelete
+                      : () => {}
+                  }
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                  }}
+                >
+                  No
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                }}
+              >
+                Close
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -55,6 +55,7 @@ class PaymentController {
             productId: item.id,
             quantity: item.quantity,
             price: item.cost,
+            size: item.size,
           })),
         };
 
@@ -74,6 +75,18 @@ class PaymentController {
 
   show(req, res, next) {
     Order.find()
+      .lean()
+      .then((order) => {
+        res.json({ order });
+      })
+      .catch(next);
+  }
+
+  showDetail(req, res, next) {
+    const { id } = req.params;
+
+    Order.findById(id)
+      .populate("items.productId")
       .lean()
       .then((order) => {
         res.json({ order });

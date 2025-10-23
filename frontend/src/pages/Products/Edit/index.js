@@ -63,7 +63,7 @@ function Product() {
     e.preventDefault();
 
     if (!formData.name || !formData.brand || !formData.cost) {
-      setModalMessage("Vui lòng nhập đầy đủ thông tin!");
+      setModalMessage("Please fill out all fields!");
       setShowModal(true);
       return;
     }
@@ -92,14 +92,14 @@ function Product() {
 
         <div className={styles.nameAndCost}>
           <div className={clsx(styles.formGroup, styles.formName)}>
-            <label htmlFor="name">Name</label>
+            <label htmlFor="name">Product Name</label>
             <input
               id="name"
               name="name"
               type="text"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Nhập tên sản phẩm"
+              placeholder="Enter product name"
             />
           </div>
 
@@ -111,19 +111,19 @@ function Product() {
               type="text"
               value={formData.color}
               onChange={handleChange}
-              placeholder="Nhập màu"
+              placeholder="Enter product color"
             />
           </div>
 
           <div className={clsx(styles.formGroup, styles.formCost)}>
-            <label htmlFor="cost">Cost</label>
+            <label htmlFor="cost">Price</label>
             <input
               id="cost"
               name="cost"
               type="number"
               value={formData.cost}
               onChange={handleChange}
-              placeholder="Nhập giá sản phẩm"
+              placeholder="Enter product price"
             />
           </div>
         </div>
@@ -137,9 +137,10 @@ function Product() {
               type="text"
               value={formData.brand}
               onChange={handleChange}
-              placeholder="Nhập thương hiệu"
+              placeholder="Enter brand name"
             />
           </div>
+
           <div className={clsx(styles.formGroup, styles.formDescription)}>
             <label htmlFor="description">Description</label>
             <input
@@ -148,9 +149,10 @@ function Product() {
               type="text"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Mô tả"
+              placeholder="Enter product description"
             />
           </div>
+
           <div className={clsx(styles.formGroup, styles.formStatus)}>
             <label htmlFor="status">Status</label>
             <select
@@ -159,7 +161,7 @@ function Product() {
               value={formData.status}
               onChange={handleChange}
             >
-              <option value="null">-- Trạng thái --</option>
+              <option value="null">-- Select status --</option>
               <option value="New">New</option>
               <option value="BestSeller">Best Seller</option>
               <option value="Sale">Sale</option>

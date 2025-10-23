@@ -14,7 +14,6 @@ function Products() {
 
   const navigate = useNavigate();
 
-  // Lấy dữ liệu
   const fetchProducts = () => {
     fetch("http://localhost:5000/dashboard/products/trash")
       .then((res) => res.json())
@@ -45,14 +44,14 @@ function Products() {
       method: "DELETE",
     })
       .then((res) => res.json())
-      .then(() => {
-        alert("✅ Xóa thành công!");
+      .then((data) => {
+        setModalMessage(data.message);
+        setShowModal(true);
         fetchProducts();
       })
       .catch(() => alert("❌ Có lỗi xảy ra khi xóa!"))
       .finally(() => {
         setDeleteId(null);
-        setShowModal(false);
       });
   };
 
@@ -63,14 +62,14 @@ function Products() {
       method: "PATCH",
     })
       .then((res) => res.json())
-      .then(() => {
-        alert("✅ Khôi phục thành công!");
+      .then((data) => {
+        setModalMessage(data.message);
+        setShowModal(true);
         fetchProducts();
       })
       .catch(() => alert("❌ Có lỗi xảy ra khi khôi phục!"))
       .finally(() => {
         setDeleteId(null);
-        setShowModal(false);
       });
   };
 
@@ -158,7 +157,7 @@ function Products() {
                   onClick={() => {
                     setShowModal(true);
                     setRestoreId(product._id);
-                    setModalMessage("Bạn có chắc chắn muốn khôi phục không ?");
+                    setModalMessage("Are you sure you want to restore?");
                   }}
                 >
                   <i className="fa-solid fa-window-restore"></i>
@@ -167,7 +166,7 @@ function Products() {
                   onClick={() => {
                     setShowModal(true);
                     setDeleteId(product._id);
-                    setModalMessage("Bạn có chắc chắn muốn xóa không ?");
+                    setModalMessage("Are you sure you want to delete?");
                   }}
                 >
                   <i className="fa-solid fa-trash"></i>
@@ -216,24 +215,36 @@ function Products() {
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <p>{modalMessage}</p>
-            <button
-              onClick={
-                modalMessage.includes("khôi phục")
-                  ? handleRestore
-                  : modalMessage.includes("xóa")
-                  ? handleDelete
-                  : () => {}
-              }
-            >
-              Có
-            </button>
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-            >
-              Không
-            </button>
+            {modalMessage.includes("successfully") ? (
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                }}
+              >
+                Close
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={
+                    modalMessage.includes("restore")
+                      ? handleRestore
+                      : modalMessage.includes("delete")
+                      ? handleDelete
+                      : () => {}
+                  }
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                  }}
+                >
+                  No
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

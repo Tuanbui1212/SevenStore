@@ -27,7 +27,6 @@ function Employee() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Nếu là size bắt đầu bằng "size"
     if (name.startsWith("size")) {
       setFormData((prev) => ({
         ...prev,
@@ -36,9 +35,7 @@ function Employee() {
           [name]: value,
         },
       }));
-    }
-    // Nếu là image (bắt đầu bằng "image")
-    else if (name.startsWith("image")) {
+    } else if (name.startsWith("image")) {
       setFormData((prev) => ({
         ...prev,
         image: {
@@ -73,7 +70,7 @@ function Employee() {
     })
       .then((res) => res.json())
       .then((data) => {
-        setModalMessage("Thêm thành công");
+        setModalMessage(data.message);
         setShowModal(true);
       })
       .catch(() => alert("❌ Có lỗi xảy ra khi thêm sản phẩm"));
@@ -90,14 +87,14 @@ function Employee() {
 
         <div className={styles.nameAndCost}>
           <div className={clsx(styles.formGroup, styles.formName)}>
-            <label htmlFor="name">Name</label>
+            <label htmlFor="name">Product Name</label>
             <input
               id="name"
               name="name"
               type="text"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Nhập tên sản phẩm"
+              placeholder="Enter product name"
             />
           </div>
 
@@ -109,19 +106,19 @@ function Employee() {
               type="text"
               value={formData.color}
               onChange={handleChange}
-              placeholder="Nhập màu"
+              placeholder="Enter product color"
             />
           </div>
 
           <div className={clsx(styles.formGroup, styles.formCost)}>
-            <label htmlFor="cost">Cost</label>
+            <label htmlFor="cost">Price</label>
             <input
               id="cost"
               name="cost"
               type="number"
               value={formData.cost}
               onChange={handleChange}
-              placeholder="Nhập giá sản phẩm"
+              placeholder="Enter product price"
             />
           </div>
         </div>
@@ -135,9 +132,10 @@ function Employee() {
               type="text"
               value={formData.brand}
               onChange={handleChange}
-              placeholder="Nhập thương hiệu"
+              placeholder="Enter brand name"
             />
           </div>
+
           <div className={clsx(styles.formGroup, styles.formDescription)}>
             <label htmlFor="description">Description</label>
             <input
@@ -146,9 +144,10 @@ function Employee() {
               type="text"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Mô tả"
+              placeholder="Enter product description"
             />
           </div>
+
           <div className={clsx(styles.formGroup, styles.formStatus)}>
             <label htmlFor="status">Status</label>
             <select
@@ -157,7 +156,7 @@ function Employee() {
               value={formData.status}
               onChange={handleChange}
             >
-              <option value="null">-- Trạng thái --</option>
+              <option value="null">-- Select status --</option>
               <option value="New">New</option>
               <option value="BestSeller">Best Seller</option>
               <option value="Sale">Sale</option>
@@ -217,12 +216,12 @@ function Employee() {
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("thành công")) {
+                if (modalMessage.includes("successfully")) {
                   navigate("/dashboard/products");
                 }
               }}
             >
-              Đóng
+              Close
             </button>
           </div>
         </div>

@@ -48,14 +48,14 @@ function Products() {
       method: "DELETE",
     })
       .then((res) => res.json())
-      .then(() => {
-        alert("✅ Deleted successfully!");
+      .then((data) => {
+        setModalMessage(data.message);
+        setShowModal(true);
         fetchProducts();
       })
       .catch(() => alert("❌ An error occurred while deleting!"))
       .finally(() => {
         setDeleteId(null);
-        setShowModal(false);
       });
   };
 
@@ -174,9 +174,9 @@ function Products() {
                 </button>
                 <button
                   onClick={() => {
+                    setModalMessage("Are you sure you want to delete?");
                     setShowModal(true);
                     setDeleteId(product._id);
-                    setModalMessage("Bạn có chắc chắn muốn xóa không ?");
                   }}
                 >
                   <i className="fa-solid fa-trash"></i>
@@ -225,14 +225,26 @@ function Products() {
         <div className={styles.overlay}>
           <div className={styles.modal}>
             <p>{modalMessage}</p>
-            <button onClick={handleDeleteSoft}>Có</button>
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-            >
-              Không
-            </button>
+            {modalMessage.includes("successfully") ? (
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                }}
+              >
+                Close
+              </button>
+            ) : (
+              <>
+                <button onClick={handleDeleteSoft}>Yes</button>
+                <button
+                  onClick={() => {
+                    setShowModal(false);
+                  }}
+                >
+                  No
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

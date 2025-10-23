@@ -18,6 +18,8 @@ function Payment() {
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
 
+  const [url, setUrl] = useState("");
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -79,7 +81,7 @@ function Payment() {
       })
         .then((res) => res.json())
         .then((data) => {
-          navigate(data.url);
+          setUrl(data.url);
           setModalMessage(data.message);
           setShowModal(true);
         })
@@ -262,7 +264,7 @@ function Payment() {
             <p>{modalMessage}</p>
             <button
               onClick={() => {
-                setShowModal(false);
+                navigate(url);
               }}
             >
               Close

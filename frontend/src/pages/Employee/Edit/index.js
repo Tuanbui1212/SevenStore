@@ -31,7 +31,7 @@ function Employee() {
       !formData.role ||
       !formData.date
     ) {
-      setModalMessage("Vui lòng nhập đầy đủ thông tin!");
+      setModalMessage("Please fill out all fields!");
       setShowModal(true);
       return;
     }
@@ -43,10 +43,12 @@ function Employee() {
     })
       .then((res) => res.json())
       .then((data) => {
-        setModalMessage("Sửa thành công");
+        setModalMessage(data.message);
         setShowModal(true);
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi sửa nhân viên"));
+      .catch(() =>
+        alert("❌ Something went wrong while updating the employee!")
+      );
   };
 
   useEffect(() => {
@@ -77,14 +79,14 @@ function Employee() {
 
       <form className={styles.employeeForm} onSubmit={handleSubmit}>
         <div className={styles.formGroup}>
-          <label htmlFor="name">Name</label>
+          <label htmlFor="name">Employee Name</label>
           <input
             id="name"
             name="name"
             type="text"
             value={formData.name}
             onChange={handleChange}
-            placeholder="Nhập tên nhân viên"
+            placeholder="Enter employee name"
           />
         </div>
 
@@ -96,7 +98,7 @@ function Employee() {
             type="text"
             value={formData.role}
             onChange={handleChange}
-            placeholder="Nhập chức vụ"
+            placeholder="Enter your role ..."
           />
         </div>
 
@@ -130,7 +132,6 @@ function Employee() {
             (!formData.name || !formData.role || !formData.date) &&
               styles.disabled
           )}
-          disabled={!formData.name || !formData.role || !formData.date}
         >
           SAVE
         </button>
@@ -143,12 +144,12 @@ function Employee() {
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("thành công")) {
+                if (modalMessage.includes("successfully")) {
                   navigate("/dashboard/employee");
                 }
               }}
             >
-              Đóng
+              Close
             </button>
           </div>
         </div>

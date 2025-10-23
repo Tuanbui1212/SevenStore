@@ -52,11 +52,12 @@ function Employee() {
       method: "DELETE",
     })
       .then((res) => res.json())
-      .then(() => {
-        alert("✅ Xóa thành công!");
-        fetchEmployees(); // load lại danh sách
+      .then((data) => {
+        setModalMessage(data.message);
+        setShowModal(true);
+        fetchEmployees();
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi xóa!"))
+      .catch(() => alert("❌ An error occurred while deleting!"))
       .finally(() => {
         setDeleteId(null);
         setShowModal(false);

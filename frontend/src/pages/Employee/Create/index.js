@@ -41,7 +41,7 @@ function Employee() {
     })
       .then((res) => res.json())
       .then((data) => {
-        setModalMessage("Thêm thành công");
+        setModalMessage(data.message);
         setShowModal(true);
         setFormData({ name: "", role: "", status: "Full-Time", date: "" });
       })
@@ -122,12 +122,12 @@ function Employee() {
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("thành công")) {
+                if (modalMessage.includes("successfully")) {
                   navigate("/dashboard/employee");
                 }
               }}
             >
-              Đóng
+              Close
             </button>
           </div>
         </div>
