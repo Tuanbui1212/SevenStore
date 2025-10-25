@@ -10,8 +10,9 @@ const {
 class SiteController {
   index(req, res, next) {
     Product.find({ status: "New" })
+      .lean()
       .then((newProduct) => {
-        res.json({ newProduct: muntipleMongooseToObject(newProduct) });
+        res.json({ newProduct });
       })
       .catch(next);
   }
@@ -86,6 +87,18 @@ class SiteController {
         console.error("Lỗi truy vấn:", err);
         res.status(500).json({ message: "Lỗi server khi kiểm tra tài khoản" });
       });
+  }
+
+  //[GET] /search
+  search(req, res, next) {
+    const { value } = req.query;
+
+    Product.find({ name: { $regex: value, $options: "i" } })
+      .lean()
+      .then((product) => {
+        res.json({ product });
+      })
+      .catch(next);
   }
 }
 

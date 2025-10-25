@@ -10,6 +10,7 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [carts, setCarts] = useState({});
 
+  const [search, setSearch] = useState("");
   const success = localStorage.getItem("success");
   const role = localStorage.getItem("role");
 
@@ -32,6 +33,12 @@ function Header() {
   useEffect(() => {
     fetchCart();
   }, []);
+
+  const handleSearch = () => {
+    if (!search) return;
+    navigate(`/search?value=${search}`);
+    setSearch("");
+  };
 
   return (
     <>
@@ -187,14 +194,18 @@ function Header() {
           <div className={clsx(styles.nav_search)}>
             <input
               className={clsx(styles.nav_search_input)}
-              placeholder="Tìm kiếm sản phẩm  "
+              placeholder="Search items"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
-            <i
-              className={clsx(
-                "fa-solid fa-magnifying-glass",
-                styles.nav_search_icon
-              )}
-            ></i>
+            <button
+              className={clsx(styles.nav_search_icon)}
+              onClick={() => {
+                handleSearch();
+              }}
+            >
+              <i className={clsx("fa-solid fa-magnifying-glass")}></i>
+            </button>
           </div>
 
           {/* Cart */}

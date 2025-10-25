@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Account = require("../models/Account");
+const Customer = require("../models/Customer");
 class PaymentController {
   create(req, res) {
     const { formData, user, checkedItems, totalCost } = req.body;
@@ -61,6 +62,24 @@ class PaymentController {
 
         const order = new Order(orderData);
         return order.save();
+      })
+      .then(() => {
+        const phone = formData.phone;
+
+        Customer.findOne({ phone }).then((customer) => {
+          if (customer) return;
+
+          const address = formData.address + ", " + formData.city;
+
+          const customerData = {
+            name: formData.name,
+            phone: formData.phone,
+            address: address,
+          };
+
+          const customerDB = new Customer(customerData);
+          return customerDB.save();
+        });
       })
       .then(() => {
         res.status(201).json({

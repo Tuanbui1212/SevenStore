@@ -91,6 +91,13 @@
       right: 10px;
       font-size: 1.4rem;
       margin: 0px;
+      background-color: transparent;
+      border: transparent;
+
+      i {
+        color: $black-color;
+        margin: 0px;
+      }
     }
   }
 

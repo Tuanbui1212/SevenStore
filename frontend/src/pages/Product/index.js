@@ -7,6 +7,13 @@ import { Link } from "react-router-dom";
 
 import no_img from "../../assets/images/no_img.jpg";
 
+const sorts = [
+  "Best Sellers",
+  "Newest",
+  "Price High To Low",
+  "Price Low To High",
+];
+
 const types = ["High", "Hype", "Mid", "Low"];
 
 const colors = [
@@ -32,15 +39,17 @@ const priceOptions = [
 ];
 
 function Product() {
-  const { brand } = useParams(); // Lấy brand từ URL
+  const { brand } = useParams();
   const [products, setProducts] = useState([]);
 
+  const [selectedSort, setSelectedSort] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [selectedPrice, setSelectedPrice] = useState(null);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
+  const [openSort, setOpenSort] = useState(false);
   const [openType, setOpenType] = useState(false);
   const [openColor, setOpenColor] = useState(false);
   const [openPrice, setOpenPrice] = useState(false);
@@ -48,6 +57,7 @@ function Product() {
   useEffect(() => {
     let url = `http://localhost:5000/product/${brand}?`;
 
+    if (selectedSort) url += `sort=${selectedSort}&`;
     if (selectedColor) url += `color=${selectedColor}&`;
     if (selectedType) url += `type=${selectedType}&`;
     if (minPrice) url += `min=${minPrice}&`;
@@ -57,7 +67,7 @@ function Product() {
       .then((res) => res.json())
       .then((data) => setProducts(data.newProduct || []))
       .catch((err) => console.error("Lỗi:", err));
-  }, [brand, selectedColor, selectedType, minPrice, maxPrice]);
+  }, [brand, selectedColor, selectedType, minPrice, maxPrice, selectedSort]);
   return (
     <>
       <div className="container">
@@ -84,6 +94,40 @@ function Product() {
         <div className={clsx("row mt-28", styles.mainRow)}>
           {/* --- sidebar --- */}
           <div className={clsx("col col-3 display-sm-none", styles.sidebar)}>
+            {/* --- Sắp xếp theo --- */}
+            <div className={styles.section}>
+              <div className={styles.header}>
+                <h3 className={styles.sidebarTitle}>SORT BY</h3>
+                <button
+                  className={styles.toggleBtn}
+                  onClick={() => setOpenSort(!openSort)}
+                >
+                  {openSort ? "—" : "+"}
+                </button>
+              </div>
+              {openSort && (
+                <ul className={styles.sidebarList__type}>
+                  {sorts.map((type, idx) => (
+                    <li key={idx} className={styles.type__Item}>
+                      <label className={styles.type__link}>
+                        <input
+                          type="checkbox"
+                          name="type"
+                          value={type}
+                          checked={selectedSort === type}
+                          onChange={() =>
+                            selectedSort === type
+                              ? setSelectedSort("")
+                              : setSelectedSort(type)
+                          }
+                        />
+                        <span>{type}</span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             {/* --- Phân loại --- */}
             <div className={styles.section}>
               <div className={styles.header}>

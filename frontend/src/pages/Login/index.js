@@ -77,8 +77,8 @@ const AuthForm = () => {
     const newErrors = {};
 
     const infor = {
-      user: formData.user,
-      password: formData.password,
+      user: formData.user.trim(),
+      password: String(formData.password).trim(),
       name: formData.name,
     };
 

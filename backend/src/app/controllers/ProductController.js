@@ -4,9 +4,21 @@ class ProductController {
   //[GET]/product/:brand/
   show(req, res, next) {
     const { brand } = req.params;
-    const { color, type, min, max } = req.query;
+    const { color, type, min, max, sort } = req.query;
 
     let filter = {};
+
+    let sortBy = {};
+
+    if (sort === "Best Sellers") {
+      filter.status = { $regex: "BestSeller", $options: "i" };
+    } else if (sort === "Newest") {
+      sortBy = { updatedAt: 1 };
+    } else if (sort === "Price High To Low") {
+      sortBy = { cost: 1 };
+    } else if (sort === "Price Low To High") {
+      sortBy = { cost: -1 };
+    }
 
     if (brand === "sale") {
       filter.status = { $regex: "sale", $options: "i" };
@@ -29,6 +41,7 @@ class ProductController {
     }
 
     Product.find(filter)
+      .sort(sortBy)
       .lean()
       .then((newProduct) => {
         console.log(`Found ${newProduct.length} products with filter:`, filter);

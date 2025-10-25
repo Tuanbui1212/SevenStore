@@ -1,0 +1,270 @@
+@import "../../components/GlobalStyles/variables";
+@font-face {
+  font-family: "Puma";
+  src: url("../../assets/font/MYPUMA__.TTF") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.breadcrumb {
+  .breadcrumb__link {
+    text-decoration: none;
+    font-size: 1.3rem;
+    color: $black-color;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .breadcrumb__divider {
+    font-size: 1.6rem;
+  }
+}
+
+.sidebar {
+  padding-right: (100% / 12 * 1);
+  padding-top: 32px;
+
+  .sidebarTitle {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+}
+
+.section {
+  margin-bottom: 16px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-weight: bold;
+  margin-bottom: 12px;
+
+  span {
+    font-size: 1.4rem;
+  }
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: $black-color;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Loại */
+.sidebarList__type {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .type__Item {
+    .type__link {
+      display: flex;
+      align-items: center;
+      padding: 6px;
+      border-radius: 6px;
+      color: $black-color;
+      text-decoration: none;
+      transition: background 0.2s;
+
+      &:hover {
+        background: #f1f1f1;
+      }
+
+      input[type="checkbox"] {
+        margin-right: 8px;
+        accent-color: $text-color;
+      }
+
+      span {
+        font-size: 1.4rem;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+//
+
+/* Màu */
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 30px);
+  gap: 10px;
+
+  .colorCircle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    transition: transform 0.2s, border 0.2s;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &.selected {
+      border: 2px solid #000;
+    }
+  }
+}
+
+/* Giá */
+.inputGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+
+  input {
+    max-width: 90px;
+    padding: 6px 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+
+    &::placeholder {
+      color: #aaa;
+    }
+
+    &:focus {
+      border-color: #000;
+    }
+  }
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.4rem;
+  gap: 8px;
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    input[type="radio"] {
+      accent-color: #000;
+    }
+  }
+}
+
+// --- Product ---
+.productList {
+  padding: 16px;
+
+  &Title {
+    font-family: "Puma", sans-serif;
+    font-size: 8rem;
+    font-weight: 600;
+    margin-top: 10px;
+    margin-bottom: 56px;
+    text-transform: uppercase;
+    text-align: center;
+    height: auto;
+  }
+
+  & .productGrid {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  color: white;
+  font-weight: bold;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 1rem;
+  z-index: 10;
+  text-transform: uppercase;
+
+  &.new {
+    background-color: $black-color;
+  }
+  &.sale {
+    background-color: $primary-color;
+  }
+  &.BestSeller {
+    background-color: red;
+  }
+}
+
+.productCard {
+  position: relative;
+  margin-top: 12px;
+  background: #fff;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+  }
+}
+
+.productLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.productImage {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.productInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.productTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.productName {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #333;
+
+  white-space: nowrap; /* Không xuống dòng */
+  overflow: hidden; /* Ẩn phần vượt quá khung */
+  text-overflow: ellipsis; /* Hiện dấu ... */
+  padding-right: 10px;
+}
+
+.productPrice {
+  font-size: 15px;
+  font-weight: 600;
+  color: #e63946;
+}
+
+.productDescription {
+  font-size: 14px;
+  color: #666;
+}

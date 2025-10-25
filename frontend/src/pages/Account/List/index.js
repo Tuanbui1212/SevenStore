@@ -88,7 +88,9 @@ function Account() {
               <td className={styles.tableCell}>{index + 1}</td>
               <td className={styles.tableCell}>{a.name}</td>
               <td className={styles.tableCell}>{a.user}</td>
-              <td className={styles.tableCell}>{a.password}</td>
+              <td className={styles.tableCell}>
+                {"*".repeat(a.password.length)}
+              </td>
               <td
                 className={clsx(
                   styles.tableCell,
