@@ -7,7 +7,7 @@ import { cartRoutes } from "./cartRouters";
 import { paymentRoutes } from "./payRouters";
 import { orderRoutes } from "./orderRoutes";
 
-const publicRoutes = [...mainRoutes, ...customerRoutes, ...productRoutes];
+const publicRoutes = [...mainRoutes];
 
 const privateRoutes = [
   ...paymentRoutes,
@@ -15,6 +15,8 @@ const privateRoutes = [
   ...accountRoutes,
   ...cartRoutes,
   ...orderRoutes,
+  ...productRoutes,
+  ...customerRoutes,
 ];
 
 export { publicRoutes, privateRoutes };

@@ -28,6 +28,18 @@ const AuthForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const [remember, setRemember] = useState(
+    localStorage.getItem("remember") === "true"
+  );
+
+  const handleRememberChange = (e) => {
+    const isChecked = e.target.checked;
+    setRemember(isChecked);
+
+    // Lưu boolean dưới dạng string "true"/"false"
+    localStorage.setItem("remember", isChecked.toString());
+  };
+
   const handleSubmitLogin = (e) => {
     e.preventDefault();
 
@@ -158,7 +170,7 @@ const AuthForm = () => {
                     setUsername(e.target.value);
                   }}
                   placeholder="Enter your username"
-                  className={clsx({ ["error"]: errors.user })}
+                  className={clsx({ error: errors.user })}
                 />
 
                 <label>
@@ -171,12 +183,17 @@ const AuthForm = () => {
                     setPassword(e.target.value);
                   }}
                   placeholder="Enter your password"
-                  className={clsx({ ["error"]: errors.pass })}
+                  className={clsx({ error: errors.pass })}
                 />
 
                 <div className={styles.authOptions}>
                   <label className={styles.remember}>
-                    <input type="checkbox" /> Remember me
+                    <input
+                      type="checkbox"
+                      checked={remember}
+                      onChange={handleRememberChange}
+                    />{" "}
+                    Remember me
                   </label>
                   <Link to={"/"} className={styles.forgot}>
                     Lost your password?
@@ -204,7 +221,7 @@ const AuthForm = () => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your name"
-                  className={clsx({ ["error"]: errors.name })}
+                  className={clsx({ error: errors.name })}
                 />
                 <label>
                   Username <span>*</span>
@@ -215,7 +232,7 @@ const AuthForm = () => {
                   value={formData.user}
                   onChange={handleChange}
                   placeholder="Enter your username"
-                  className={clsx({ ["error"]: errors.user })}
+                  className={clsx({ error: errors.user })}
                 />
 
                 <label>
@@ -227,7 +244,7 @@ const AuthForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Create a password"
-                  className={clsx({ ["error"]: errors.password })}
+                  className={clsx({ error: errors.password })}
                 />
 
                 <p>

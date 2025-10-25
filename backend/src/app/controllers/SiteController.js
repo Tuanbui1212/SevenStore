@@ -20,13 +20,13 @@ class SiteController {
   checkLogin(req, res, next) {
     const { username, password } = req.body;
 
-    Account.findOne({ user: username }) // ✅ Tìm 1 account
+    Account.findOne({ user: username })
       .lean()
       .then((account) => {
         if (!account) {
           return res.json({
             success: false,
-            message: "Không tồn tại tài khoản nào",
+            message: "No account found",
           });
         }
 
@@ -41,14 +41,14 @@ class SiteController {
             role: account.role,
             success: true,
             id: account._id,
-            message: "Đăng nhập thành công",
+            message: "Login successful",
             redirectUrl: Url,
             user: account.user,
           });
         } else {
           return res.json({
             success: false,
-            message: "Sai mật khẩu",
+            message: "The password you entered is incorrect",
           });
         }
       })
@@ -58,34 +58,44 @@ class SiteController {
   register(req, res, next) {
     const { formData } = req.body; // lấy object formData từ body
     if (!formData)
-      return res.status(400).json({ message: "Thiếu dữ liệu gửi lên" });
+      return res.status(400).json({ message: "Required data is missing" });
 
     const { name, user, password } = formData;
 
     if (!name || !user || !password) {
-      return res.status(400).json({ message: "Thiếu thông tin đăng ký" });
+      return res
+        .status(400)
+        .json({ message: "Some registration information is missing" });
     }
 
     Account.findOne({ user })
       .lean()
       .then((existingUser) => {
         if (existingUser) {
-          return res.status(400).json({ message: "Đã tồn tại tài khoản này" });
+          return res
+            .status(400)
+            .json({ message: "This username is already taken" });
         }
 
         const account = new Account(formData);
 
         return account
           .save()
-          .then(() => res.status(201).json({ message: "Đăng ký thành công" }))
+          .then(() =>
+            res.status(201).json({ message: "Registration successful" })
+          )
           .catch((err) => {
             console.error("Lỗi khi lưu tài khoản:", err);
-            res.status(500).json({ message: "Lỗi server khi tạo tài khoản" });
+            res
+              .status(500)
+              .json({ message: "Server error while creating account" });
           });
       })
       .catch((err) => {
         console.error("Lỗi truy vấn:", err);
-        res.status(500).json({ message: "Lỗi server khi kiểm tra tài khoản" });
+        res
+          .status(500)
+          .json({ message: "Server error while checking the account" });
       });
   }
 

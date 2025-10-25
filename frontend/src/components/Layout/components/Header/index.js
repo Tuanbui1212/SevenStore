@@ -197,6 +197,9 @@ function Header() {
               placeholder="Search items"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSearch();
+              }}
             />
             <button
               className={clsx(styles.nav_search_icon)}
@@ -289,7 +292,7 @@ function Header() {
                     to={"/login"}
                     className={clsx(styles.user_login, styles.user_item)}
                   >
-                    Đăng nhập
+                    Login
                   </Link>
                 </li>
               )}
@@ -300,13 +303,10 @@ function Header() {
                     to={"/login"}
                     className={clsx(styles.user_login, styles.user_item)}
                     onClick={() => {
-                      localStorage.removeItem("role");
-                      localStorage.removeItem("success");
-                      localStorage.removeItem("id");
-                      localStorage.removeItem("user");
+                      localStorage.clear();
                     }}
                   >
-                    Đăng xuất
+                    Log Out
                   </Link>
                 </li>
               )}
