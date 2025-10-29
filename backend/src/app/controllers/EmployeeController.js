@@ -7,7 +7,7 @@ const {
 class EmployeeController {
   show(req, res, next) {
     Promise.all([
-      Employee.find().lean(),
+      Employee.find().sort({ updatedAt: -1 }).lean(),
       Employee.countDocumentsWithDeleted({ deleted: true }),
     ])
       .then(([employees, deletedCount]) =>

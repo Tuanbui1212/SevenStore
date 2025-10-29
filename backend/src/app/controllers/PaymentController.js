@@ -94,6 +94,7 @@ class PaymentController {
 
   show(req, res, next) {
     Order.find()
+      .sort({ updatedAt: -1 })
       .lean()
       .then((order) => {
         res.json({ order });

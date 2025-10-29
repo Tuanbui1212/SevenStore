@@ -3,6 +3,7 @@ const Account = require("../models/Account");
 class AccountController {
   show(req, res, next) {
     Account.find({})
+      .sort({ updatedAt: -1 })
       .lean()
       .then((account) => res.json({ account }))
       .catch(next);

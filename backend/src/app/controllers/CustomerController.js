@@ -3,6 +3,7 @@ const Customer = require("../models/Customer");
 class CustomerController {
   show(req, res, next) {
     Customer.find({})
+      .sort({ updatedAt: -1 })
       .lean()
       .then((customers) => res.json({ customers }))
       .catch(next);

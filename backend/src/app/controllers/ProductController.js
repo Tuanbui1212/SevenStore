@@ -63,7 +63,7 @@ class ProductController {
   //[GET]/dashboard/products/:brand/:slug
   showList(req, res, next) {
     Promise.all([
-      Product.find().lean(),
+      Product.find().sort({ updatedAt: -1 }).lean(),
       Product.countDocumentsWithDeleted({ deleted: true }),
     ])
       .then(([listProduct, deletedCount]) =>

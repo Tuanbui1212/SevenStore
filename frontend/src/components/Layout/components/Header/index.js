@@ -145,18 +145,13 @@ function Header() {
               </ul>
             </li>
             <li>
-              <Link className={clsx(styles.nav_item)} to="/">
+              <Link to="/service" className={clsx(styles.nav_item)}>
                 SERVICES
               </Link>
             </li>
             <li>
-              <Link className={clsx(styles.nav_item)} to="/">
+              <Link className={clsx(styles.nav_item)} to="/aboutUs">
                 ABOUT US
-              </Link>
-            </li>
-            <li>
-              <Link className={clsx(styles.nav_item)} to="/">
-                CONTACT
               </Link>
             </li>
             <li>

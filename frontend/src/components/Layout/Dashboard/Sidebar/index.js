@@ -64,17 +64,7 @@ function Sidebar() {
               <span className={styles.sidebarText}>Orders</span>
             </Link>
           </li>
-          <li>
-            <Link
-              to="/dashboard/stats"
-              className={clsx(
-                styles.sidebarItem,
-                location.pathname === "/dashboard/stats" && styles.active
-              )}
-            >
-              <span className={styles.sidebarText}>Stats</span>
-            </Link>
-          </li>
+
           {role === "admin" && (
             <li>
               <Link
@@ -88,18 +78,6 @@ function Sidebar() {
               </Link>
             </li>
           )}
-
-          <li>
-            <Link
-              to="/dashboard/management"
-              className={clsx(
-                styles.sidebarItem,
-                location.pathname === "/dashboard/management" && styles.active
-              )}
-            >
-              <span className={styles.sidebarText}>Management</span>
-            </Link>
-          </li>
         </ul>
       </div>
     </>
