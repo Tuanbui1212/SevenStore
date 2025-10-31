@@ -1,10 +1,13 @@
 const mongoose = require("mongoose");
 
 async function connect() {
-  const mongoURI = process.env.MONGODB_URI || "mongodb://127.0.0.1/SevenStore";
+  const mongoURI = process.env.MONGO_URI || "mongodb://127.0.0.1/SevenStore";
 
   try {
-    await mongoose.connect(mongoURI);
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("✅ Kết nối MongoDB thành công");
   } catch (error) {
     console.error("❌ Kết nối MongoDB thất bại:", error.message);
@@ -12,3 +15,18 @@ async function connect() {
 }
 
 module.exports = { connect };
+
+// const mongoose = require("mongoose");
+
+// async function connect() {
+//   const mongoURI = process.env.MONGO_URI || "mongodb://127.0.0.1/SevenStore";
+
+//   try {
+//     await mongoose.connect(mongoURI);
+//     console.log("✅ Kết nối MongoDB thành công");
+//   } catch (error) {
+//     console.error("❌ Kết nối MongoDB thất bại:", error.message);
+//   }
+// }
+
+// module.exports = { connect };
