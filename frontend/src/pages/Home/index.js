@@ -64,7 +64,7 @@ function Home() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:5000/")
+    fetch("http://https://sevenstore-api.onrender.com//")
       .then((res) => res.json())
       .then((data) => {
         setProducts(data.newProduct);
