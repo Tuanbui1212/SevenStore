@@ -277,13 +277,13 @@ function Header() {
             <ul className={styles.user_list}>
               <li className={styles.user_title}>Liên kết nhanh</li>
               <li>
-                <Link className={styles.user_item}>Thông tin của tôi</Link>
+                <Link className={styles.user_item}>My Account</Link>
               </li>
               <li>
-                <Link className={styles.user_item}>Danh sách yêu thích</Link>
+                <Link className={styles.user_item}>Favorites</Link>
               </li>
               <li>
-                <Link className={styles.user_item}>Hỗ trợ</Link>
+                <Link className={styles.user_item}>Support</Link>
               </li>
               {!success && (
                 <li>
@@ -312,9 +312,9 @@ function Header() {
 
               {!success && (
                 <li className={styles.user_title}>
-                  Bạn chưa có tài khoản ?
+                  Don’t have an account?
                   <Link to="/login" className={clsx(styles.user_register)}>
-                    Đăng ký tại đây
+                    Sign up here
                   </Link>
                 </li>
               )}
