@@ -144,7 +144,13 @@ function Home() {
             <Link
               key={index}
               to={`/product/${product.brand}/${product.slug}`}
-              className={clsx("col", "col-3", styles.product_item)}
+              className={clsx(
+                "col",
+                "col-3",
+                "col-md-4",
+                "col-sm-5",
+                styles.product_item
+              )}
             >
               <img
                 src={product.image.image1}
@@ -182,7 +188,14 @@ function Home() {
       <div className={clsx("row", "no-gutters", styles.content)}>
         <div className={clsx(styles.finder)}>
           <div
-            className={clsx("col", "col-6", "col-lg-8", styles.finder__content)}
+            className={clsx(
+              "col",
+              "col-6",
+              "col-lg-8",
+              "col-md-12",
+              "col-sm-12",
+              styles.finder__content
+            )}
           >
             <h3>NIKE RUNNING SHOE FINDER</h3>
             <span>
@@ -191,7 +204,14 @@ function Home() {
             <button>GET START</button>
           </div>
           <img
-            className={clsx("col", "col-6", "col-lg-4", styles.finder__image)}
+            className={clsx(
+              "col",
+              "col-6",
+              "col-lg-4",
+              "display-md-none",
+              "display-sm-none",
+              styles.finder__image
+            )}
             src={nike}
             alt=""
           />
@@ -260,7 +280,7 @@ function Home() {
                 "col",
                 "col-2",
                 "col-md-3",
-                "col-sm-2",
+                "col-sm-5",
                 styles.product_item
               )}
             >
