@@ -136,6 +136,10 @@ body {
     padding-right: 8px;
   }
 
+  .display-md-none {
+    display: none;
+  }
+
   @for $i from 1 through 12 {
     .col-md-#{$i} {
       display: block;
