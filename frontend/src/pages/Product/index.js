@@ -56,7 +56,8 @@ function Product() {
   const [openPrice, setOpenPrice] = useState(false);
 
   useEffect(() => {
-    let url = `http://localhost:5000/product/${brand}?`;
+    //let url = `http://localhost:5000/product/${brand}?`;
+    let url = `/product/${brand}?`;
 
     if (selectedSort) url += `sort=${selectedSort}&`;
     if (selectedColor) url += `color=${selectedColor}&`;

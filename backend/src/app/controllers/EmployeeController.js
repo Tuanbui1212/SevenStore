@@ -73,7 +73,7 @@ class EmployeeController {
   trashEmpolyee(req, res, next) {
     Employee.findWithDeleted({ deleted: true })
       .lean()
-      .then((trashEmpolyee) => res.json({ trashEmployee }))
+      .then((trashEmployee) => res.json({ trashEmployee }))
       .catch(next);
   }
 
