@@ -64,16 +64,14 @@ function Home() {
     scrollRefBrand.current.scrollBy({ left: 300, behavior: "smooth" });
   };
 
-  const API_URL = process.env.REACT_APP_API_URL;
-
   useEffect(() => {
     axios
-      .get(`${API_URL}/`)
+      .get(`/`)
       .then((response) => {
         setProducts(response.data.newProduct);
       })
       .catch((err) => console.error(err));
-  }, [API_URL]);
+  }, []);
 
   function changeImage(direction) {
     setIsFading(true);
