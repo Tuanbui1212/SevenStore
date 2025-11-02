@@ -2,6 +2,7 @@ import styles from "./Account.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Account() {
   const [account, setAccount] = useState([]);
@@ -12,10 +13,12 @@ function Account() {
   const navigate = useNavigate();
 
   const fetchAccount = () => {
-    fetch("http://localhost:5000/dashboard/account")
-      .then((res) => res.json())
-      .then((data) => {
-        setAccount(data.account);
+    // fetch("http://localhost:5000/dashboard/account")
+    //   .then((res) => res.json())
+    axios
+      .get("/dashboard/account")
+      .then((res) => {
+        setAccount(res.data.account);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   };

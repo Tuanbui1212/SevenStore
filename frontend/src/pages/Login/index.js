@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import styles from "./AuthForm.module.scss"; // SCSS module riêng
 import "../../components/GlobalStyles/GlobalStyles.scss"; // SCSS global
+import axios from "../../util/axios";
 
 const AuthForm = () => {
   const navigate = useNavigate();
@@ -55,24 +56,26 @@ const AuthForm = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            localStorage.setItem("user", data.user);
-            localStorage.setItem("success", data.success);
-            localStorage.setItem("role", data.role);
-            localStorage.setItem("id", data.id);
+      // fetch("http://localhost:5000/login", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ username, password }),
+      // })
+      //   .then((res) => res.json())
+      axios
+        .post("/login", { username, password })
+        .then((res) => {
+          if (res.data.success) {
+            localStorage.setItem("user", res.data.user);
+            localStorage.setItem("success", res.data.success);
+            localStorage.setItem("role", res.data.role);
+            localStorage.setItem("id", res.data.id);
 
-            navigate(data.redirectUrl);
+            navigate(res.data.redirectUrl);
           } else {
-            setModalMessage(data.message || "Đăng nhập thất bại");
+            setModalMessage(res.data.message || "Đăng nhập thất bại");
             setShowModal(true);
           }
         })
@@ -95,7 +98,7 @@ const AuthForm = () => {
     };
 
     Object.keys(infor).forEach((key) => {
-      if (!formData[key].trim()) {
+      if (!formData[key]) {
         newErrors[key] = true;
       }
     });
@@ -103,18 +106,20 @@ const AuthForm = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      fetch("http://localhost:5000/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ formData }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setModalMessage(data.message);
+      // fetch("http://localhost:5000/register", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({ formData }),
+      // })
+      //   .then((res) => res.json())
+      axios
+        .post("/register", { formData })
+        .then((res) => {
+          setModalMessage(res.data.message);
           setShowModal(true);
-          if (data.message.includes("thành công")) {
+          if (res.data.message.includes("thành công")) {
             setActiveTab("login");
             setFormData({
               name: "",

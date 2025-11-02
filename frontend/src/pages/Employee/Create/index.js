@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Employee() {
   const navigate = useNavigate();
@@ -34,14 +35,16 @@ function Employee() {
       setShowModal(true);
       return;
     }
-    fetch("http://localhost:5000/dashboard/employee/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch("http://localhost:5000/dashboard/employee/create", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(formData),
+    // })
+    //   .then((res) => res.json())
+    axios
+      .post("/dashboard/employee/create", formData)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
         setFormData({ name: "", role: "", status: "Full-Time", date: "" });
       })

@@ -4,6 +4,7 @@ import styles from "./Product.module.scss";
 import clsx from "clsx";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 import { Link } from "react-router-dom";
+import axios from "../../util/axios";
 
 import no_img from "../../assets/images/no_img.jpg";
 
@@ -15,11 +16,14 @@ function Sreach() {
   const value = params.get("value") || "";
 
   useEffect(() => {
-    let url = `http://localhost:5000/search?value=${value}`;
+    //let url = `http://localhost:5000/search?value=${value}`;
+    let url = `/search?value=${value}`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => setProducts(data.product || []))
+    // fetch(url)
+    //   .then((res) => res.json())
+    axios
+      .get(url)
+      .then((res) => setProducts(res.data.product || []))
       .catch((err) => console.error("Lỗi:", err));
   }, [value]);
 

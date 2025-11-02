@@ -4,6 +4,7 @@ import noItem from "../../assets/images/no-item.jpg";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "../../util/axios";
 
 import no_img from "../../assets/images/no_img.jpg";
 
@@ -23,14 +24,16 @@ function Cart() {
     const user = localStorage.getItem("user");
 
     if (!user) return;
-    let url = `http://localhost:5000/cart?`;
+    let url = `/cart?`;
 
     if (user) url += `user=${encodeURIComponent(user)}`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setCarts(data.cart);
+    // fetch(url)
+    //   .then((res) => res.json())
+    axios
+      .get(url)
+      .then((res) => {
+        setCarts(res.data.cart);
       })
       .catch((err) => console.log(err));
   };
@@ -42,13 +45,15 @@ function Cart() {
   const handleChane = (data) => {
     const user = localStorage.getItem("user");
     if (!user) return;
-    let url = `http://localhost:5000/cart?`;
+    let url = `/cart?`;
     if (user) url += `user=${encodeURIComponent(user)}`;
-    fetch(url, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+    // fetch(url, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(data),
+    // });
+
+    axios.put(url, data);
   };
 
   const handleDelete = () => {
@@ -57,15 +62,17 @@ function Cart() {
     if (!deleteId) return;
     if (!user) return;
 
-    let url = `http://localhost:5000/cart?`;
+    let url = `/cart?`;
     if (user) url += `user=${encodeURIComponent(user)}&`;
     if (deleteId) url += `deleteId=${encodeURIComponent(deleteId)}&`;
     if (size) url += `size=${encodeURIComponent(size)}&`;
 
-    fetch(url, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
+    // fetch(url, {
+    //   method: "DELETE",
+    // })
+    //   .then((res) => res.json())
+    axios
+      .delete(url)
       .then(() => {
         setModalMessage("✅ Successfully deleted!");
         setShowModal(true);

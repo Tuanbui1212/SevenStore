@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Account() {
   const navigate = useNavigate();
@@ -19,10 +20,12 @@ function Account() {
   });
 
   const fetchAccount = () => {
-    fetch("http://localhost:5000/dashboard/account")
-      .then((res) => res.json())
-      .then((data) => {
-        setAccount(data.account);
+    // fetch("http://localhost:5000/dashboard/account")
+    //   .then((res) => res.json())
+    axios
+      .get(`/dashboard/account`)
+      .then((response) => {
+        setAccount(response.data.account);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   };
@@ -58,14 +61,16 @@ function Account() {
       return;
     }
 
-    fetch("http://localhost:5000/dashboard/account/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage("Thêm thành công");
+    // fetch("http://localhost:5000/dashboard/account/create", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(formData),
+    // })
+    //   .then((res) => res.json())
+    axios
+      .post(`/dashboard/account/create`, formData)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
         setFormData({
           name: "",
@@ -163,7 +168,7 @@ function Account() {
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("thành công")) {
+                if (modalMessage.includes("success")) {
                   navigate("/dashboard/account");
                 }
               }}

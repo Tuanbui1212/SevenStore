@@ -3,6 +3,7 @@ import styles from "./Home.module.scss";
 import clsx from "clsx";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 import { Link } from "react-router-dom";
+import axios from "../../util/axios";
 
 import slider01 from "../../assets/images/slider01.png";
 import slider02 from "../../assets/images/slider02.png";
@@ -63,14 +64,16 @@ function Home() {
     scrollRefBrand.current.scrollBy({ left: 300, behavior: "smooth" });
   };
 
+  const API_URL = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
-    fetch("https://sevenstore-api.onrender.com/")
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data.newProduct);
+    axios
+      .get(`${API_URL}/`)
+      .then((response) => {
+        setProducts(response.data.newProduct);
       })
       .catch((err) => console.error(err));
-  }, []);
+  }, [API_URL]);
 
   function changeImage(direction) {
     setIsFading(true);

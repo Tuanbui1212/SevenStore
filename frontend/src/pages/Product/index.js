@@ -4,6 +4,7 @@ import styles from "./Product.module.scss";
 import clsx from "clsx";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 import { Link } from "react-router-dom";
+import axios from "../../util/axios";
 
 import no_img from "../../assets/images/no_img.jpg";
 
@@ -63,9 +64,10 @@ function Product() {
     if (minPrice) url += `min=${minPrice}&`;
     if (maxPrice) url += `max=${maxPrice}&`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => setProducts(data.newProduct || []))
+    // fetch(url)
+    //   .then((res) => res.json())
+    axios(url)
+      .then((res) => setProducts(res.data.newProduct || []))
       .catch((err) => console.error("Lỗi:", err));
   }, [brand, selectedColor, selectedType, minPrice, maxPrice, selectedSort]);
   return (

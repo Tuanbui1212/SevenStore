@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { Link } from "react-router";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import axios from "../../util/axios";
 
 import styles from "./ProductDetail.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
@@ -31,19 +32,23 @@ function ProductDetail() {
   });
 
   useEffect(() => {
-    fetch(`http://localhost:5000/product/${brand}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data.newProduct);
+    // fetch(`http://localhost:5000/product/${brand}`)
+    //   .then((res) => res.json())
+    axios
+      .get(`/product/${brand}`)
+      .then((res) => {
+        setProducts(res.data.newProduct);
       })
       .catch((err) => console.error(err));
   }, [brand]);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/product/${brand}/${slug}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setProduct(data.productDetail);
+    // fetch(`http://localhost:5000/product/${brand}/${slug}`)
+    //   .then((res) => res.json())
+    axios
+      .get(`/product/${brand}/${slug}`)
+      .then((res) => {
+        setProduct(res.data.productDetail);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [brand, slug]);
@@ -75,21 +80,26 @@ function ProductDetail() {
     const user = localStorage.getItem("user");
 
     if (!user) return;
-    let url = `http://localhost:5000/cart?`;
+    //let url = `http://localhost:5000/cart?`;
+    let url = `/cart?`;
 
     if (user) url += `user=${encodeURIComponent(user)}`;
 
-    fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch(url, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(formData),
+    // })
+    //   .then((res) => res.json())
+    axios
+      .post(url, formData)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
       })
-      .catch();
+      .catch((err) => {
+        console.error("Lỗi khi thêm vào giỏ:", err);
+      });
   }, [formData]);
 
   return (

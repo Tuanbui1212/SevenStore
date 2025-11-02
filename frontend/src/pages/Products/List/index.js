@@ -2,6 +2,7 @@ import styles from "./ListProduct.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../../../util/axios";
 
 import no_item from "../../../assets/images/no_img.jpg";
 
@@ -19,10 +20,12 @@ function Products() {
 
   // Lấy dữ liệu
   const fetchProducts = () => {
-    fetch("http://localhost:5000/dashboard/products")
-      .then((res) => res.json())
-      .then((data) => {
-        const newList = data.listProduct.map((product) => {
+    // fetch("http://localhost:5000/dashboard/products")
+    //   .then((res) => res.json())
+    axios
+      .get("/dashboard/products")
+      .then((res) => {
+        const newList = res.data.listProduct.map((product) => {
           const total = Object.values(product.size).reduce(
             (sum, value) => Number(sum) + Number(value),
             0
@@ -30,7 +33,7 @@ function Products() {
 
           return { ...product, total };
         });
-        setCountDelete(data.deletedCount);
+        setCountDelete(res.data.deletedCount);
         setProducts(newList);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
@@ -44,12 +47,14 @@ function Products() {
   const handleDeleteSoft = () => {
     if (!deleteId) return;
 
-    fetch(`http://localhost:5000/dashboard/products/${deleteId}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch(`http://localhost:5000/dashboard/products/${deleteId}`, {
+    //   method: "DELETE",
+    // })
+    //   .then((res) => res.json())
+    axios
+      .delete(`/dashboard/products/${deleteId}`)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
         fetchProducts();
       })

@@ -4,7 +4,7 @@ import styles from "./Payment.module.scss";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-
+import axios from "../../util/axios";
 import momo from "../../assets/images/momo.png";
 import cod from "../../assets/images/cod.png";
 import vnPay from "../../assets/images/vnPay.png";
@@ -74,18 +74,22 @@ function Payment() {
       console.log("user: ", user);
       console.log("item: ", checkedItems);
 
-      fetch("http://localhost:5000/payment", {
-        method: "post",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formData, user, checkedItems, totalCost }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setUrl(data.url);
-          setModalMessage(data.message);
+      // fetch("http://localhost:5000/payment", {
+      //   method: "post",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({ formData, user, checkedItems, totalCost }),
+      // })
+      //   .then((res) => res.json())
+      axios
+        .post("/payment", { formData, user, checkedItems, totalCost })
+        .then((res) => {
+          setUrl(res.data.url);
+          setModalMessage(res.data.message);
           setShowModal(true);
         })
-        .catch();
+        .catch((err) => {
+          console.error("Lỗi khi thanh toán:", err);
+        });
     }
   };
 

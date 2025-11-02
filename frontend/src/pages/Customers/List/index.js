@@ -2,6 +2,7 @@ import styles from "./ListProduct.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Customer() {
   const [customer, setCustomer] = useState([]);
@@ -16,10 +17,12 @@ function Customer() {
 
   // Lấy dữ liệu
   const fetchCustomer = () => {
-    fetch("http://localhost:5000/dashboard/customers")
-      .then((res) => res.json())
-      .then((data) => {
-        setCustomer(data.customers);
+    // fetch("http://localhost:5000/dashboard/customers")
+    //   .then((res) => res.json())
+    axios
+      .get("/dashboard/customers")
+      .then((res) => {
+        setCustomer(res.data.customers);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   };

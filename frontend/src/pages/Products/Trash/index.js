@@ -2,6 +2,7 @@ import styles from "./TrashProduct.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -15,10 +16,12 @@ function Products() {
   const navigate = useNavigate();
 
   const fetchProducts = () => {
-    fetch("http://localhost:5000/dashboard/products/trash")
-      .then((res) => res.json())
-      .then((data) => {
-        const newList = data.trashProducts.map((product) => {
+    // fetch("http://localhost:5000/dashboard/products/trash")
+    //   .then((res) => res.json())
+    axios
+      .get("/dashboard/products/trash")
+      .then((res) => {
+        const newList = res.data.trashProducts.map((product) => {
           const total = Object.values(product.size).reduce(
             (sum, value) => sum + value,
             0
@@ -40,12 +43,14 @@ function Products() {
   const handleDelete = () => {
     if (!deleteId) return;
 
-    fetch(`http://localhost:5000/dashboard/products/${deleteId}/force`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch(`http://localhost:5000/dashboard/products/${deleteId}/force`, {
+    //   method: "DELETE",
+    // })
+    //   .then((res) => res.json())
+    axios
+      .delete(`/dashboard/products/${deleteId}/force`)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
         fetchProducts();
       })
@@ -58,12 +63,14 @@ function Products() {
   const handleRestore = () => {
     if (!restoreId) return;
 
-    fetch(`http://localhost:5000/dashboard/products/${restoreId}/restore`, {
-      method: "PATCH",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch(`http://localhost:5000/dashboard/products/${restoreId}/restore`, {
+    //   method: "PATCH",
+    // })
+    //   .then((res) => res.json())
+    axios
+      .patch(`/dashboard/products/${restoreId}/restore`)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
         fetchProducts();
       })

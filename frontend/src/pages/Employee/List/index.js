@@ -2,6 +2,7 @@ import styles from "./Employee.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Employee() {
   const [employee, setEmployee] = useState([]);
@@ -18,10 +19,12 @@ function Employee() {
   const navigate = useNavigate();
 
   const fetchEmployees = () => {
-    fetch("http://localhost:5000/dashboard/employee")
-      .then((res) => res.json())
-      .then((data) => {
-        const formattedEmployees = data.employees.map((employee) => {
+    // fetch("http://localhost:5000/dashboard/employee")
+    //   .then((res) => res.json())
+    axios
+      .get("/dashboard/employee")
+      .then((res) => {
+        const formattedEmployees = res.data.employees.map((employee) => {
           if (!employee.date) {
             return employee;
           }
@@ -35,7 +38,7 @@ function Employee() {
             date: formattedDate,
           };
         });
-        setCountDelete(data.deletedCount);
+        setCountDelete(res.data.deletedCount);
         setEmployee(formattedEmployees);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
@@ -48,12 +51,14 @@ function Employee() {
   const handleDelete = () => {
     if (!deleteId) return;
 
-    fetch(`http://localhost:5000/dashboard/employee/${deleteId}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch(`http://localhost:5000/dashboard/employee/${deleteId}`, {
+    //   method: "DELETE",
+    // })
+    //   .then((res) => res.json())
+    axios
+      .delete(`/dashboard/employee/${deleteId}`)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
         fetchEmployees();
       })

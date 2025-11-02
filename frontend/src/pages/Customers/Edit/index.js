@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Customer() {
   const navigate = useNavigate();
@@ -22,10 +23,12 @@ function Customer() {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:5000/dashboard/customers/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setFormData(data.customer);
+    // fetch(`http://localhost:5000/dashboard/customers/${id}`)
+    //   .then((res) => res.json())
+    axios
+      .get(`/dashboard/customers/${id}`)
+      .then((res) => {
+        setFormData(res.data.customer);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [id]);
@@ -39,14 +42,16 @@ function Customer() {
       return;
     }
 
-    fetch(`http://localhost:5000/dashboard/customers/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage("Sửa thành công");
+    // fetch(`http://localhost:5000/dashboard/customers/${id}`, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(formData),
+    // })
+    //   .then((res) => res.json())
+    axios
+      .put(`/dashboard/customers/${id}`, formData)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
       })
       .catch(() => alert("❌ Cập nhật thất bại"));
@@ -116,7 +121,7 @@ function Customer() {
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("thành công")) {
+                if (modalMessage.includes("success")) {
                   navigate("/dashboard/customers");
                 }
               }}

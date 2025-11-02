@@ -2,6 +2,7 @@ import styles from "./TrashEmployee.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function TrashEmployee() {
   const [employee, setEmployee] = useState([]);
@@ -15,10 +16,12 @@ function TrashEmployee() {
   const navigate = useNavigate();
 
   const fetchEmployees = () => {
-    fetch("http://localhost:5000/dashboard/employee/trash")
-      .then((res) => res.json())
-      .then((data) => {
-        const formattedEmployees = data.trashEmpolyee.map((employee) => {
+    // fetch("http://localhost:5000/dashboard/employee/trash")
+    //   .then((res) => res.json())
+    axios
+      .get("/dashboard/employee/trash")
+      .then((res) => {
+        const formattedEmployees = res.data.trashEmployee.map((employee) => {
           if (!employee.date) {
             return employee;
           }
@@ -45,15 +48,17 @@ function TrashEmployee() {
   const handleRestore = () => {
     if (!restoreId) return;
 
-    fetch(
-      `http://localhost:5000/dashboard/employee/trash/${restoreId}/restore`,
-      {
-        method: "PATCH",
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch(
+    //   `http://localhost:5000/dashboard/employee/trash/${restoreId}/restore`,
+    //   {
+    //     method: "PATCH",
+    //   }
+    // )
+    //   .then((res) => res.json())
+    axios
+      .patch(`/dashboard/employee/trash/${restoreId}/restore`)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
         fetchEmployees();
       })
@@ -67,12 +72,14 @@ function TrashEmployee() {
   const handleDelete = () => {
     if (!deleteId) return;
 
-    fetch(`http://localhost:5000/dashboard/employee/trash/${deleteId}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch(`http://localhost:5000/dashboard/employee/trash/${deleteId}`, {
+    //   method: "DELETE",
+    // })
+    //   .then((res) => res.json())
+    axios
+      .delete(`/dashboard/employee/trash/${deleteId}`)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
         fetchEmployees();
       })

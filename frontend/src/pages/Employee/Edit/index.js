@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Employee() {
   const navigate = useNavigate();
@@ -36,14 +37,16 @@ function Employee() {
       return;
     }
 
-    fetch(`http://localhost:5000/dashboard/employee/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setModalMessage(data.message);
+    // fetch(`http://localhost:5000/dashboard/employee/${id}`, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(formData),
+    // })
+    //   .then((res) => res.json())
+    axios
+      .put(`/dashboard/employee/${id}`, formData)
+      .then((res) => {
+        setModalMessage(res.data.message);
         setShowModal(true);
       })
       .catch(() =>
@@ -52,19 +55,21 @@ function Employee() {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:5000/dashboard/employee/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
+    // fetch(`http://localhost:5000/dashboard/employee/${id}`)
+    //   .then((res) => res.json())
+    axios
+      .get(`/dashboard/employee/${id}`)
+      .then((res) => {
         let formattedDate = "";
-        if (data.employee && data.employee.date) {
-          formattedDate = new Date(data.employee.date)
+        if (res.data.employee && res.data.employee.date) {
+          formattedDate = new Date(res.data.employee.date)
             .toISOString()
             .split("T")[0];
         }
         setFormData({
-          name: data.employee.name,
-          role: data.employee.role,
-          status: data.employee.status,
+          name: res.data.employee.name,
+          role: res.data.employee.role,
+          status: res.data.employee.status,
           date: formattedDate,
         });
       })

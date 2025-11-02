@@ -4,6 +4,7 @@ import noItem from "../../assets/images/no-item.jpg";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import axios from "../../util/axios";
 
 import no_img from "../../assets/images/no_img.jpg";
 
@@ -15,12 +16,14 @@ function OrderDetail() {
   const [bill, setBill] = useState([]);
 
   const fetchOrderDetail = () => {
-    fetch(`http://localhost:5000/dashboard/orders/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setOrderDetail(data.order.items);
-        console.log(data.order);
-        setBill(data.order);
+    // fetch(`http://localhost:5000/dashboard/orders/${id}`)
+    //   .then((res) => res.json())
+    axios
+      .get(`/dashboard/orders/${id}`)
+      .then((res) => {
+        setOrderDetail(res.data.order.items);
+        console.log(res.data.order);
+        setBill(res.data.order);
       })
       .catch((err) => console.log(err));
   };

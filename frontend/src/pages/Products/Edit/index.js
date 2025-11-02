@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
+import axios from "../../../util/axios";
 
 function Product() {
   const navigate = useNavigate();
@@ -51,10 +52,12 @@ function Product() {
   };
 
   useEffect(() => {
-    fetch(`http://localhost:5000/dashboard/products/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setFormData(data.product);
+    // fetch(`http://localhost:5000/dashboard/products/${id}`)
+    //   .then((res) => res.json())
+    axios
+      .get(`/dashboard/products/${id}`)
+      .then((res) => {
+        setFormData(res.data.product);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [id]);
@@ -68,12 +71,14 @@ function Product() {
       return;
     }
 
-    fetch(`http://localhost:5000/dashboard/products/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
+    // fetch(`http://localhost:5000/dashboard/products/${id}`, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify(formData),
+    // })
+    //   .then((res) => res.json())
+    axios
+      .put(`/dashboard/products/${id}`, formData)
       .then((data) => {
         setModalMessage("Updated successfully");
         setShowModal(true);

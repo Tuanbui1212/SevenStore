@@ -2,6 +2,7 @@ import styles from "./Order.module.scss";
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../../util/axios";
 
 function Order() {
   const [orders, setOrders] = useState([]);
@@ -15,10 +16,12 @@ function Order() {
   const navigate = useNavigate();
 
   const fetchOrder = () => {
-    fetch("http://localhost:5000/dashboard/orders")
-      .then((res) => res.json())
-      .then((data) => {
-        setOrders(data.order);
+    // fetch("http://localhost:5000/dashboard/orders")
+    //   .then((res) => res.json())
+    axios
+      .get("/dashboard/orders")
+      .then((res) => {
+        setOrders(res.data.order);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
   };
