@@ -4,6 +4,7 @@ import "../../../GlobalStyles/GlobalStyles.scss";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import noItem from "../../../../assets/images/no-item.jpg";
+import axios from "../../../../util/axios";
 
 function Header() {
   const navigate = useNavigate();
@@ -18,14 +19,17 @@ function Header() {
     const user = localStorage.getItem("user");
 
     if (!user) return;
-    let url = `http://localhost:5000/cart?`;
+    //let url = `http://localhost:5000/cart?`;
+    let url = `/cart?`;
 
     if (user) url += `user=${encodeURIComponent(user)}`;
 
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        setCarts(data.cart || []);
+    // fetch(url)
+    //   .then((res) => res.json())
+    axios
+      .get(url)
+      .then((res) => {
+        setCarts(res.data.cart || []);
       })
       .catch((err) => console.log(err));
   };
