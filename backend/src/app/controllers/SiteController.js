@@ -26,7 +26,7 @@ class SiteController {
         if (!account) {
           return res.json({
             success: false,
-            message: "No account found",
+            message: "Account not found",
           });
         }
 

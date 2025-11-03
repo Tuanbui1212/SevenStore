@@ -153,7 +153,8 @@ function ProductDetail() {
                 className={clsx(
                   styles.status__product,
                   product.status === "New" && styles.status__new,
-                  product.status === "BestSeller" && styles.status__bestSeller
+                  product.status === "BestSeller" && styles.status__bestSeller,
+                  product.status === "Null" && "display-none"
                 )}
               >
                 {product.status}

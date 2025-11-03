@@ -75,7 +75,7 @@ const AuthForm = () => {
 
             navigate(res.data.redirectUrl);
           } else {
-            setModalMessage(res.data.message || "Đăng nhập thất bại");
+            setModalMessage(res.data.message);
             setShowModal(true);
           }
         })
@@ -119,7 +119,7 @@ const AuthForm = () => {
         .then((res) => {
           setModalMessage(res.data.message);
           setShowModal(true);
-          if (res.data.message.includes("thành công")) {
+          if (res.data.message.includes("successful")) {
             setActiveTab("login");
             setFormData({
               name: "",
@@ -132,7 +132,7 @@ const AuthForm = () => {
         })
         .catch((err) => {
           console.error("Lỗi khi gửi request:", err);
-          setModalMessage("Đăng ký thất bại.");
+          setModalMessage(err.response?.data?.message);
           setShowModal(true);
         });
     }
