@@ -258,16 +258,15 @@ function ProductDetail() {
               </div>
 
               <div className={clsx("row mt-36", styles.description__title)}>
-                <h1>Miễn phí vận chuyển và trả hàng </h1>
+                <h1>Free Shipping & Returns </h1>
                 <span>
-                  Miễn phí vận chuyển tiêu chuẩn cho đơn đặt hàng trên 1.200.000
-                  VND.
+                  Enjoy free standard shipping on orders over 1,200,000 VND.
                 </span>
 
                 <span>
-                  Tìm hiểu thêm Bạn có thể trả lại (các) mặt hàng* trong vòng 14
-                  ngày kể từ ngày bạn nhận được đơn đặt hàng. Nhấp vào đây để
-                  xem Chính Sách Trả Hàng.
+                  Learn more — You can return your item(s)* within 14 days from
+                  the date you receive your order. Click here to view our Return
+                  Policy.
                 </span>
               </div>
             </div>

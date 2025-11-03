@@ -8,6 +8,9 @@ import axios from "../../../../util/axios";
 
 function Header() {
   const navigate = useNavigate();
+
+  const fullUrl = window.location.href;
+
   const [open, setOpen] = useState(false);
   const [carts, setCarts] = useState({});
 
@@ -33,6 +36,10 @@ function Header() {
       })
       .catch((err) => console.log(err));
   };
+
+  useEffect(() => {
+    setOpen(false);
+  }, [fullUrl]);
 
   useEffect(() => {
     fetchCart();
