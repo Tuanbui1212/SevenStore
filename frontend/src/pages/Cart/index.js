@@ -124,13 +124,20 @@ function Cart() {
     );
   };
 
+  console.log(checkedItems.length);
+
   const handleGoToPayment = () => {
-    navigate("/payment", {
-      state: {
-        checkedItems,
-        totalCost: SumCostItems(),
-      },
-    });
+    if (checkedItems.length > 1) {
+      navigate("/payment", {
+        state: {
+          checkedItems,
+          totalCost: SumCostItems(),
+        },
+      });
+    } else {
+      setModalMessage("Please select the product you want to buy.");
+      setShowModal(true);
+    }
   };
 
   return (
@@ -317,24 +324,38 @@ function Cart() {
           <div className={styles.overlay}>
             <div className={styles.modal}>
               <p>{modalMessage}</p>
-              {!modalMessage.includes("Successfully") && (
-                <>
-                  <button
-                    className={clsx(styles.success)}
-                    onClick={() => handleDelete()}
-                  >
-                    Yes
-                  </button>
-                  <button
-                    className={clsx(styles.danger)}
-                    onClick={() => {
-                      setShowModal(false);
-                    }}
-                  >
-                    No
-                  </button>
-                </>
-              )}
+              {!modalMessage.includes("Successfully") &&
+                (modalMessage.includes(
+                  "Please select the product you want to buy."
+                ) ? (
+                  <>
+                    <button
+                      className={clsx(styles.danger)}
+                      onClick={() => {
+                        setShowModal(false);
+                      }}
+                    >
+                      Close
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className={clsx(styles.success)}
+                      onClick={() => handleDelete()}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      className={clsx(styles.danger)}
+                      onClick={() => {
+                        setShowModal(false);
+                      }}
+                    >
+                      No
+                    </button>
+                  </>
+                ))}
 
               {modalMessage.includes("Successfully") && (
                 <>
