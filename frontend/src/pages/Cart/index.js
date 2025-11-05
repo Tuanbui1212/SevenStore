@@ -124,10 +124,8 @@ function Cart() {
     );
   };
 
-  console.log(checkedItems.length);
-
   const handleGoToPayment = () => {
-    if (checkedItems.length > 1) {
+    if (checkedItems.length >= 1) {
       navigate("/payment", {
         state: {
           checkedItems,

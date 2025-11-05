@@ -129,7 +129,7 @@ function Employee() {
           <tr>
             <th className={styles.tableHeader}>#</th>
             <th className={styles.tableHeader}>Name</th>
-            <th className={styles.tableHeader}>Role</th>
+            <th className={styles.tableHeader}>Position</th>
             <th className={styles.tableHeader}>Status</th>
             <th className={styles.tableHeader}>Date</th>
             <th className={styles.tableHeader}></th>

@@ -70,9 +70,9 @@ function Payment() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("Form hợp lệ:", formData);
-      console.log("user: ", user);
-      console.log("item: ", checkedItems);
+      // console.log("Form hợp lệ:", formData);
+      // console.log("user: ", user);
+      // console.log("item: ", checkedItems);
 
       // fetch("http://localhost:5000/payment", {
       //   method: "post",

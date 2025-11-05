@@ -12,7 +12,7 @@ function Sidebar() {
   return (
     <>
       <div className={clsx("mt-36", styles.sidebar)}>
-        <Link to="/dashboard/employee" className={styles.sidebarTitle}>
+        <Link to="/dashboard" className={styles.sidebarTitle}>
           <img src={Admin} alt="" className={styles.sidebarIcon} />
           <span className={styles.sidebarText}>Admin dashboard</span>
         </Link>

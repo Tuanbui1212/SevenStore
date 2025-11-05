@@ -310,7 +310,7 @@ function Product() {
                           </span>
                         </div>
                         <span className={styles.productDescription}>
-                          {product.description}
+                          {product.description ? product.description : "\u00A0"}
                         </span>
                       </div>
                     </Link>

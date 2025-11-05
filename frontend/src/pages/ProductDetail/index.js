@@ -19,6 +19,8 @@ function ProductDetail() {
   const [selectedSize, setSelectedSize] = useState(null);
   const [sizeInStock, setSizeInStock] = useState(null);
 
+  const [checkedItems, setCheckedItems] = useState([]);
+
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
@@ -71,6 +73,36 @@ function ProductDetail() {
       image: product.image.image1,
       brand: product.brand,
       slug: product.slug,
+    });
+  };
+
+  const SumCostItems = () => {
+    return checkedItems.cost * checkedItems.quantity;
+  };
+
+  useEffect(() => {
+    setCheckedItems({
+      cost: product?.cost,
+      id: product?._id,
+      image: product?.image?.image1 || null,
+      name: product?.name,
+      quantity: quantity,
+      size: selectedSize,
+    });
+  }, [product, selectedSize, quantity]);
+
+  const handleGoToPayment = () => {
+    if (checkedItems.size === null) {
+      setModalMessage("Please select a size before purchasing");
+      setShowModal(true);
+      return;
+    }
+
+    navigate("/payment", {
+      state: {
+        checkedItems: [checkedItems],
+        totalCost: SumCostItems(),
+      },
     });
   };
 
@@ -252,7 +284,7 @@ function ProductDetail() {
                 </button>
                 <button
                   className={clsx(styles.buy__now)}
-                  onClick={() => console.log(formData)}
+                  onClick={() => handleGoToPayment()}
                 >
                   <i className="fa-solid fa-bag-shopping"></i> Buy Now
                 </button>
