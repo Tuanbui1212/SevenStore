@@ -1,0 +1,233 @@
+@import "../../components/GlobalStyles/variables";
+
+.helpCenter {
+  padding-top: 60px;
+  padding-bottom: 80px;
+  max-width: 900px; // Giới hạn chiều rộng để dễ đọc hơn
+  margin: 0 auto;
+}
+
+// 1. HERO SECTION
+.hero {
+  text-align: center;
+  margin-bottom: 60px;
+
+  &__title {
+    font-size: 4.8rem;
+    font-weight: 800; // Siêu đậm
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  &__search {
+    position: relative;
+    max-width: 500px;
+    margin: 0 auto;
+
+    input {
+      width: 100%;
+      padding: 18px 20px;
+      padding-right: 50px;
+      font-size: 1.8rem;
+      border: 2px solid #e5e5e5;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s;
+
+      &:focus {
+        border-color: $black-color;
+      }
+    }
+
+    button {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: $description-color;
+      cursor: pointer;
+
+      &:hover {
+        color: $black-color;
+      }
+    }
+  }
+}
+
+// 2. COMMON SECTION STYLES
+.section {
+  margin-bottom: 60px;
+
+  &__title {
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    letter-spacing: 0.5px;
+  }
+}
+
+// 3. GRID CARDS
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); // 3 cột
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(2, 1fr); // Mobile 2 cột
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 20px;
+  background-color: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  text-decoration: none;
+  color: $black-color;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: $black-color;
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  }
+
+  &__icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+  }
+
+  &__text {
+    font-size: 1.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+}
+
+// 4. FAQ ACCORDION
+.faqList {
+  border-top: 1px solid #e5e5e5;
+}
+
+.faqItem {
+  border-bottom: 1px solid #e5e5e5;
+  overflow: hidden;
+
+  .faqQuestion {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    color: $black-color;
+
+    i {
+      font-size: 1.4rem;
+      transition: transform 0.3s;
+    }
+
+    &:hover {
+      color: lighten($black-color, 30%);
+    }
+  }
+
+  .faqAnswer {
+    max-height: 0; // Ẩn mặc định
+    opacity: 0;
+    transition: all 0.4s ease;
+    padding-bottom: 0;
+
+    p {
+      font-size: 1.6rem;
+      color: $description-color;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+  }
+
+  // Khi active
+  &.active {
+    .faqQuestion i {
+      transform: rotate(180deg); // Xoay dấu trừ
+    }
+    .faqAnswer {
+      max-height: 200px; // Mở ra
+      opacity: 1;
+    }
+  }
+}
+
+// 5. CONTACT CTA
+.contact {
+  text-align: center;
+  background-color: #f5f5f5; // Nền xám nhẹ
+  padding: 50px 20px;
+  border-radius: 12px;
+
+  h3 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  p {
+    font-size: 1.6rem;
+    color: $description-color;
+    margin-bottom: 30px;
+  }
+
+  &__buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+
+    button {
+      padding: 15px 30px;
+      font-size: 1.6rem;
+      font-weight: 600;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btnPrimary {
+      background-color: $black-color;
+      color: $white-color;
+      border: 2px solid $black-color;
+      &:hover {
+        background-color: lighten($black-color, 20%);
+        border-color: lighten($black-color, 20%);
+      }
+    }
+
+    .btnSecondary {
+      background-color: transparent;
+      color: $black-color;
+      border: 2px solid $black-color;
+      &:hover {
+        background-color: $black-color;
+        color: $white-color;
+      }
+    }
+  }
+}

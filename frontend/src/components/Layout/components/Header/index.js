@@ -122,25 +122,53 @@ function Header() {
                   </Link>
                 </li>
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>
+                  <Link
+                    to="/product/onitsuka-tiger"
+                    className={clsx(styles.nav_item_brands)}
+                  >
                     Onitsuka Tiger
                   </Link>
                 </li>
 
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>Converse</Link>
+                  <Link
+                    to="/product/converse"
+                    className={clsx(styles.nav_item_brands)}
+                  >
+                    Converse
+                  </Link>
                 </li>
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>Vans</Link>
+                  <Link
+                    to="/product/vans"
+                    className={clsx(styles.nav_item_brands)}
+                  >
+                    Vans
+                  </Link>
                 </li>
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>Asics</Link>
+                  <Link
+                    to="/product/asics"
+                    className={clsx(styles.nav_item_brands)}
+                  >
+                    Asics
+                  </Link>
                 </li>
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>Rebok</Link>
+                  <Link
+                    to="/product/rebok"
+                    className={clsx(styles.nav_item_brands)}
+                  >
+                    Rebok
+                  </Link>
                 </li>
                 <li>
-                  <Link className={clsx(styles.nav_item_brands)}>Salomon</Link>
+                  <Link
+                    to="/product/salomon"
+                    className={clsx(styles.nav_item_brands)}
+                  >
+                    Salomon
+                  </Link>
                 </li>
                 <li>
                   <Link
@@ -173,14 +201,6 @@ function Header() {
                 Sale Up to 50%
               </Link>
             </li>
-
-            {success && role === "admin" && (
-              <li>
-                <Link className={clsx(styles.nav_item)} to="/dashboard">
-                  Dashboard
-                </Link>
-              </li>
-            )}
           </ul>
 
           <div className={clsx(styles.nav_left_icon)}>
@@ -282,16 +302,29 @@ function Header() {
             <i className="fa-regular fa-user"></i>
 
             <ul className={styles.user_list}>
-              <li className={styles.user_title}>Liên kết nhanh</li>
+              {/* Đổi "Liên kết nhanh" thành Account Menu hoặc Quick Actions */}
+              <li className={styles.user_title}>Account Menu</li>
+
               <li>
-                <Link className={styles.user_item}>My Account</Link>
+                <Link to={"/"} className={styles.user_item}>
+                  My Account
+                </Link>
               </li>
+
+              {success && role === "admin" && (
+                <li>
+                  <Link className={styles.user_item} to="/dashboard">
+                    Dashboard
+                  </Link>
+                </li>
+              )}
+
               <li>
-                <Link className={styles.user_item}>Favorites</Link>
+                <Link to={"/help"} className={styles.user_item}>
+                  Help Center
+                </Link>
               </li>
-              <li>
-                <Link className={styles.user_item}>Support</Link>
-              </li>
+
               {!success && (
                 <li>
                   <Link
@@ -319,9 +352,9 @@ function Header() {
 
               {!success && (
                 <li className={styles.user_title}>
-                  Don’t have an account?
+                  Not a member?
                   <Link to="/login" className={clsx(styles.user_register)}>
-                    Sign up here
+                    Join Us
                   </Link>
                 </li>
               )}

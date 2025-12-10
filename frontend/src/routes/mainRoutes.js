@@ -5,6 +5,8 @@ import Product from "../pages/Product";
 import ProductDetail from "../pages/ProductDetail";
 import Login from "../pages/Login";
 import AboutUs from "../pages/AboutUS";
+import HelpCenter from "../pages/HelpCenter";
+import MyAccount from "../pages/MyAccount";
 
 import DashBoard from "../components/Layout/Dashboard";
 import OnlyHeader from "../components/Layout/OnlyHeader";
@@ -16,6 +18,8 @@ export const mainRoutes = [
   { path: "/service", component: Service },
   { path: "/aboutUS", component: AboutUs },
   { path: "/search", component: Search },
+  { path: "/help", component: HelpCenter },
+  { path: "/myAccount", component: MyAccount },
   { path: "/login", component: Login, layout: OnlyHeader },
   {
     path: "/dashboard",
