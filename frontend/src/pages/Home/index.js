@@ -98,6 +98,16 @@ function Home() {
 
   return (
     <div className={clsx("container")}>
+      {products.length === 0 && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loadingModal}>
+            <div className={styles.spinner}></div>
+            <h3>Đang tải dữ liệu...</h3>
+            <p>Vui lòng chờ trong giây lát để cập nhật sản phẩm mới nhất.</p>
+          </div>
+        </div>
+      )}
+
       <div className={clsx("row", styles.slider)}>
         <button
           className={clsx(styles.slider_btn, styles.slider_btn_pre)}
