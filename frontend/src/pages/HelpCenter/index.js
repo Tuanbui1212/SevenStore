@@ -3,7 +3,6 @@ import styles from "./HelpCenter.module.scss";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 
-// Dữ liệu giả lập cho các chủ đề hỗ trợ
 const supportTopics = [
   {
     icon: "fa-solid fa-truck-fast",
@@ -25,7 +24,6 @@ const supportTopics = [
   { icon: "fa-solid fa-tags", title: "Promotions", link: "/help/promos" },
 ];
 
-// Dữ liệu giả lập cho FAQ
 const faqs = [
   {
     question: "Where is my order?",
@@ -50,7 +48,6 @@ const faqs = [
 ];
 
 function HelpCenter() {
-  // State để quản lý việc đóng mở FAQ
   const [openIndex, setOpenIndex] = useState(null);
 
   const toggleFAQ = (index) => {
@@ -59,7 +56,6 @@ function HelpCenter() {
 
   return (
     <div className={clsx("container", styles.helpCenter)}>
-      {/* 1. HERO SECTION: Title & Search */}
       <div className={styles.hero}>
         <h1 className={styles.hero__title}>GET HELP</h1>
         <div className={styles.hero__search}>
@@ -70,12 +66,11 @@ function HelpCenter() {
         </div>
       </div>
 
-      {/* 2. TOPIC GRID */}
       <div className={styles.section}>
         <h3 className={styles.section__title}>QUICK ASSIST</h3>
         <div className={styles.grid}>
           {supportTopics.map((topic, index) => (
-            <Link to={topic.link} key={index} className={styles.card}>
+            <Link key={index} className={styles.card}>
               <i className={clsx(topic.icon, styles.card__icon)}></i>
               <span className={styles.card__text}>{topic.title}</span>
             </Link>
@@ -83,7 +78,6 @@ function HelpCenter() {
         </div>
       </div>
 
-      {/* 3. FAQ ACCORDION */}
       <div className={styles.section}>
         <h3 className={styles.section__title}>FREQUENTLY ASKED QUESTIONS</h3>
         <div className={styles.faqList}>
@@ -115,7 +109,6 @@ function HelpCenter() {
         </div>
       </div>
 
-      {/* 4. CONTACT CTA */}
       <div className={styles.contact}>
         <h3>STILL NEED HELP?</h3>
         <p>Our team is available Mon-Fri, 9am - 6pm.</p>

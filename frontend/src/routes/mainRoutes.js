@@ -7,6 +7,7 @@ import Login from "../pages/Login";
 import AboutUs from "../pages/AboutUS";
 import HelpCenter from "../pages/HelpCenter";
 import MyAccount from "../pages/MyAccount";
+import StatisticalReport from "../pages/StatisticalReport";
 
 import DashBoard from "../components/Layout/Dashboard";
 import OnlyHeader from "../components/Layout/OnlyHeader";
@@ -21,6 +22,11 @@ export const mainRoutes = [
   { path: "/help", component: HelpCenter },
   { path: "/myAccount", component: MyAccount },
   { path: "/login", component: Login, layout: OnlyHeader },
+  {
+    path: "/dashboard/report",
+    component: StatisticalReport,
+    layout: DashBoard,
+  },
   {
     path: "/dashboard",
     component: () => (

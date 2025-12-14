@@ -51,7 +51,7 @@
   color: $black-color;
 }
 
-.employeeForm {
+.accountForm {
   .formGroup {
     display: flex;
     flex-direction: column;
@@ -132,14 +132,14 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
   }
-}
 
-.submitBtn.disabled {
-  background: #e0e0e0;
-  color: #a0a0a0;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  .submitBtn.disabled {
+    background: #e0e0e0;
+    color: #a0a0a0;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
 }
 
 .overlay {

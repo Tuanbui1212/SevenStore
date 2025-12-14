@@ -5,11 +5,16 @@ import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
 
-function Customer() {
+function EditCustomer() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [modalMessage, setModalMessage] = useState("");
+
+  // State quản lý UI
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -22,117 +27,163 @@ function Customer() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Fetch dữ liệu customer
   useEffect(() => {
-    // fetch(`http://localhost:5000/dashboard/customers/${id}`)
-    //   .then((res) => res.json())
+    setIsLoading(true);
     axios
       .get(`/dashboard/customers/${id}`)
       .then((res) => {
-        setFormData(res.data.customer);
+        setFormData({
+          name: res.data.customer.name || "",
+          phone: res.data.customer.phone || "",
+          address: res.data.customer.address || "",
+        });
       })
-      .catch((err) => console.error("Lỗi fetch:", err));
+      .catch((err) => {
+        console.error("Lỗi fetch:", err);
+        setModalMessage("Không thể tải thông tin khách hàng.");
+        setIsSuccess(false);
+        setShowModal(true);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, [id]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!formData.name || !formData.phone) {
-      setModalMessage("Vui lòng nhập đầy đủ thông tin!");
+      setModalMessage("Vui lòng nhập tên và số điện thoại!");
+      setIsSuccess(false);
       setShowModal(true);
       return;
     }
 
-    // fetch(`http://localhost:5000/dashboard/customers/${id}`, {
-    //   method: "PUT",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(formData),
-    // })
-    //   .then((res) => res.json())
+    setIsSaving(true);
+
     axios
       .put(`/dashboard/customers/${id}`, formData)
       .then((res) => {
-        setModalMessage(res.data.message);
+        setModalMessage("Cập nhật khách hàng thành công!");
+        setIsSuccess(true);
         setShowModal(true);
       })
-      .catch(() => alert("❌ Cập nhật thất bại"));
+      .catch(() => {
+        setModalMessage("❌ Cập nhật thất bại. Vui lòng thử lại!");
+        setIsSuccess(false);
+        setShowModal(true);
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
   };
 
   return (
-    <>
+    <div className={styles.container}>
       <Link to="/dashboard/customers" className={styles.btnBack}>
-        Back
+        <i className="fa-solid fa-arrow-left"></i> Back to List
       </Link>
 
-      <form className={styles.productForm} onSubmit={handleSubmit}>
-        <h1> EDIT Customer</h1>
+      <div className={styles.formCard}>
+        <h2 className={styles.formTitle}>Edit Customer</h2>
 
-        <div className={clsx(styles.formGroup)}>
-          <label htmlFor="name">Name</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Nhập tên sản phẩm"
-          />
-        </div>
+        {isLoading ? (
+          <div className={styles.loadingState}>
+            <i className="fa-solid fa-spinner fa-spin"></i> Loading info...
+          </div>
+        ) : (
+          <form className={styles.customerForm} onSubmit={handleSubmit}>
+            <div className={styles.formGroup}>
+              <label htmlFor="name">Full Name</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Nhập tên khách hàng"
+              />
+            </div>
 
-        <div className={clsx(styles.formGroup)}>
-          <label htmlFor="phone">Phone</label>
-          <input
-            id="phone"
-            type="number"
-            name="phone"
-            placeholder="Nhập số điện thoại"
-            value={formData.phone}
-            onChange={handleChange}
-          ></input>
-        </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="phone">Phone Number</label>
+              <input
+                id="phone"
+                name="phone"
+                type="text" // Để text tốt hơn number nếu số có số 0 đầu hoặc format
+                placeholder="Nhập số điện thoại"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="address1">address</label>
-          <input
-            id={`address`}
-            name={`address`}
-            placeholder={`Nhập địa chỉ`}
-            type="text"
-            value={formData.address ?? ""}
-            onChange={handleChange}
-          />
-        </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="address">Address</label>
+              <input
+                id="address"
+                name="address"
+                type="text"
+                placeholder="Nhập địa chỉ"
+                value={formData.address}
+                onChange={handleChange}
+              />
+            </div>
 
-        <button
-          type="submit"
-          className={clsx(
-            styles.submitBtn,
-            (!formData.name || !formData.phone) && styles.disabled
-          )}
-          disabled={!formData.name || !formData.phone}
-        >
-          UPDATE
-        </button>
-      </form>
+            <button
+              type="submit"
+              className={clsx(
+                styles.submitBtn,
+                (isSaving || !formData.name || !formData.phone) &&
+                  styles.disabled
+              )}
+              disabled={isSaving || !formData.name || !formData.phone}
+            >
+              {isSaving ? (
+                <i className="fa-solid fa-spinner fa-spin"></i>
+              ) : (
+                "UPDATE CUSTOMER"
+              )}
+            </button>
+          </form>
+        )}
+      </div>
 
+      {/* Modal Thông báo */}
       {showModal && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
+            <div
+              className={clsx(
+                styles.modalIcon,
+                isSuccess ? styles.success : styles.error
+              )}
+            >
+              <i
+                className={
+                  isSuccess
+                    ? "fa-solid fa-check-circle"
+                    : "fa-solid fa-circle-xmark"
+                }
+              ></i>
+            </div>
+            <h3>{isSuccess ? "Thành công!" : "Lỗi"}</h3>
             <p>{modalMessage}</p>
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("success")) {
+                if (isSuccess) {
                   navigate("/dashboard/customers");
                 }
               }}
             >
-              Đóng
+              {isSuccess ? "Về danh sách" : "Đóng"}
             </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
-export default Customer;
+export default EditCustomer;

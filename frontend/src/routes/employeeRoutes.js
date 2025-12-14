@@ -4,7 +4,6 @@ import EditEmployee from "../pages/Employee/Edit";
 import TrashEmployee from "../pages/Employee/Trash";
 
 import Dashboard from "../components/Layout/Dashboard";
-import OnlyHeader from "../components/Layout/OnlyHeader";
 
 export const employeeRoutes = [
   {
@@ -15,16 +14,16 @@ export const employeeRoutes = [
   {
     path: "/dashboard/employee/create",
     component: CreateEmployee,
-    layout: OnlyHeader,
+    layout: null,
   },
   {
     path: "/dashboard/employee/trash",
     component: TrashEmployee,
-    layout: OnlyHeader,
+    layout: null,
   },
   {
     path: "/dashboard/employee/:id",
     component: EditEmployee,
-    layout: OnlyHeader,
+    layout: null,
   },
 ];

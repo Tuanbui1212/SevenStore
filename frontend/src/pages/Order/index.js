@@ -6,18 +6,17 @@ import axios from "../../util/axios";
 
 function Order() {
   const [orders, setOrders] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6; // số dòng mỗi trang
-
+  const pageSize = 5;
   const navigate = useNavigate();
 
   const fetchOrder = () => {
-    // fetch("http://localhost:5000/dashboard/orders")
-    //   .then((res) => res.json())
     axios
       .get("/dashboard/orders")
       .then((res) => {
@@ -30,33 +29,82 @@ function Order() {
     fetchOrder();
   }, []);
 
-  // Tính toán phân trang
-  const totalPages = Math.ceil(orders.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentData = orders.slice(startIndex, startIndex + pageSize);
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
-  // Tạo danh sách trang hiển thị (có dấu ...)
+  const filteredData = orders.filter((order) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      (order.name && order.name.toLowerCase().includes(term)) ||
+      (order.phone && order.phone.includes(term)) ||
+      (order.city && order.city.toLowerCase().includes(term))
+    );
+  });
+
+  if (sortConfig.key) {
+    filteredData.sort((a, b) => {
+      let aValue = a[sortConfig.key]
+        ? a[sortConfig.key].toString().toLowerCase()
+        : "";
+      let bValue = b[sortConfig.key]
+        ? b[sortConfig.key].toString().toLowerCase()
+        : "";
+
+      if (aValue < bValue) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentData = filteredData.slice(startIndex, startIndex + pageSize);
+
   const getPageNumbers = () => {
     const pages = [];
-
     if (totalPages <= 7) {
-      // ít trang thì hiển thị hết
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       pages.push(1);
-
       if (currentPage > 4) pages.push("...");
-
       for (let i = currentPage - 2; i <= currentPage + 2; i++) {
         if (i > 1 && i < totalPages) pages.push(i);
       }
-
       if (currentPage < totalPages - 3) pages.push("...");
-
       pages.push(totalPages);
     }
-
     return pages;
+  };
+
+  const renderSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey) {
+      return (
+        <i
+          className="fa-solid fa-sort"
+          style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+        ></i>
+      );
+    }
+    return sortConfig.direction === "asc" ? (
+      <i
+        className="fa-solid fa-sort-up"
+        style={{ fontSize: "12px", marginLeft: "5px" }}
+      ></i>
+    ) : (
+      <i
+        className="fa-solid fa-sort-down"
+        style={{ fontSize: "12px", marginLeft: "5px" }}
+      ></i>
+    );
   };
 
   return (
@@ -64,90 +112,124 @@ function Order() {
       <div className={styles.tableControls}>
         <input
           type="text"
-          placeholder="Search by name..."
+          placeholder="Search by name, phone, city..."
           className={styles.searchInput}
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
         />
-        <div></div>
       </div>
 
       <table className={styles.table}>
         <thead className={styles.tableTitle}>
           <tr>
             <th className={styles.tableHeader}>#</th>
-            <th className={styles.tableHeader}>Name</th>
-            <th className={styles.tableHeader}>Phone</th>
-            <th className={styles.tableHeader}>City</th>
-            <th className={styles.tableHeader}>Status</th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("name")}
+            >
+              Name {renderSortIcon("name")}
+            </th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("phone")}
+            >
+              Phone {renderSortIcon("phone")}
+            </th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("city")}
+            >
+              City {renderSortIcon("city")}
+            </th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("paymentMethod")}
+            >
+              Status {renderSortIcon("paymentMethod")}
+            </th>
             <th className={styles.tableHeader}></th>
           </tr>
         </thead>
         <tbody>
-          {currentData.map((e, index) => (
-            <tr key={index} className={styles.tableRow}>
-              <td className={styles.tableCell}>{index + 1}</td>
-              <td className={styles.tableCell}>{e.name}</td>
-              <td className={styles.tableCell}>{e.phone}</td>
-              <td className={styles.tableCell}>{e.city}</td>
-              <td
-                className={clsx(
-                  styles.tableCell,
-                  styles.tableStatus,
-                  e.paymentMethod === "Momo" && styles.Momo,
-                  e.paymentMethod === "VnPay" && styles.VnPay,
-                  e.paymentMethod === "ShipCod" && styles.ShipCOD
-                )}
-              >
-                {e.paymentMethod}
-              </td>
-
-              <td className={styles.tableCell}>
-                <button
-                  onClick={() => {
-                    navigate(`/dashboard/orders/${e._id}`);
-                  }}
-                >
-                  <i className="fa-solid fa-pen-to-square"></i>
-                </button>
+          {currentData.length > 0 ? (
+            currentData.map((e, index) => (
+              <tr key={index} className={styles.tableRow}>
+                <td className={styles.tableCell}>{startIndex + index + 1}</td>
+                <td className={styles.tableCell}>
+                  <strong>{e.name}</strong>
+                </td>
+                <td className={styles.tableCell}>{e.phone}</td>
+                <td className={styles.tableCell}>{e.city}</td>
+                <td className={styles.tableCell}>
+                  <span
+                    className={clsx(
+                      styles.tableStatus,
+                      e.paymentMethod === "Momo" && styles.Momo,
+                      e.paymentMethod === "VnPay" && styles.VnPay,
+                      e.paymentMethod === "ShipCod" && styles.ShipCOD
+                    )}
+                  >
+                    {e.paymentMethod}
+                  </span>
+                </td>
+                <td className={styles.tableCell}>
+                  <button
+                    onClick={() => {
+                      navigate(`/dashboard/orders/${e._id}`);
+                    }}
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                No orders found matching "{searchTerm}"
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
-      {/* Thanh phân trang */}
-      <div className={styles.pagination}>
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage((p) => p - 1)}
-        >
-          <i className="fa-solid fa-caret-left"></i>
-        </button>
+      {totalPages > 0 && (
+        <div className={styles.pagination}>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            <i className="fa-solid fa-caret-left"></i>
+          </button>
 
-        {getPageNumbers().map((p, i) =>
-          p === "..." ? (
-            <span key={i} className={styles.ellipsis}>
-              ...
-            </span>
-          ) : (
-            <button
-              key={i}
-              className={clsx(currentPage === p && styles.activePage)}
-              onClick={() => setCurrentPage(p)}
-            >
-              {p}
-            </button>
-          )
-        )}
+          {getPageNumbers().map((p, i) =>
+            p === "..." ? (
+              <span key={i} className={styles.ellipsis}>
+                ...
+              </span>
+            ) : (
+              <button
+                key={i}
+                className={clsx(currentPage === p && styles.activePage)}
+                onClick={() => setCurrentPage(p)}
+              >
+                {p}
+              </button>
+            )
+          )}
 
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage((p) => p + 1)}
-        >
-          <i className="fa-solid fa-caret-right"></i>
-        </button>
-      </div>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            <i className="fa-solid fa-caret-right"></i>
+          </button>
+        </div>
+      )}
 
-      {/* Modal */}
       {showModal && (
         <div className={styles.overlay}>
           <div className={styles.modal}>

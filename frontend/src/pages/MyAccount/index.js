@@ -1,49 +1,61 @@
 import { useState, useEffect } from "react";
 import styles from "./MyAccount.module.scss";
 import clsx from "clsx";
-import axios from "../../util/axios"; // Đường dẫn axios của bạn
+import axios from "../../util/axios";
 
 function MyAccount() {
-  // 1. State lưu thông tin User (Lấy từ localStorage hoặc API)
   const [userInfo, setUserInfo] = useState({
-    username: "",
+    user: "",
     email: "",
-    fullName: "",
+    name: "",
     phone: "",
+    address: "",
+    city: "",
     role: "",
   });
 
-  // 2. State lưu dữ liệu đổi mật khẩu
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
 
-  const [message, setMessage] = useState({ type: "", text: "" }); // Thông báo lỗi/thành công
-  const [showPassword, setShowPassword] = useState(false); // Ẩn/hiện mật khẩu
+  const [message, setMessage] = useState({ type: "", text: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Giả lập lấy dữ liệu user khi vào trang
   useEffect(() => {
-    // Thay đoạn này bằng API thực tế hoặc lấy từ localStorage
-    // Ví dụ: const user = JSON.parse(localStorage.getItem("user"));
-    const mockUser = {
-      username: "sneakerhead99",
-      email: "customer@example.com",
-      fullName: "Nguyen Van A",
-      phone: "0987654321",
-      role: "Member",
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get("/auth/me");
+        if (response.data) {
+          setUserInfo({
+            user: response.data.user || "",
+            email: response.data.email || "",
+            name: response.data.name || "",
+            phone: response.data.phone || "",
+            address: response.data.address || "",
+            city: response.data.city || "",
+            role: response.data.role || "",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch user info", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    setUserInfo(mockUser);
+
+    fetchUserData();
   }, []);
 
   const handleChange = (e) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
-    setMessage({ type: "", text: "" }); // Reset thông báo khi gõ
+    setMessage({ type: "", text: "" });
   };
 
   const handleSubmit = async () => {
-    // Validate cơ bản
     if (
       !passwordData.oldPassword ||
       !passwordData.newPassword ||
@@ -69,18 +81,15 @@ function MyAccount() {
       return;
     }
 
-    // Call API đổi mật khẩu
+    setIsSaving(true);
+
     try {
-      // const res = await axios.post("/user/change-password", {
-      //    oldPassword: passwordData.oldPassword,
-      //    newPassword: passwordData.newPassword
-      // });
+      await axios.put("/auth/change-password", {
+        oldPassword: passwordData.oldPassword,
+        newPassword: passwordData.newPassword,
+      });
 
-      // Giả lập thành công
-      console.log("Change password logic here", passwordData);
       setMessage({ type: "success", text: "Password updated successfully!" });
-
-      // Reset form
       setPasswordData({
         oldPassword: "",
         newPassword: "",
@@ -89,126 +98,128 @@ function MyAccount() {
     } catch (error) {
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Something went wrong.",
+        text: error.response?.data?.message || "Failed to update password.",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return (
-    <div className={clsx("container", styles.accountPage)}>
-      <h1 className={styles.pageTitle}>MY ACCOUNT</h1>
+    <div className={styles.container}>
+      <div className={styles.formCard}>
+        <h2 className={styles.formTitle}>MY ACCOUNT</h2>
 
-      <div className={styles.layout}>
-        {/* --- PHẦN 1: THÔNG TIN TÀI KHOẢN (READ ONLY) --- */}
-        <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>ACCOUNT DETAILS</h3>
-          <div className={styles.formGroup}>
-            <label>Username</label>
-            <input
-              type="text"
-              value={userInfo.username}
-              disabled
-              className={styles.inputReadOnly}
-            />
+        {isLoading ? (
+          <div className={styles.loadingState}>
+            <i className="fa-solid fa-spinner fa-spin"></i> Loading info...
           </div>
-          <div className={styles.formGroup}>
-            <label>Email</label>
-            <input
-              type="email"
-              value={userInfo.email}
-              disabled
-              className={styles.inputReadOnly}
-            />
-          </div>
-          <div className={styles.rowGroup}>
-            <div className={styles.formGroup}>
-              <label>Full Name</label>
-              <input
-                type="text"
-                value={userInfo.fullName}
-                disabled
-                className={styles.inputReadOnly}
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label>Phone Number</label>
-              <input
-                type="text"
-                value={userInfo.phone}
-                disabled
-                className={styles.inputReadOnly}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* --- PHẦN 2: ĐỔI MẬT KHẨU --- */}
-        <div className={styles.section}>
-          <h3 className={styles.sectionTitle}>SECURITY & PASSWORD</h3>
-          <p className={styles.desc}>
-            Ensure your account is using a long, random password to stay secure.
-          </p>
-
-          <div className={styles.passwordForm}>
-            <div className={styles.formGroup}>
-              <label>Current Password</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="oldPassword"
-                  placeholder="Enter current password"
-                  value={passwordData.oldPassword}
-                  onChange={handleChange}
-                />
+        ) : (
+          <div className={styles.contentWrapper}>
+            <div className={styles.section}>
+              <h3 className={styles.sectionHeader}>Profile Information</h3>
+              <div className={styles.rowGroup}>
+                <div className={styles.formGroup}>
+                  <label>Username</label>
+                  <input
+                    type="text"
+                    value={userInfo.user}
+                    disabled
+                    className={styles.inputReadOnly}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Role</label>
+                  <input
+                    type="text"
+                    value={userInfo.role}
+                    disabled
+                    className={styles.inputReadOnly}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label>New Password</label>
-              <div className={styles.inputWrapper}>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="newPassword"
-                  placeholder="Enter new password"
-                  value={passwordData.newPassword}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+            <div className={styles.divider}></div>
 
-            <div className={styles.formGroup}>
-              <label>Confirm New Password</label>
-              <div className={styles.inputWrapper}>
+            <div className={styles.section}>
+              <h3 className={styles.sectionHeader}>Change Password</h3>
+              <div className={styles.formGroup}>
+                <label>Current Password</label>
+                <div className={styles.inputWrapper}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="oldPassword"
+                    placeholder="Enter current password"
+                    value={passwordData.oldPassword}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.rowGroup}>
+                <div className={styles.formGroup}>
+                  <label>New Password</label>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="newPassword"
+                      placeholder="Enter new password"
+                      value={passwordData.newPassword}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>Confirm Password</label>
+                  <div className={styles.inputWrapper}>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      placeholder="Re-enter password"
+                      value={passwordData.confirmPassword}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.showPassOption}>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  placeholder="Re-enter new password"
-                  value={passwordData.confirmPassword}
-                  onChange={handleChange}
+                  type="checkbox"
+                  id="showPass"
+                  checked={showPassword}
+                  onChange={() => setShowPassword(!showPassword)}
                 />
-                <i
-                  className={clsx(
-                    "fa-solid",
-                    showPassword ? "fa-eye-slash" : "fa-eye",
-                    styles.eyeIcon
+                <label htmlFor="showPass">Show Password</label>
+              </div>
+
+              {message.text && (
+                <div className={clsx(styles.message, styles[message.type])}>
+                  {message.type === "success" ? (
+                    <i className="fa-solid fa-check-circle"></i>
+                  ) : (
+                    <i className="fa-solid fa-circle-exclamation"></i>
                   )}
-                  onClick={() => setShowPassword(!showPassword)}
-                ></i>
-              </div>
+                  {message.text}
+                </div>
+              )}
+
+              <button
+                className={clsx(styles.submitBtn, isSaving && styles.disabled)}
+                onClick={handleSubmit}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                ) : (
+                  "SAVE CHANGES"
+                )}
+              </button>
             </div>
-
-            {/* Thông báo lỗi/thành công */}
-            {message.text && (
-              <div className={clsx(styles.message, styles[message.type])}>
-                {message.text}
-              </div>
-            )}
-
-            <button className={styles.saveBtn} onClick={handleSubmit}>
-              SAVE CHANGES
-            </button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

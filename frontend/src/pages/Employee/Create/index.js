@@ -5,16 +5,18 @@ import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
 
-function Employee() {
+function CreateEmployee() {
   const navigate = useNavigate();
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
     role: "",
     status: "Full-Time",
-    date: "2000-01-01",
+    date: new Date().toISOString().split("T")[0],
   });
 
   const handleChange = (e) => {
@@ -31,112 +33,152 @@ function Employee() {
       !formData.role ||
       !formData.date
     ) {
-      setModalMessage("Vui lòng nhập đầy đủ thông tin!");
+      setModalMessage("Please fill in all required fields!");
+      setIsSuccess(false);
       setShowModal(true);
       return;
     }
-    // fetch("http://localhost:5000/dashboard/employee/create", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(formData),
-    // })
-    //   .then((res) => res.json())
+
+    setIsLoading(true);
+
     axios
       .post("/dashboard/employee/create", formData)
       .then((res) => {
-        setModalMessage(res.data.message);
+        setModalMessage("Employee created successfully!");
+        setIsSuccess(true);
         setShowModal(true);
         setFormData({ name: "", role: "", status: "Full-Time", date: "" });
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi thêm nhân viên"));
+      .catch(() => {
+        setModalMessage("❌ An error occurred while adding the employee.");
+        setIsSuccess(false);
+        setShowModal(true);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   return (
-    <>
+    <div className={styles.container}>
       <Link to="/dashboard/employee" className={styles.btnBack}>
-        Back
+        <i className="fa-solid fa-arrow-left"></i> Back to List
       </Link>
 
-      <form className={styles.employeeForm} onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label htmlFor="name">Name</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Nhập tên nhân viên"
-          />
-        </div>
+      <div className={styles.formCard}>
+        <h2 className={styles.formTitle}>Add New Employee</h2>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="role">Role</label>
-          <input
-            id="role"
-            name="role"
-            type="text"
-            value={formData.role}
-            onChange={handleChange}
-            placeholder="Nhập chức vụ"
-          />
-        </div>
+        <form className={styles.employeeForm} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label htmlFor="name">Full Name</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Ex: John Doe"
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="status">Status</label>
-          <select
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
+          <div className={styles.formGroup}>
+            <label htmlFor="role">Role / Position</label>
+            <input
+              id="role"
+              name="role"
+              type="text"
+              value={formData.role}
+              onChange={handleChange}
+              placeholder="Ex: Manager, Sales..."
+            />
+          </div>
+
+          <div className={styles.rowGroup}>
+            <div className={styles.formGroup}>
+              <label htmlFor="status">Work Status</label>
+              <div className={styles.selectWrapper}>
+                <select
+                  id="status"
+                  name="status"
+                  value={formData.status}
+                  onChange={handleChange}
+                >
+                  <option value="Full-Time">Full-Time</option>
+                  <option value="Part-Time">Part-Time</option>
+                </select>
+                <i className="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label htmlFor="date">Join Date</label>
+              <input
+                id="date"
+                name="date"
+                type="date"
+                value={formData.date}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className={clsx(
+              styles.submitBtn,
+              (!formData.name ||
+                !formData.role ||
+                !formData.date ||
+                isLoading) &&
+                styles.disabled
+            )}
+            disabled={
+              !formData.name || !formData.role || !formData.date || isLoading
+            }
           >
-            <option value="Full-Time">Full-Time</option>
-            <option value="Part-Time">Part-Time</option>
-          </select>
-        </div>
-
-        <div className={styles.formGroup}>
-          <label htmlFor="date">Date</label>
-          <input
-            id="date"
-            name="date"
-            type="date"
-            value={formData.date}
-            onChange={handleChange}
-          />
-        </div>
-        <button
-          type="submit"
-          className={clsx(
-            styles.submitBtn,
-            (!formData.name || !formData.role || !formData.date) &&
-              styles.disabled
-          )}
-          disabled={!formData.name || !formData.role || !formData.date}
-        >
-          ADD
-        </button>
-      </form>
+            {isLoading ? (
+              <i className="fa-solid fa-spinner fa-spin"></i>
+            ) : (
+              "CREATE EMPLOYEE"
+            )}
+          </button>
+        </form>
+      </div>
 
       {showModal && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
+            <div
+              className={clsx(
+                styles.modalIcon,
+                isSuccess ? styles.success : styles.error
+              )}
+            >
+              <i
+                className={
+                  isSuccess
+                    ? "fa-solid fa-check-circle"
+                    : "fa-solid fa-circle-xmark"
+                }
+              ></i>
+            </div>
+            <h3>{isSuccess ? "Success!" : "Error"}</h3>
             <p>{modalMessage}</p>
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("successfully")) {
+                if (isSuccess) {
                   navigate("/dashboard/employee");
                 }
               }}
             >
-              Close
+              {isSuccess ? "Go to List" : "Try Again"}
             </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
-export default Employee;
+export default CreateEmployee;

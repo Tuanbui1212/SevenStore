@@ -1,15 +1,19 @@
-import styles from "./CreatAcount.module.scss";
+import styles from "./CreateAccount.module.scss";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
 
-function Account() {
+function CreateAccount() {
   const navigate = useNavigate();
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [account, setAccount] = useState([]);
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -20,14 +24,13 @@ function Account() {
   });
 
   const fetchAccount = () => {
-    // fetch("http://localhost:5000/dashboard/account")
-    //   .then((res) => res.json())
     axios
       .get(`/dashboard/account`)
       .then((response) => {
         setAccount(response.data.account);
       })
-      .catch((err) => console.error("Lỗi fetch:", err));
+      .catch((err) => console.error("Lỗi fetch:", err))
+      .finally(() => setIsLoading(false));
   };
 
   useEffect(() => {
@@ -48,7 +51,8 @@ function Account() {
       !formData.role ||
       !formData.password
     ) {
-      setModalMessage("Vui lòng nhập đầy đủ thông tin!");
+      setModalMessage("Please fill in all required fields!");
+      setIsSuccess(false);
       setShowModal(true);
       return;
     }
@@ -56,21 +60,19 @@ function Account() {
     const existingUser = account.find((acc) => acc.user === formData.user);
 
     if (existingUser) {
-      setModalMessage("Username đã tồn tại!");
+      setModalMessage("Username already exists!");
+      setIsSuccess(false);
       setShowModal(true);
       return;
     }
 
-    // fetch("http://localhost:5000/dashboard/account/create", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(formData),
-    // })
-    //   .then((res) => res.json())
+    setIsSaving(true);
+
     axios
       .post(`/dashboard/account/create`, formData)
       .then((res) => {
-        setModalMessage(res.data.message);
+        setModalMessage("Account created successfully!");
+        setIsSuccess(true);
         setShowModal(true);
         setFormData({
           name: "",
@@ -80,106 +82,138 @@ function Account() {
           role: "staff",
         });
       })
-      .catch(() => alert("❌ Có lỗi xảy ra khi thêm nhân viên"));
+      .catch(() => {
+        setModalMessage("❌ An error occurred while creating account.");
+        setIsSuccess(false);
+        setShowModal(true);
+      })
+      .finally(() => {
+        setIsSaving(false);
+      });
   };
 
   return (
-    <>
+    <div className={styles.container}>
       <Link to="/dashboard/account" className={styles.btnBack}>
-        Back
+        <i className="fa-solid fa-arrow-left"></i> Back to List
       </Link>
 
-      <form className={styles.employeeForm} onSubmit={handleSubmit}>
-        <div className={styles.formGroup}>
-          <label htmlFor="name">Name</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Nhập tên"
-          />
-        </div>
+      <div className={styles.formCard}>
+        <h2 className={styles.formTitle}>Create New Account</h2>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="user">User</label>
-          <input
-            id="user"
-            name="user"
-            type="text"
-            value={formData.user}
-            onChange={handleChange}
-            placeholder="Nhập tài khoản"
-          />
-        </div>
+        <form className={styles.accountForm} onSubmit={handleSubmit}>
+          <div className={styles.formGroup}>
+            <label htmlFor="name">Full Name</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter full name"
+            />
+          </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Nhập mật khẩu"
-          />
-        </div>
+          <div className={styles.rowGroup}>
+            <div className={styles.formGroup}>
+              <label htmlFor="user">Username</label>
+              <input
+                id="user"
+                name="user"
+                type="text"
+                value={formData.user}
+                onChange={handleChange}
+                placeholder="Enter username"
+              />
+            </div>
 
-        <div className={styles.formGroup}>
-          <label htmlFor="role">Role</label>
-          <select
-            id="role"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
+            <div className={styles.formGroup}>
+              <label htmlFor="role">Role</label>
+              <div className={styles.selectWrapper}>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                >
+                  <option value="staff">Staff</option>
+                  <option value="admin">Admin</option>
+                  <option value="customer">Customer</option>
+                </select>
+                <i className="fa-solid fa-chevron-down"></i>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Enter password"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className={clsx(
+              styles.submitBtn,
+              (isSaving ||
+                !formData.name ||
+                !formData.user ||
+                !formData.password) &&
+                styles.disabled
+            )}
+            disabled={
+              isSaving || !formData.name || !formData.user || !formData.password
+            }
           >
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
-            <option value="customer">Customer</option>
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          className={clsx(
-            styles.submitBtn,
-            (!formData.name ||
-              !formData.user ||
-              !formData.role ||
-              !formData.password) &&
-              styles.disabled
-          )}
-          disabled={
-            !formData.name ||
-            !formData.user ||
-            !formData.role ||
-            !formData.password
-          }
-        >
-          ADD
-        </button>
-      </form>
+            {isSaving ? (
+              <i className="fa-solid fa-spinner fa-spin"></i>
+            ) : (
+              "CREATE ACCOUNT"
+            )}
+          </button>
+        </form>
+      </div>
 
       {showModal && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
+            <div
+              className={clsx(
+                styles.modalIcon,
+                isSuccess ? styles.success : styles.error
+              )}
+            >
+              <i
+                className={
+                  isSuccess
+                    ? "fa-solid fa-check-circle"
+                    : "fa-solid fa-circle-xmark"
+                }
+              ></i>
+            </div>
+            <h3>{isSuccess ? "Success!" : "Error"}</h3>
             <p>{modalMessage}</p>
             <button
               onClick={() => {
                 setShowModal(false);
-                if (modalMessage.includes("success")) {
+                if (isSuccess) {
                   navigate("/dashboard/account");
                 }
               }}
             >
-              Đóng
+              {isSuccess ? "Go to List" : "Close"}
             </button>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
-export default Account;
+export default CreateAccount;

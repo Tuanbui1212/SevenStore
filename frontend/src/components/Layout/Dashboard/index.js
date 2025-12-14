@@ -1,14 +1,11 @@
 import "../../GlobalStyles/GlobalStyles.scss";
 import clsx from "clsx";
 
-import Header from "../components/Header";
 import Sidebar from "./Sidebar";
 
 function Dashboard({ children }) {
   return (
     <div>
-      <Header />
-
       <div className={clsx("container")}>
         <div className={clsx("row")}>
           <div className={clsx("col col-2 col-lg-3 col-md-3 display-sm-none")}>

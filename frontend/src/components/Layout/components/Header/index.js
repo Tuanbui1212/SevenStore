@@ -302,7 +302,6 @@ function Header() {
             <i className="fa-regular fa-user"></i>
 
             <ul className={styles.user_list}>
-              {/* Đổi "Liên kết nhanh" thành Account Menu hoặc Quick Actions */}
               <li className={styles.user_title}>Account Menu</li>
 
               <li>

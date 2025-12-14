@@ -6,21 +6,20 @@ import axios from "../../../util/axios";
 
 function Employee() {
   const [employee, setEmployee] = useState([]);
-
+  const [searchTerm, setSearchTerm] = useState("");
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
-
   const [deleteId, setDeleteId] = useState(null);
   const [countDelete, setCountDelete] = useState(0);
-
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 6; // số dòng mỗi trang
 
+  // State cho chức năng sắp xếp
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
+  const pageSize = 5;
   const navigate = useNavigate();
 
   const fetchEmployees = () => {
-    // fetch("http://localhost:5000/dashboard/employee")
-    //   .then((res) => res.json())
     axios
       .get("/dashboard/employee")
       .then((res) => {
@@ -28,11 +27,9 @@ function Employee() {
           if (!employee.date) {
             return employee;
           }
-
           const formattedDate = new Date(employee.date)
             .toISOString()
             .split("T")[0];
-
           return {
             ...employee,
             date: formattedDate,
@@ -50,11 +47,6 @@ function Employee() {
 
   const handleDelete = () => {
     if (!deleteId) return;
-
-    // fetch(`http://localhost:5000/dashboard/employee/${deleteId}`, {
-    //   method: "DELETE",
-    // })
-    //   .then((res) => res.json())
     axios
       .delete(`/dashboard/employee/${deleteId}`)
       .then((res) => {
@@ -69,33 +61,83 @@ function Employee() {
       });
   };
 
-  // Tính toán phân trang
-  const totalPages = Math.ceil(employee.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentData = employee.slice(startIndex, startIndex + pageSize);
+  // Xử lý logic sắp xếp
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
 
-  // Tạo danh sách trang hiển thị (có dấu ...)
+  // Logic lọc dữ liệu theo Search
+  const filteredData = employee.filter((e) => {
+    const term = searchTerm.toLowerCase();
+    return (
+      e.name.toLowerCase().includes(term) || e.role.toLowerCase().includes(term)
+    );
+  });
+
+  // Logic sắp xếp dữ liệu
+  if (sortConfig.key) {
+    filteredData.sort((a, b) => {
+      let aValue = a[sortConfig.key]
+        ? a[sortConfig.key].toString().toLowerCase()
+        : "";
+      let bValue = b[sortConfig.key]
+        ? b[sortConfig.key].toString().toLowerCase()
+        : "";
+
+      if (aValue < bValue) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+  }
+
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentData = filteredData.slice(startIndex, startIndex + pageSize);
+
   const getPageNumbers = () => {
     const pages = [];
-
     if (totalPages <= 7) {
-      // ít trang thì hiển thị hết
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       pages.push(1);
-
       if (currentPage > 4) pages.push("...");
-
       for (let i = currentPage - 2; i <= currentPage + 2; i++) {
         if (i > 1 && i < totalPages) pages.push(i);
       }
-
       if (currentPage < totalPages - 3) pages.push("...");
-
       pages.push(totalPages);
     }
-
     return pages;
+  };
+
+  // Helper render icon sort
+  const renderSortIcon = (columnKey) => {
+    if (sortConfig.key !== columnKey)
+      return (
+        <i
+          className="fa-solid fa-sort"
+          style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+        ></i>
+      );
+    return sortConfig.direction === "asc" ? (
+      <i
+        className="fa-solid fa-sort-up"
+        style={{ fontSize: "12px", marginLeft: "5px" }}
+      ></i>
+    ) : (
+      <i
+        className="fa-solid fa-sort-down"
+        style={{ fontSize: "12px", marginLeft: "5px" }}
+      ></i>
+    );
   };
 
   return (
@@ -103,13 +145,18 @@ function Employee() {
       <div className={styles.tableControls}>
         <input
           type="text"
-          placeholder="Search by name..."
+          placeholder="Search by name or role..."
           className={styles.searchInput}
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
         />
         <div>
           <button
             className={styles.searchButton}
-            style={{ display: countDelete === 0 ? "none" : "inline-block" }}
+            style={{ display: countDelete === 0 ? "none" : "inline-flex" }}
             onClick={() => navigate("/dashboard/employee/trash")}
           >
             <i className="fa-solid fa-trash"></i>
@@ -128,88 +175,118 @@ function Employee() {
         <thead className={styles.tableTitle}>
           <tr>
             <th className={styles.tableHeader}>#</th>
-            <th className={styles.tableHeader}>Name</th>
-            <th className={styles.tableHeader}>Position</th>
-            <th className={styles.tableHeader}>Status</th>
-            <th className={styles.tableHeader}>Date</th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("name")}
+            >
+              Name {renderSortIcon("name")}
+            </th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("role")}
+            >
+              Position {renderSortIcon("role")}
+            </th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("status")}
+            >
+              Status {renderSortIcon("status")}
+            </th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("date")}
+            >
+              Date {renderSortIcon("date")}
+            </th>
             <th className={styles.tableHeader}></th>
           </tr>
         </thead>
         <tbody>
-          {currentData.map((e, index) => (
-            <tr key={index} className={styles.tableRow}>
-              <td className={styles.tableCell}>{index + 1}</td>
-              <td className={styles.tableCell}>{e.name}</td>
-              <td className={styles.tableCell}>{e.role}</td>
-              <td
-                className={clsx(
-                  styles.tableCell,
-                  styles.tableStatus,
-                  e.status === "Full-Time" && styles.fullTime,
-                  e.status === "Part-Time" && styles.partTime
-                )}
-              >
-                {e.status}
-              </td>
-
-              <td className={styles.tableCell}>{e.date}</td>
-              <td className={styles.tableCell}>
-                <button
-                  onClick={() => {
-                    navigate(`/dashboard/employee/${e._id}`);
-                  }}
-                >
-                  <i className="fa-solid fa-pen-to-square"></i>
-                </button>
-                <button
-                  onClick={() => {
-                    setShowModal(true);
-                    setDeleteId(e._id);
-                    setModalMessage("Are you sure you want to delete this?");
-                  }}
-                >
-                  <i className="fa-solid fa-trash"></i>
-                </button>
+          {currentData.length > 0 ? (
+            currentData.map((e, index) => (
+              <tr key={index} className={styles.tableRow}>
+                <td className={styles.tableCell}>{startIndex + index + 1}</td>
+                <td className={styles.tableCell}>
+                  <strong>{e.name}</strong>
+                </td>
+                <td className={styles.tableCell}>{e.role}</td>
+                <td className={styles.tableCell}>
+                  <span
+                    className={clsx(
+                      styles.tableStatus,
+                      e.status === "Full-Time" && styles.fullTime,
+                      e.status === "Part-Time" && styles.partTime
+                    )}
+                  >
+                    {e.status}
+                  </span>
+                </td>
+                <td className={styles.tableCell}>{e.date}</td>
+                <td className={styles.tableCell}>
+                  <button
+                    onClick={() => {
+                      navigate(`/dashboard/employee/${e._id}`);
+                    }}
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowModal(true);
+                      setDeleteId(e._id);
+                      setModalMessage("Are you sure you want to delete this?");
+                    }}
+                  >
+                    <i className="fa-solid fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
+                No employees found matching "{searchTerm}"
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
 
-      {/* Thanh phân trang */}
-      <div className={styles.pagination}>
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage((p) => p - 1)}
-        >
-          <i className="fa-solid fa-caret-left"></i>
-        </button>
+      {totalPages > 0 && (
+        <div className={styles.pagination}>
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+          >
+            <i className="fa-solid fa-caret-left"></i>
+          </button>
 
-        {getPageNumbers().map((p, i) =>
-          p === "..." ? (
-            <span key={i} className={styles.ellipsis}>
-              ...
-            </span>
-          ) : (
-            <button
-              key={i}
-              className={clsx(currentPage === p && styles.activePage)}
-              onClick={() => setCurrentPage(p)}
-            >
-              {p}
-            </button>
-          )
-        )}
+          {getPageNumbers().map((p, i) =>
+            p === "..." ? (
+              <span key={i} className={styles.ellipsis}>
+                ...
+              </span>
+            ) : (
+              <button
+                key={i}
+                className={clsx(currentPage === p && styles.activePage)}
+                onClick={() => setCurrentPage(p)}
+              >
+                {p}
+              </button>
+            )
+          )}
 
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage((p) => p + 1)}
-        >
-          <i className="fa-solid fa-caret-right"></i>
-        </button>
-      </div>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+          >
+            <i className="fa-solid fa-caret-right"></i>
+          </button>
+        </div>
+      )}
 
-      {/* Modal */}
       {showModal && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
