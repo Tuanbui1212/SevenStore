@@ -15,16 +15,16 @@ export const productRoutes = [
   {
     path: "/dashboard/products/create",
     component: CreateProducts,
-    layout: OnlyHeader,
+    layout: null,
   },
   {
     path: "/dashboard/products/trash",
     component: TrashProduct,
-    layout: OnlyHeader,
+    layout: null,
   },
   {
     path: "/dashboard/products/:id",
     component: EditProducts,
-    layout: OnlyHeader,
+    layout: null,
   },
 ];

@@ -141,6 +141,8 @@ function StatisticalReport() {
   const startIndex = (currentPage - 1) * pageSize;
   const currentData = filteredData.slice(startIndex, startIndex + pageSize);
 
+  console.log("Rendered currentData:", currentData);
+
   const getPageNumbers = () => {
     const pages = [];
     if (totalPages <= 7) {

@@ -9,7 +9,6 @@ function EditCustomer() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // State quản lý UI
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -27,7 +26,6 @@ function EditCustomer() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Fetch dữ liệu customer
   useEffect(() => {
     setIsLoading(true);
     axios
@@ -40,8 +38,8 @@ function EditCustomer() {
         });
       })
       .catch((err) => {
-        console.error("Lỗi fetch:", err);
-        setModalMessage("Không thể tải thông tin khách hàng.");
+        console.error("Fetch error:", err);
+        setModalMessage("Failed to load customer information.");
         setIsSuccess(false);
         setShowModal(true);
       })
@@ -54,7 +52,7 @@ function EditCustomer() {
     e.preventDefault();
 
     if (!formData.name || !formData.phone) {
-      setModalMessage("Vui lòng nhập tên và số điện thoại!");
+      setModalMessage("Please enter name and phone number!");
       setIsSuccess(false);
       setShowModal(true);
       return;
@@ -65,12 +63,12 @@ function EditCustomer() {
     axios
       .put(`/dashboard/customers/${id}`, formData)
       .then((res) => {
-        setModalMessage("Cập nhật khách hàng thành công!");
+        setModalMessage("Customer updated successfully!");
         setIsSuccess(true);
         setShowModal(true);
       })
       .catch(() => {
-        setModalMessage("❌ Cập nhật thất bại. Vui lòng thử lại!");
+        setModalMessage("❌ Update failed. Please try again!");
         setIsSuccess(false);
         setShowModal(true);
       })
@@ -102,7 +100,7 @@ function EditCustomer() {
                 type="text"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Nhập tên khách hàng"
+                placeholder="Enter full name"
               />
             </div>
 
@@ -111,8 +109,8 @@ function EditCustomer() {
               <input
                 id="phone"
                 name="phone"
-                type="text" // Để text tốt hơn number nếu số có số 0 đầu hoặc format
-                placeholder="Nhập số điện thoại"
+                type="text"
+                placeholder="Enter phone number"
                 value={formData.phone}
                 onChange={handleChange}
               />
@@ -124,7 +122,7 @@ function EditCustomer() {
                 id="address"
                 name="address"
                 type="text"
-                placeholder="Nhập địa chỉ"
+                placeholder="Enter address"
                 value={formData.address}
                 onChange={handleChange}
               />
@@ -149,7 +147,6 @@ function EditCustomer() {
         )}
       </div>
 
-      {/* Modal Thông báo */}
       {showModal && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
@@ -167,7 +164,7 @@ function EditCustomer() {
                 }
               ></i>
             </div>
-            <h3>{isSuccess ? "Thành công!" : "Lỗi"}</h3>
+            <h3>{isSuccess ? "Success!" : "Error"}</h3>
             <p>{modalMessage}</p>
             <button
               onClick={() => {
@@ -177,7 +174,7 @@ function EditCustomer() {
                 }
               }}
             >
-              {isSuccess ? "Về danh sách" : "Đóng"}
+              {isSuccess ? "Back to List" : "Close"}
             </button>
           </div>
         </div>
