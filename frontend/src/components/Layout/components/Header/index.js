@@ -2,33 +2,30 @@ import styles from "./Header.module.scss";
 import clsx from "clsx";
 import "../../../GlobalStyles/GlobalStyles.scss";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import noItem from "../../../../assets/images/no-item.jpg";
 import axios from "../../../../util/axios";
 
 function Header() {
   const navigate = useNavigate();
-
   const fullUrl = window.location.href;
 
-  const [open, setOpen] = useState(false);
-  const [carts, setCarts] = useState({});
-
+  const [openMenu, setOpenMenu] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [carts, setCarts] = useState([]);
   const [search, setSearch] = useState("");
+
   const success = localStorage.getItem("success");
   const role = localStorage.getItem("role");
 
+  const searchInputRef = useRef(null);
+
   const fetchCart = () => {
     const user = localStorage.getItem("user");
-
     if (!user) return;
-    //let url = `http://localhost:5000/cart?`;
-    let url = `/cart?`;
 
-    if (user) url += `user=${encodeURIComponent(user)}`;
+    let url = `/cart?user=${encodeURIComponent(user)}`;
 
-    // fetch(url)
-    //   .then((res) => res.json())
     axios
       .get(url)
       .then((res) => {
@@ -38,17 +35,25 @@ function Header() {
   };
 
   useEffect(() => {
-    setOpen(false);
+    setOpenMenu(false);
+    setShowSearch(false);
   }, [fullUrl]);
 
   useEffect(() => {
     fetchCart();
   }, []);
 
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
+
   const handleSearch = () => {
     if (!search) return;
     navigate(`/search?value=${search}`);
     setSearch("");
+    setShowSearch(false);
   };
 
   return (
@@ -60,9 +65,19 @@ function Header() {
           </Link>
         </div>
       </header>
+
       <nav className={clsx(styles.navbar)}>
         <div className={clsx(styles.nav_left)}>
-          <ul className={clsx(styles.nav_list, open && styles.show)}>
+          <div className={clsx(styles.nav_left_icon)}>
+            <button
+              className={clsx(styles.btn_menu)}
+              onClick={() => setOpenMenu(!openMenu)}
+            >
+              <i className={clsx("fa-solid fa-bars")}></i>
+            </button>
+          </div>
+
+          <ul className={clsx(styles.nav_list, openMenu && styles.show)}>
             <li>
               <Link className={clsx(styles.nav_item)} to="/">
                 Home
@@ -76,100 +91,36 @@ function Header() {
                 NEW ARRIVALS
               </Link>
             </li>
+
             <li className={clsx(styles.nav_item, styles.nav_brands)}>
-              Brands
-              <i className="fa-solid fa-caret-down"></i>
+              Brands{" "}
+              <i
+                className="fa-solid fa-caret-down"
+                style={{ marginLeft: "5px" }}
+              ></i>
               <ul className={clsx(styles.nav_list_brands)}>
-                <li>
-                  <Link
-                    to="/product/puma"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Puma
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/product/nike"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Nike
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/product/bape"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Bape
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/product/adidas"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Adidas
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/product/new-balance"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    New Balance
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/product/onitsuka-tiger"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Onitsuka Tiger
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/product/converse"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Converse
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/product/vans"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Vans
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/product/asics"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Asics
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/product/rebok"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Rebok
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/product/salomon"
-                    className={clsx(styles.nav_item_brands)}
-                  >
-                    Salomon
-                  </Link>
-                </li>
+                {[
+                  "Puma",
+                  "Nike",
+                  "Bape",
+                  "Adidas",
+                  "New Balance",
+                  "Onitsuka Tiger",
+                  "Converse",
+                  "Vans",
+                  "Asics",
+                  "Reebok",
+                  "Salomon",
+                ].map((brand) => (
+                  <li key={brand}>
+                    <Link
+                      to={`/product/${brand.toLowerCase().replace(" ", "-")}`}
+                      className={clsx(styles.nav_item_brands)}
+                    >
+                      {brand}
+                    </Link>
+                  </li>
+                ))}
                 <li>
                   <Link
                     to="/product/all"
@@ -183,6 +134,7 @@ function Header() {
                 </li>
               </ul>
             </li>
+
             <li>
               <Link to="/service" className={clsx(styles.nav_item)}>
                 SERVICES
@@ -202,25 +154,19 @@ function Header() {
               </Link>
             </li>
           </ul>
-
-          <div className={clsx(styles.nav_left_icon)}>
-            <button
-              className={clsx(styles.btn_menu)}
-              onClick={() => setOpen(!open)}
-            >
-              <i className={clsx("fa-solid fa-bars")}></i>
-            </button>
-            <button className={clsx(styles.mobile_btn_search)}>
-              <i className={clsx("fa-solid fa-magnifying-glass")}></i>
-            </button>
-          </div>
         </div>
 
         <div className={clsx(styles.nav_right)}>
-          <div className={clsx(styles.nav_search)}>
+          <div
+            className={clsx(
+              styles.nav_search,
+              showSearch && styles.show_mobile_search
+            )}
+          >
             <input
+              ref={searchInputRef}
               className={clsx(styles.nav_search_input)}
-              placeholder="Search items"
+              placeholder="Search items..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -229,17 +175,29 @@ function Header() {
             />
             <button
               className={clsx(styles.nav_search_icon)}
-              onClick={() => {
-                handleSearch();
-              }}
+              onClick={handleSearch}
             >
               <i className={clsx("fa-solid fa-magnifying-glass")}></i>
             </button>
           </div>
 
-          {/* Cart */}
+          <button
+            className={clsx(styles.mobile_search_btn)}
+            onClick={() => setShowSearch(!showSearch)}
+          >
+            <i
+              className={clsx(
+                "fa-solid",
+                showSearch ? "fa-xmark" : "fa-magnifying-glass"
+              )}
+            ></i>
+          </button>
+
           <div className={clsx(styles.header_cart)} onMouseEnter={fetchCart}>
             <i className="fa-solid fa-cart-shopping"></i>
+            {carts.length > 0 && (
+              <span className={styles.cart_badge}>{carts.length}</span>
+            )}
 
             <div className={clsx(styles.header_cart_wrapper)}>
               <h4 className={clsx(styles.heading_cart)}>Added products</h4>
@@ -263,13 +221,12 @@ function Header() {
                               {item.name}
                             </span>
                             <span className={clsx(styles.cartSize)}>
-                              Size: {item.size.replace("size", "")}
+                              Size: {item.size?.replace("size", "")}
                             </span>
                             <span className={clsx(styles.cartQuantity)}>
                               SL: {item.quantity}
                             </span>
                           </div>
-
                           <div className={clsx(styles.cartInfoRight)}>
                             <span className={clsx(styles.cartPrice)}>
                               {Number(item.cost).toLocaleString("vi-VN")} ₫
@@ -290,26 +247,26 @@ function Header() {
                   </>
                 )}
               </div>
-
               <Link to={"/cart"} className={clsx(styles.link_cart)}>
-                {" "}
-                View cart{" "}
+                View cart
               </Link>
             </div>
           </div>
 
           <div className={clsx(styles.header_user)}>
             <i className="fa-regular fa-user"></i>
-
             <ul className={styles.user_list}>
               <li className={styles.user_title}>Account Menu</li>
-
               <li>
                 <Link to={"/"} className={styles.user_item}>
                   My Account
                 </Link>
               </li>
-
+              {/* <li>
+                <Link to={"/my-orders"} className={styles.user_item}>
+                  My Orders
+                </Link>
+              </li> */}
               {success && role === "admin" && (
                 <li>
                   <Link className={styles.user_item} to="/dashboard">
@@ -317,43 +274,36 @@ function Header() {
                   </Link>
                 </li>
               )}
-
               <li>
                 <Link to={"/help"} className={styles.user_item}>
                   Help Center
                 </Link>
               </li>
-
-              {!success && (
+              {!success ? (
+                <>
+                  <li>
+                    <Link
+                      to={"/login"}
+                      className={clsx(styles.user_login, styles.user_item)}
+                    >
+                      Login
+                    </Link>
+                  </li>
+                  <li className={styles.user_title}>
+                    Not a member?{" "}
+                    <Link to="/login" className={clsx(styles.user_register)}>
+                      Join Us
+                    </Link>
+                  </li>
+                </>
+              ) : (
                 <li>
                   <Link
                     to={"/login"}
                     className={clsx(styles.user_login, styles.user_item)}
-                  >
-                    Login
-                  </Link>
-                </li>
-              )}
-
-              {success && (
-                <li>
-                  <Link
-                    to={"/login"}
-                    className={clsx(styles.user_login, styles.user_item)}
-                    onClick={() => {
-                      localStorage.clear();
-                    }}
+                    onClick={() => localStorage.clear()}
                   >
                     Log Out
-                  </Link>
-                </li>
-              )}
-
-              {!success && (
-                <li className={styles.user_title}>
-                  Not a member?
-                  <Link to="/login" className={clsx(styles.user_register)}>
-                    Join Us
                   </Link>
                 </li>
               )}

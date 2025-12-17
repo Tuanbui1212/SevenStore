@@ -66,12 +66,12 @@ function Footer() {
               <div>
                 <div className={clsx(styles.help)}>
                   <i className="fa-solid fa-phone"></i>
-                  <p>0 999 999 999</p>
+                  <p>098 432 6877</p>
                 </div>
 
                 <div className={clsx(styles.help)}>
                   <i className="fa-solid fa-envelope"></i>
-                  <p>info@example.com</p>
+                  <p>tuanbui122003@gmail.com</p>
                 </div>
               </div>
             </div>

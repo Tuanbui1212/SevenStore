@@ -1,0 +1,321 @@
+@import "../../components/GlobalStyles/variables";
+
+$mobile-width: 739px;
+
+@mixin mobile {
+  @media (max-width: #{$mobile-width}) {
+    @content;
+  }
+}
+
+.container {
+  margin-top: 40px;
+  margin-bottom: 80px;
+  min-height: 60vh;
+
+  @include mobile {
+    margin-top: 20px;
+    margin-bottom: 100px;
+  }
+}
+
+.pageTitle {
+  font-size: 2.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  text-align: center;
+  color: $black-color;
+
+  @include mobile {
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+  }
+}
+
+// --- Tabs ---
+.tabs {
+  display: flex;
+  justify-content: center;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 30px;
+  gap: 20px;
+
+  @include mobile {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 5px;
+    gap: 15px;
+
+    // Ẩn thanh cuộn trên mobile cho đẹp
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .tabItem {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: $hide-color;
+    padding: 10px 15px;
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: $black-color;
+    }
+
+    &.active {
+      color: $black-color;
+      font-weight: 700;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: -1px; // Đè lên border-bottom của .tabs
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: $black-color;
+      }
+    }
+  }
+}
+
+// --- Order List ---
+.orderList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.orderCard {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 20px;
+  background-color: $white-color;
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  @include mobile {
+    padding: 15px;
+  }
+}
+
+// --- Header Card ---
+.orderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 15px;
+
+  .headerLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .orderId {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: $black-color;
+    }
+    .orderDate {
+      font-size: 1.3rem;
+      color: $hide-color;
+    }
+  }
+
+  .statusBadge {
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-transform: capitalize;
+
+    &.pending {
+      color: #f59e0b;
+    } // Vàng cam
+    &.shipping {
+      color: #3b82f6;
+    } // Xanh dương
+    &.delivered {
+      color: #10b981;
+    } // Xanh lá
+    &.cancelled {
+      color: #ef4444;
+    } // Đỏ
+  }
+}
+
+// --- Body Product ---
+.orderBody {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.productItem {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  .productImg {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid #f0f0f0;
+    }
+  }
+
+  .productInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .productName {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: $black-color;
+
+      @include mobile {
+        font-size: 1.4rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+    }
+
+    .productDetails {
+      font-size: 1.4rem;
+      color: $hide-color;
+    }
+  }
+
+  .productPrice {
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: $black-color;
+
+    @include mobile {
+      font-size: 1.4rem;
+    }
+  }
+}
+
+// --- Footer Card ---
+.orderFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #f0f0f0;
+
+  @include mobile {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-end; // Đẩy sang phải hết
+  }
+
+  .totalSection {
+    font-size: 1.6rem;
+    color: $black-color;
+
+    span:first-child {
+      margin-right: 8px;
+    }
+
+    .totalPrice {
+      font-size: 2rem;
+      font-weight: 700;
+      color: $primary-color;
+    }
+  }
+
+  .actionButtons {
+    display: flex;
+    gap: 10px;
+
+    button,
+    a {
+      font-size: 1.4rem;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .btnDetail {
+      border: 1px solid $black-color;
+      color: $black-color;
+      background: transparent;
+
+      &:hover {
+        background: #f5f5f5;
+      }
+    }
+
+    .btnReorder {
+      border: 1px solid $primary-color;
+      background-color: $primary-color;
+      color: $white-color;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+// --- No Order State ---
+.noOrder {
+  text-align: center;
+  padding: 40px 0;
+
+  img {
+    width: 200px;
+    margin-bottom: 20px;
+    opacity: 0.8;
+  }
+
+  p {
+    font-size: 1.8rem;
+    color: $hide-color;
+    margin-bottom: 20px;
+  }
+
+  .btnShopNow {
+    display: inline-block;
+    background-color: $black-color;
+    color: $white-color;
+    padding: 12px 30px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 1.6rem;
+    font-weight: 600;
+    transition: opacity 0.3s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./Home.module.scss";
 import clsx from "clsx";
 import "../../components/GlobalStyles/GlobalStyles.scss";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "../../util/axios";
 
 import slider01 from "../../assets/images/slider01.png";
@@ -32,6 +32,7 @@ function Home() {
   const [products, setProducts] = useState([]);
   const scrollRef = useRef(null);
   const scrollRefBrand = useRef(null);
+  const navigate = useNavigate();
 
   const images = [slider01, slider02, slider03];
 
@@ -257,7 +258,7 @@ function Home() {
           <h3>UP TO 70% OFF END OF SEASON SALE</h3>
           <p>+ Extra 15% Off with code: Seven</p>
         </div>
-        <button>SHOW NOW</button>
+        <button onClick={() => navigate("/product/sale")}>SHOW NOW</button>
       </div>
 
       <div className={clsx("row", styles.content)}>
