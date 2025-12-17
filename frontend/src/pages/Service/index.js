@@ -5,97 +5,131 @@ import clsx from "clsx";
 
 function Service() {
   return (
-    <div className={styles.container}>
-      <div className={styles.bannerWrapper}>
+    <div className={styles.wrapper}>
+      {/* Hero Section */}
+      <div className={styles.hero}>
+        <div className={styles.heroOverlay}></div>
         <img
           src={backGround}
-          alt="Dịch vụ vệ sinh giày"
-          className={styles.bannerImg}
+          alt="Shoe Cleaning Service"
+          className={styles.heroImg}
         />
+        <div className={styles.heroContent}>
+          <h1 className={styles.heroTitle}>Premium Shoe Care</h1>
+          <p className={styles.heroSubtitle}>
+            Professional Cleaning & Warranty Services
+          </p>
+        </div>
       </div>
 
-      <div className={styles.content}>
-        <h2 className={styles.title}>Shoe Cleaning Service</h2>
+      <div className={clsx("container", styles.container)}>
+        {/* Intro */}
+        <div className={styles.intro}>
+          <h2 className={styles.sectionTitle}>Shoe Cleaning Service</h2>
+          <p className={styles.desc}>
+            We are committed to delivering the best shopping experience through
+            a diverse product range, stylish designs, modern and luxurious
+            stores, and continuously improved after-sales services. Accordingly,
+            we have upgraded and implemented a warranty policy applicable to all
+            customers purchasing at our nationwide store system and through our
+            website.
+          </p>
+        </div>
 
-        <p className={styles.desc}>
-          We are committed to delivering the best shopping experience through a
-          diverse product range, stylish designs, modern and luxurious stores,
-          and continuously improved after-sales services. Accordingly, we have
-          upgraded and implemented a warranty policy applicable to all customers
-          purchasing at our nationwide store system and through our website.
-        </p>
+        {/* Policy Grid */}
+        <div className={styles.policyGrid}>
+          {/* Card 1: Applicable Products */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <i className="fa-solid fa-layer-group"></i>
+              <h3>Applicable Categories</h3>
+            </div>
+            <div className={styles.cardBody}>
+              <p>
+                Our warranty policy applies to all products purchased at our
+                stores or through our official website:
+              </p>
+              <ul className={styles.checkList}>
+                <li>Shoes & Sandals</li>
+                <li>Belts</li>
+                <li>Handbags & Wallets</li>
+              </ul>
+              <div className={styles.note}>
+                <i className="fa-solid fa-circle-info"></i>
+                <p>
+                  For manufacturing defects, the exchange policy will be
+                  applied. Kindly refer to our Product Exchange Policy.
+                </p>
+              </div>
+            </div>
+          </div>
 
-        <h3 className={styles.subtitle}>Applicable Product Categories</h3>
+          {/* Card 2: Warranty Conditions */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <i className="fa-solid fa-shield-halved"></i>
+              <h3>Free Warranty Conditions</h3>
+            </div>
+            <div className={styles.cardBody}>
+              <p>
+                Customers are entitled to <strong>free warranty service</strong>{" "}
+                for:
+              </p>
+              <ul className={styles.checkList}>
+                <li>Detached adhesive (Keo bong)</li>
+                <li>Loose stitching (Sứt chỉ)</li>
+                <li>Dry or cracked adhesive</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
-        <ul className={clsx(styles.list, styles.textList)}>
-          <li>
-            Our warranty policy applies to all products purchased at our stores
-            or through our official website, including:
-          </li>
-          <li>Shoes</li>
-          <li>Sandals</li>
-          <li>Belts</li>
-          <li>Handbags</li>
-          <li>Wallets</li>
-          <li>
-            In cases where the product is faulty due to manufacturing defects,
-            the exchange policy will be applied. Kindly refer to our Product
-            Exchange Policy for further details.
-          </li>
-        </ul>
+        {/* Detailed Conditions Section */}
+        <div className={styles.detailsSection}>
+          <h3 className={styles.sectionTitle}>Detailed Terms</h3>
 
-        <h3 className={styles.subtitle}>Warranty Policy</h3>
+          <div className={styles.termsGrid}>
+            <div className={clsx(styles.termBox, styles.valid)}>
+              <h4>
+                <i className="fa-solid fa-check"></i> Eligible Cases
+              </h4>
+              <p>
+                Warranty applies to products included in the applicable product
+                categories listed above that encounter the technical issues
+                mentioned (adhesive, stitching).
+              </p>
+            </div>
 
-        <p className={styles.desc}>
-          Customers purchasing products from us are entitled to{" "}
-          <strong>free warranty service</strong>
-          under the following conditions:
-        </p>
+            <div className={clsx(styles.termBox, styles.invalid)}>
+              <h4>
+                <i className="fa-solid fa-xmark"></i> Non-Eligible Cases
+              </h4>
+              <ul>
+                <li>Products not purchased from SevenStore.</li>
+                <li>
+                  Wear and tear: Worn-out soles, broken heels, scratches,
+                  damaged leather from impact.
+                </li>
+                <li>
+                  Improper storage: Chemical discoloration, dry/hardened leather
+                  due to long-term lack of use, aging due to environment.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
-        <ul className={clsx(styles.list, styles.textList)}>
-          <li>Detached adhesive</li>
-          <li>Loose stitching</li>
-          <li>Dry or cracked adhesive</li>
-        </ul>
-
-        <h3 className={styles.subtitle}>Warranty Conditions</h3>
-
-        <ul className={clsx(styles.list, styles.textList)}>
-          <li>
-            <strong>Eligible warranty cases:</strong>
-          </li>
-          <li>
-            Warranty applies to products included in the applicable product
-            categories listed above.
-          </li>
-
-          <li>
-            <strong>
-              Warranty will not be applied in the following cases:
-            </strong>
-          </li>
-          <li>
-            Products that are not purchased at our stores or not within the
-            applicable product categories
-          </li>
-          <li>
-            Used footwear showing wear such as worn-out soles, broken soles,
-            impacts causing scratches, broken heels, damaged leather, etc.
-          </li>
-          <li>
-            Improper storage such as applying chemicals causing discoloration,
-            leather fading, long-term lack of use resulting in decomposition,
-            dry or hardened leather, aging adhesives, etc.
-          </li>
-        </ul>
-
-        <h3 className={styles.subtitle}>Warranty Duration</h3>
-
-        <p className={styles.desc}>
-          Once we receive the product for warranty service, the processing time
-          will take up to
-          <strong> 05 working days</strong>.
-        </p>
+        {/* Duration Banner */}
+        <div className={styles.durationBanner}>
+          <div className={styles.durationContent}>
+            <h3>Warranty Duration</h3>
+            <p>
+              Processing time: up to <strong>05 working days</strong> from
+              receipt.
+            </p>
+          </div>
+          <button className={styles.contactBtn}>Contact Support</button>
+        </div>
       </div>
     </div>
   );

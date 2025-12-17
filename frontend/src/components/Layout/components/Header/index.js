@@ -257,16 +257,20 @@ function Header() {
             <i className="fa-regular fa-user"></i>
             <ul className={styles.user_list}>
               <li className={styles.user_title}>Account Menu</li>
-              <li>
-                <Link to={"/"} className={styles.user_item}>
-                  My Account
-                </Link>
-              </li>
-              {/* <li>
-                <Link to={"/my-orders"} className={styles.user_item}>
-                  My Orders
-                </Link>
-              </li> */}
+              {success && (
+                <>
+                  <li>
+                    <Link to={"/myAccount"} className={styles.user_item}>
+                      My Account
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to={"/my-orders"} className={styles.user_item}>
+                      My Orders
+                    </Link>
+                  </li>
+                </>
+              )}
               {success && role === "admin" && (
                 <li>
                   <Link className={styles.user_item} to="/dashboard">

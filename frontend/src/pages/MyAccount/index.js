@@ -6,11 +6,7 @@ import axios from "../../util/axios";
 function MyAccount() {
   const [userInfo, setUserInfo] = useState({
     user: "",
-    email: "",
     name: "",
-    phone: "",
-    address: "",
-    city: "",
     role: "",
   });
 
@@ -28,15 +24,15 @@ function MyAccount() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("/auth/me");
+        const response = await axios.get(
+          `/account/${localStorage.getItem("id")}`
+        );
+
+        console.log("User info response:", response);
         if (response.data) {
           setUserInfo({
             user: response.data.user || "",
-            email: response.data.email || "",
             name: response.data.name || "",
-            phone: response.data.phone || "",
-            address: response.data.address || "",
-            city: response.data.city || "",
             role: response.data.role || "",
           });
         }
@@ -84,7 +80,7 @@ function MyAccount() {
     setIsSaving(true);
 
     try {
-      await axios.put("/auth/change-password", {
+      await axios.put(`/account/${localStorage.getItem("id")}`, {
         oldPassword: passwordData.oldPassword,
         newPassword: passwordData.newPassword,
       });
@@ -118,9 +114,22 @@ function MyAccount() {
           <div className={styles.contentWrapper}>
             <div className={styles.section}>
               <h3 className={styles.sectionHeader}>Profile Information</h3>
+
               <div className={styles.rowGroup}>
                 <div className={styles.formGroup}>
-                  <label>Username</label>
+                  <label>Full Name</label>
+                  <input
+                    type="text"
+                    value={userInfo.name}
+                    disabled
+                    className={styles.inputReadOnly}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.rowGroup}>
+                <div className={styles.formGroup}>
+                  <label>User Name</label>
                   <input
                     type="text"
                     value={userInfo.user}

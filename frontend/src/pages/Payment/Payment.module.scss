@@ -1,5 +1,21 @@
 @import "../../components/GlobalStyles/variables";
-@import "../../components/GlobalStyles/variables";
+
+// --- Mixin cho Responsive ---
+$mobile-width: 739px;
+$tablet-width: 1023px;
+
+@mixin mobile {
+  @media (max-width: #{$mobile-width}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: 740px) and (max-width: #{$tablet-width}) {
+    @content;
+  }
+}
+// -----------------------------
 
 .breadcrumb {
   .breadcrumb__link {
@@ -14,16 +30,44 @@
   }
 }
 
-.formRow {
-  display: flex;
-  flex: 1;
-  gap: 20px;
+// Layout chính: Xử lý khoảng cách giữa 2 cột
+.row {
+  @include mobile {
+    flex-direction: column-reverse; // Đảo ngược: Hiện Summary trước rồi mới đến Form (hoặc bỏ dòng này nếu muốn Form trước)
+    gap: 30px;
+  }
 }
 
+// Cột trái: Form thông tin
 .formSection {
   background: $white-color;
   padding: 20px;
   border-radius: 12px;
+
+  // Trên mobile và tablet chiếm hết chiều rộng
+  @include mobile {
+    width: 100% !important; // Ghi đè class col-8
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  @include tablet {
+    width: 100% !important;
+    flex: 0 0 100%;
+    max-width: 100%;
+    margin-bottom: 20px;
+  }
+}
+
+.formRow {
+  display: flex;
+  flex: 1;
+  gap: 20px;
+
+  // Trên mobile, Email và Phone xếp dọc
+  @include mobile {
+    flex-direction: column;
+    gap: 0;
+  }
 }
 
 .formGroup {
@@ -39,15 +83,18 @@
   }
 
   input,
-  textarea {
+  textarea,
+  select {
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 10px;
     font-size: 1.4rem;
+    background-color: $white-color;
+    transition: border-color 0.3s;
 
     &:focus {
       outline: none;
-      border-color: #000;
+      border-color: $black-color;
     }
   }
 
@@ -56,23 +103,54 @@
   }
 }
 
+// Cột phải: Tổng đơn hàng
 .summarySection {
+  @include mobile {
+    width: 100% !important; // Ghi đè class col-4
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  @include tablet {
+    width: 100% !important;
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+}
+
+.summaryCard {
   background: $white-color;
   padding: 20px;
   border-radius: 12px;
   border: 1px solid #ddd;
-}
 
-.summaryCard {
+  // Sticky: Ghim lại khi cuộn chuột (Chỉ hoạt động trên Desktop)
+  position: sticky;
+  top: 100px; // Cách mép trên 100px
+
+  @include mobile {
+    position: static; // Mobile không cần ghim
+  }
+
   h2 {
     font-size: 2rem;
     margin-bottom: 20px;
+    font-weight: 700;
   }
 }
 
 .itemsList {
   border-bottom: 1px solid #eee;
   margin-bottom: 20px;
+  max-height: 300px; // Giới hạn chiều cao nếu mua quá nhiều món
+  overflow-y: auto; // Cho phép cuộn danh sách hàng
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #ddd;
+    border-radius: 4px;
+  }
 }
 
 .itemRow {
@@ -83,18 +161,31 @@
 
   img {
     width: 60px;
-    aspect-ratio: 1 / 1;
+    height: 60px;
     object-fit: cover;
     border-radius: 8px;
+    border: 1px solid #f0f0f0;
+    flex-shrink: 0;
+  }
+
+  div {
+    flex: 1;
   }
 
   .itemName {
     font-size: 1.4rem;
+    font-weight: 500;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .itemPrice {
     color: #666;
     font-size: 1.3rem;
+    margin-top: 4px;
   }
 }
 
@@ -109,90 +200,107 @@
 }
 
 .totalRow {
-  font-weight: 600;
-  font-size: 1.6rem;
+  font-weight: 700;
+  font-size: 1.8rem;
   border-top: 1px solid #ddd;
-  padding-top: 10px;
+  padding-top: 15px;
+  margin-top: 10px;
+  color: $primary-color;
 }
 
 .error {
   border-color: red !important;
-  background-color: #ffeaea;
+  background-color: #fff5f5 !important;
+
+  // Animation rung nhẹ khi lỗi
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .checkoutBtn {
   width: 100%;
-  background: #000;
+  background: $black-color;
   color: #fff;
-  padding: 12px;
+  padding: 14px;
   border: none;
   border-radius: 8px;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
+  font-weight: 600;
   margin-top: 20px;
   cursor: pointer;
+  transition: opacity 0.3s;
 
   &:hover {
-    opacity: 0.9;
+    opacity: 0.8;
   }
-}
 
-.paymentMethods {
-  padding: 16px;
-  font-family: Arial, sans-serif;
-
-  h2 {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 12px;
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
   }
-}
-
-.methodsList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .methodItem {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid #eee;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
+  margin-bottom: 10px;
 
   &:hover {
-    background-color: #f8f8f8;
+    background-color: #fafafa;
+    border-color: #ccc;
   }
 
   input[type="radio"] {
     width: 18px;
     height: 18px;
-    accent-color: #007bff;
+    accent-color: $black-color;
     cursor: pointer;
+    margin: 0; // Reset margin input
   }
 
   img {
-    width: 45px;
-    height: 45px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
-    border-radius: 10px;
   }
 
   span {
     font-weight: 500;
-    font-size: 16px;
-    color: #333;
+    font-size: 1.5rem;
+    color: $black-color;
   }
 }
 
 .selected {
-  border-color: #007bff;
-  background-color: #e8f2ff;
+  border-color: $black-color;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 0 1px $black-color inset; // Viền đậm hơn khi chọn
 }
 
+// Modal & Overlay
 .overlay {
   position: fixed;
   top: 0;
@@ -204,32 +312,47 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
 .modal {
   background: #fff;
-  padding: 20px;
-  border-radius: 10px;
+  padding: 30px;
+  border-radius: 12px;
   text-align: center;
-  min-width: 300px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  min-width: 320px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease;
 
   p {
-    margin-bottom: 15px;
-    font-size: 16px;
+    margin-bottom: 20px;
+    font-size: 1.6rem;
+    color: $black-color;
   }
 
   button {
-    background: $primary-color;
+    background: $black-color;
     color: white;
     border: none;
-    padding: 8px 16px;
+    padding: 10px 25px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 1.4rem;
+    font-weight: 500;
 
     &:hover {
-      background: $hide-color;
+      opacity: 0.8;
     }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

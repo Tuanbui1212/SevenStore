@@ -14,6 +14,11 @@ const Order = new Schema(
       type: String,
     },
 
+    status: {
+      type: String,
+      default: "Pending",
+    },
+
     items: [
       {
         productId: { type: mongoose.Schema.Types.ObjectId, ref: "product" },

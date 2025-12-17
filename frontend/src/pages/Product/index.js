@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import axios from "../../util/axios";
 
 import no_img from "../../assets/images/no_img.jpg";
+import ScrollToTop from "../../components/ScrollToTop";
 
 const sorts = [
   "Best Sellers",
@@ -14,9 +15,7 @@ const sorts = [
   "Price High To Low",
   "Price Low To High",
 ];
-
 const types = ["High", "Hype", "Mid", "Low"];
-
 const colors = [
   "red",
   "yellow",
@@ -31,7 +30,6 @@ const colors = [
   "green",
   "white",
 ];
-
 const priceOptions = [
   { min: 1000000, max: 2000000 },
   { min: 2000000, max: 3000000 },
@@ -42,6 +40,8 @@ const priceOptions = [
 function Product() {
   const { brand } = useParams();
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
 
   const [selectedSort, setSelectedSort] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
@@ -56,7 +56,8 @@ function Product() {
   const [openPrice, setOpenPrice] = useState(false);
 
   useEffect(() => {
-    //let url = `http://localhost:5000/product/${brand}?`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setLoading(true);
     let url = `/product/${brand}?`;
 
     if (selectedSort) url += `sort=${selectedSort}&`;
@@ -65,12 +66,36 @@ function Product() {
     if (minPrice) url += `min=${minPrice}&`;
     if (maxPrice) url += `max=${maxPrice}&`;
 
-    // fetch(url)
-    //   .then((res) => res.json())
     axios(url)
-      .then((res) => setProducts(res.data.newProduct || []))
-      .catch((err) => console.error("Lỗi:", err));
+      .then((res) => {
+        setProducts(res.data.newProduct || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Lỗi:", err);
+        setLoading(false);
+      });
   }, [brand, selectedColor, selectedType, minPrice, maxPrice, selectedSort]);
+
+  const ProductSkeleton = () => (
+    <div className={clsx("col col-4 col-md-6 col-sm-6", styles.productCard)}>
+      <div
+        className={clsx(styles.productImage, styles.skeleton)}
+        style={{ height: "300px" }}
+      ></div>
+      <div className={clsx(styles.productInfo)}>
+        <div
+          className={clsx(styles.skeleton)}
+          style={{ height: "20px", width: "80%", marginBottom: "5px" }}
+        ></div>
+        <div
+          className={clsx(styles.skeleton)}
+          style={{ height: "20px", width: "40%" }}
+        ></div>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <div className="container">
@@ -95,16 +120,45 @@ function Product() {
         </div>
 
         <div className={clsx("row mt-28", styles.mainRow)}>
-          {/* --- sidebar --- */}
-          <div className={clsx("col col-3 display-sm-none", styles.sidebar)}>
-            {/* --- Sắp xếp theo --- */}
+          {/* --- Nút mở Filter Mobile --- */}
+          <div className="col col-12 display-md-none">
+            <button
+              className={styles.mobileFilterBtn}
+              onClick={() => setShowMobileFilter(true)}
+            >
+              <i className="fa-solid fa-filter"></i> FILTER & SORT
+            </button>
+          </div>
+
+          {/* --- Overlay cho Mobile --- */}
+          <div
+            className={clsx(styles.overlay, showMobileFilter && styles.active)}
+            onClick={() => setShowMobileFilter(false)}
+          ></div>
+
+          {/* --- Sidebar (Về lại col-3) --- */}
+          <div
+            className={clsx(
+              "col col-3",
+              styles.sidebar,
+              showMobileFilter && styles.open
+            )}
+          >
+            <button
+              className={styles.closeSidebarBtn}
+              onClick={() => setShowMobileFilter(false)}
+            >
+              &times;
+            </button>
+
+            {/* Sort */}
             <div className={styles.section}>
-              <div className={styles.header}>
+              <div
+                className={styles.header}
+                onClick={() => setOpenSort(!openSort)}
+              >
                 <h3 className={styles.sidebarTitle}>SORT BY</h3>
-                <button
-                  className={styles.toggleBtn}
-                  onClick={() => setOpenSort(!openSort)}
-                >
+                <button className={styles.toggleBtn}>
                   {openSort ? "—" : "+"}
                 </button>
               </div>
@@ -114,15 +168,11 @@ function Product() {
                     <li key={idx} className={styles.type__Item}>
                       <label className={styles.type__link}>
                         <input
-                          type="checkbox"
-                          name="type"
+                          type="radio"
+                          name="sort"
                           value={type}
                           checked={selectedSort === type}
-                          onChange={() =>
-                            selectedSort === type
-                              ? setSelectedSort("")
-                              : setSelectedSort(type)
-                          }
+                          onChange={() => setSelectedSort(type)}
                         />
                         <span>{type}</span>
                       </label>
@@ -131,14 +181,15 @@ function Product() {
                 </ul>
               )}
             </div>
-            {/* --- Phân loại --- */}
+
+            {/* Category */}
             <div className={styles.section}>
-              <div className={styles.header}>
+              <div
+                className={styles.header}
+                onClick={() => setOpenType(!openType)}
+              >
                 <h3 className={styles.sidebarTitle}>CATEGORY</h3>
-                <button
-                  className={styles.toggleBtn}
-                  onClick={() => setOpenType(!openType)}
-                >
+                <button className={styles.toggleBtn}>
                   {openType ? "—" : "+"}
                 </button>
               </div>
@@ -166,14 +217,14 @@ function Product() {
               )}
             </div>
 
-            {/* --- Màu sắc --- */}
+            {/* Color */}
             <div className={styles.section}>
-              <div className={styles.header}>
+              <div
+                className={styles.header}
+                onClick={() => setOpenColor(!openColor)}
+              >
                 <h3 className={styles.sidebarTitle}>Color</h3>
-                <button
-                  className={styles.toggleBtn}
-                  onClick={() => setOpenColor(!openColor)}
-                >
+                <button className={styles.toggleBtn}>
                   {openColor ? "—" : "+"}
                 </button>
               </div>
@@ -187,25 +238,23 @@ function Product() {
                         selectedColor === color && styles.selected
                       )}
                       style={{ backgroundColor: color }}
-                      onClick={() => {
-                        const newColor = selectedColor === color ? "" : color;
-                        setSelectedColor(newColor);
-                        //handleSubmitColor(newColor);
-                      }}
+                      onClick={() =>
+                        setSelectedColor(selectedColor === color ? "" : color)
+                      }
                     />
                   ))}
                 </div>
               )}
             </div>
 
-            {/* --- Giá --- */}
+            {/* Price */}
             <div className={styles.section}>
-              <div className={styles.header}>
+              <div
+                className={styles.header}
+                onClick={() => setOpenPrice(!openPrice)}
+              >
                 <h3 className={styles.sidebarTitle}>Price</h3>
-                <button
-                  className={styles.toggleBtn}
-                  onClick={() => setOpenPrice(!openPrice)}
-                >
+                <button className={styles.toggleBtn}>
                   {openPrice ? "—" : "+"}
                 </button>
               </div>
@@ -214,21 +263,23 @@ function Product() {
                   <div className={styles.inputGroup}>
                     <input
                       type="number"
-                      placeholder="0đ"
+                      placeholder="Min"
                       value={minPrice}
                       onChange={(e) => {
                         const val = e.target.value;
                         if (val >= 0) setMinPrice(val);
+                        setSelectedPrice(null);
                       }}
                     />
                     <span>—</span>
                     <input
                       type="number"
-                      placeholder="0đ"
+                      placeholder="Max"
                       value={maxPrice}
                       onChange={(e) => {
                         const val = e.target.value;
                         if (val >= 0) setMaxPrice(val);
+                        setSelectedPrice(null);
                       }}
                     />
                   </div>
@@ -239,21 +290,17 @@ function Product() {
                         <input
                           type="checkbox"
                           name="price"
-                          checked={
-                            selectedPrice === index &&
-                            minPrice === option.min &&
-                            maxPrice === option.max
-                          }
+                          checked={selectedPrice === index}
                           onChange={() => {
-                            setSelectedPrice(
-                              (prev) => (prev === index ? "" : index) // click lại => bỏ chọn
-                            );
-                            setMinPrice((prev) =>
-                              selectedPrice === index ? "" : option.min
-                            );
-                            setMaxPrice((prev) =>
-                              selectedPrice === index ? "" : option.max
-                            );
+                            if (selectedPrice === index) {
+                              setSelectedPrice(null);
+                              setMinPrice("");
+                              setMaxPrice("");
+                            } else {
+                              setSelectedPrice(index);
+                              setMinPrice(option.min);
+                              setMaxPrice(option.max);
+                            }
                           }}
                         />
                         {Number(option.min).toLocaleString("vi-VN")}đ -{" "}
@@ -266,12 +313,17 @@ function Product() {
             </div>
           </div>
 
-          {/* Danh sách sản phẩm */}
+          {/* --- Danh sách sản phẩm (Về lại col-9) --- */}
           <div className={clsx("col col-9 col-sm-12", styles.productList)}>
             <h3 className={styles.productListTitle}>{brand}</h3>
             <div className={clsx("row", styles.productGrid)}>
-              {products && products.length > 0 ? (
+              {loading ? (
+                Array(6)
+                  .fill(0)
+                  .map((_, i) => <ProductSkeleton key={i} />)
+              ) : products.length > 0 ? (
                 products.map((product) => (
+                  // Về lại col-4 (3 sản phẩm/hàng) như cũ
                   <div
                     key={product._id}
                     className={clsx(
@@ -297,27 +349,35 @@ function Product() {
                       )}
                       <img
                         src={product.image.image1 || no_img}
-                        alt="Sneaker"
+                        alt={product.name}
                         className={styles.productImage}
                       />
                       <div className={styles.productInfo}>
                         <div className={styles.productTop}>
-                          <span className={styles.productName}>
-                            {product.name}
-                          </span>
+                          <p className={styles.productName}>{product.name}</p>
                           <span className={styles.productPrice}>
-                            {Number(product.cost).toLocaleString("vi-VN")}
+                            {Number(product.cost).toLocaleString("vi-VN")}₫
                           </span>
                         </div>
                         <span className={styles.productDescription}>
-                          {product.description ? product.description : "\u00A0"}
+                          {product.description || "\u00A0"}
                         </span>
                       </div>
                     </Link>
                   </div>
                 ))
               ) : (
-                <p>No products found</p>
+                <div className="col col-12 text-center">
+                  <p
+                    style={{
+                      fontSize: "1.6rem",
+                      color: "#888",
+                      marginTop: "20px",
+                    }}
+                  >
+                    No products found matching your selection.
+                  </p>
+                </div>
               )}
             </div>
           </div>

@@ -16,8 +16,6 @@ function OrderDetail() {
   const [bill, setBill] = useState([]);
 
   const fetchOrderDetail = () => {
-    // fetch(`http://localhost:5000/dashboard/orders/${id}`)
-    //   .then((res) => res.json())
     axios
       .get(`/dashboard/orders/${id}`)
       .then((res) => {
@@ -32,13 +30,24 @@ function OrderDetail() {
     fetchOrderDetail();
   }, []);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    return new Date(dateString).toLocaleString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
   return (
     <>
       <div className={clsx("container", styles.cartContainer)}>
         <div className={styles.btnBack}>
           <button
             onClick={() => {
-              navigate("/dashboard/orders");
+              navigate(-1);
             }}
           >
             Back
@@ -52,7 +61,9 @@ function OrderDetail() {
                   <div key={index} className={styles.cartItem}>
                     <div className={styles.itemLeft}>
                       <Link
-                        to={`/product/${items.productId.brand}/${items.productId.slug}`}
+                        to={`/product/${items.productId?.brand || "No Brand"}/${
+                          items.productId?.slug
+                        }`}
                         className={clsx(
                           "col col-2 col-md-3 col-sm-4",
                           styles.imageWrapper
@@ -64,7 +75,9 @@ function OrderDetail() {
                         />
                       </Link>
                       <Link
-                        to={`/product/${items.productId.brand}/${items.productId.slug}`}
+                        to={`/product/${items.productId?.brand || "No Brand"}/${
+                          items.productId?.slug
+                        }`}
                         className={styles.itemInfo}
                       >
                         <p className={styles.itemName}>
@@ -98,6 +111,9 @@ function OrderDetail() {
               <h3>Order Summary</h3>
 
               <div className={styles.orderInfo}>
+                <p>
+                  <strong>Date:</strong> {formatDate(bill.createdAt)}
+                </p>
                 <p>
                   <strong>Customer:</strong> {bill.name}
                 </p>

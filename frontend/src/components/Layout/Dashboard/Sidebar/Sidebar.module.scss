@@ -1,30 +1,27 @@
 @import "../../../GlobalStyles/variables";
 
 .sidebar {
-  width: 100%;
-  background-color: 80px;
-  border-radius: 16px;
+  width: 260px;
+  background-color: $white-color;
   border-right: 1px solid #e0e0e0;
   padding: 24px 16px;
-  min-height: 100vh; // Full chiều cao
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative;
+  position: fixed;
+  left: 0;
+  top: 0;
   transition: all 0.3s ease-in-out;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+  z-index: 1000;
 
-  // --- TRẠNG THÁI KHI ĐÓNG (COLLAPSED) ---
   &.collapsed {
     width: 80px;
     padding: 24px 12px;
 
-    .brandInfo {
-      opacity: 0;
-      width: 0;
-      overflow: hidden;
-    }
-
-    .menuText {
+    .brandInfo,
+    .menuText,
+    .menuLabel {
       display: none;
     }
 
@@ -45,10 +42,17 @@
         margin-right: 0;
       }
     }
+
+    .badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 0.9rem;
+      padding: 2px 5px;
+    }
   }
 }
 
-// --- NÚT TOGGLE ---
 .toggleBtn {
   position: absolute;
   top: 30px;
@@ -78,28 +82,25 @@
   }
 }
 
-// --- HEADER ---
 .header {
   display: flex;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 0px;
   padding: 0 10px;
   overflow: hidden;
 
   .logo {
-    width: 20px;
-    height: 20px;
+    width: 25px;
+    height: 25px;
     object-fit: contain;
     margin-right: 12px;
     flex-shrink: 0;
-    transition: margin 0.3s;
   }
 
   .brandInfo {
     display: flex;
     flex-direction: column;
     white-space: nowrap;
-    transition: opacity 0.2s;
 
     .brandTitle {
       font-size: 1.6rem;
@@ -113,7 +114,15 @@
   }
 }
 
-// --- MENU LIST ---
+.menuLabel {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #999;
+  padding: 20px 10px 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 .menuList {
   list-style: none;
   padding: 0;
@@ -132,27 +141,26 @@
   font-weight: 600;
   transition: all 0.2s ease;
   white-space: nowrap;
+  position: relative;
 
   i {
     width: 30px;
     text-align: center;
     font-size: 1.8rem;
     margin-right: 14px;
-    transition: all 0.3s;
   }
 
   .menuText {
     font-size: 1.5rem;
+    flex: 1;
   }
 
-  // Hover Effect
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
     color: $black-color;
     transform: translateX(4px);
   }
 
-  // Active State (Đang chọn)
   &.active {
     background-color: $black-color;
     color: $white-color;
@@ -164,9 +172,19 @@
   }
 }
 
-// --- FOOTER ---
+.badge {
+  background-color: #ef4444;
+  color: $white-color;
+  font-size: 1.1rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
 .footer {
-  margin-top: 20px;
+  margin-top: auto;
+  padding-bottom: 20px;
 
   .divider {
     height: 1px;

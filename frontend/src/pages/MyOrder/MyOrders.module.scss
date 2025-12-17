@@ -26,11 +26,6 @@ $mobile-width: 739px;
   margin-bottom: 30px;
   text-align: center;
   color: $black-color;
-
-  @include mobile {
-    font-size: 2.2rem;
-    margin-bottom: 20px;
-  }
 }
 
 // --- Tabs ---
@@ -40,18 +35,6 @@ $mobile-width: 739px;
   border-bottom: 1px solid #eee;
   margin-bottom: 30px;
   gap: 20px;
-
-  @include mobile {
-    overflow-x: auto;
-    justify-content: flex-start;
-    padding-bottom: 5px;
-    gap: 15px;
-
-    // Ẩn thanh cuộn trên mobile cho đẹp
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  }
 
   .tabItem {
     background: none;
@@ -72,11 +55,10 @@ $mobile-width: 739px;
     &.active {
       color: $black-color;
       font-weight: 700;
-
       &::after {
         content: "";
         position: absolute;
-        bottom: -1px; // Đè lên border-bottom của .tabs
+        bottom: -1px;
         left: 0;
         width: 100%;
         height: 2px;
@@ -104,10 +86,6 @@ $mobile-width: 739px;
 
   &:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  }
-
-  @include mobile {
-    padding: 15px;
   }
 }
 
@@ -143,16 +121,16 @@ $mobile-width: 739px;
 
     &.pending {
       color: #f59e0b;
-    } // Vàng cam
+    }
     &.shipping {
-      color: #3b82f6;
-    } // Xanh dương
+      color: #8b5cf6;
+    }
     &.delivered {
       color: #10b981;
-    } // Xanh lá
+    }
     &.cancelled {
       color: #ef4444;
-    } // Đỏ
+    }
   }
 }
 
@@ -172,7 +150,6 @@ $mobile-width: 739px;
     width: 70px;
     height: 70px;
     flex-shrink: 0;
-
     img {
       width: 100%;
       height: 100%;
@@ -187,21 +164,11 @@ $mobile-width: 739px;
     display: flex;
     flex-direction: column;
     gap: 4px;
-
     .productName {
       font-size: 1.6rem;
       font-weight: 600;
       color: $black-color;
-
-      @include mobile {
-        font-size: 1.4rem;
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
     }
-
     .productDetails {
       font-size: 1.4rem;
       color: $hide-color;
@@ -212,10 +179,6 @@ $mobile-width: 739px;
     font-size: 1.6rem;
     font-weight: 500;
     color: $black-color;
-
-    @include mobile {
-      font-size: 1.4rem;
-    }
   }
 }
 
@@ -228,24 +191,14 @@ $mobile-width: 739px;
   padding-top: 15px;
   border-top: 1px solid #f0f0f0;
 
-  @include mobile {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-end; // Đẩy sang phải hết
-  }
-
   .totalSection {
     font-size: 1.6rem;
     color: $black-color;
-
-    span:first-child {
-      margin-right: 8px;
-    }
-
     .totalPrice {
       font-size: 2rem;
       font-weight: 700;
       color: $primary-color;
+      margin-left: 8px;
     }
   }
 
@@ -262,23 +215,38 @@ $mobile-width: 739px;
       text-decoration: none;
       font-weight: 500;
       transition: all 0.2s;
+      border: none;
     }
 
     .btnDetail {
       border: 1px solid $black-color;
       color: $black-color;
       background: transparent;
-
       &:hover {
         background: #f5f5f5;
       }
     }
 
+    .btnReceived {
+      background-color: #ee4d2d; // Cam Shopee
+      color: $white-color;
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+
+    .btnCancelOrder {
+      border: 1px solid #ef4444;
+      color: #ef4444;
+      background: transparent;
+      &:hover {
+        background-color: #fef2f2;
+      }
+    }
+
     .btnReorder {
-      border: 1px solid $primary-color;
       background-color: $primary-color;
       color: $white-color;
-
       &:hover {
         opacity: 0.9;
       }
@@ -290,19 +258,16 @@ $mobile-width: 739px;
 .noOrder {
   text-align: center;
   padding: 40px 0;
-
   img {
     width: 200px;
     margin-bottom: 20px;
     opacity: 0.8;
   }
-
   p {
     font-size: 1.8rem;
     color: $hide-color;
     margin-bottom: 20px;
   }
-
   .btnShopNow {
     display: inline-block;
     background-color: $black-color;
@@ -312,10 +277,172 @@ $mobile-width: 739px;
     text-decoration: none;
     font-size: 1.6rem;
     font-weight: 600;
-    transition: opacity 0.3s;
-
     &:hover {
       opacity: 0.8;
     }
+  }
+}
+
+// ============================================
+// CUSTOM TOAST & MODAL STYLES (NO LIBRARY)
+// ============================================
+
+.toast {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 8px;
+  background-color: $white-color;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  min-width: 300px;
+  animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-left: 5px solid;
+
+  &.success {
+    border-left-color: #10b981;
+    .toastIcon {
+      color: #10b981;
+    }
+  }
+  &.error {
+    border-left-color: #ef4444;
+    .toastIcon {
+      color: #ef4444;
+    }
+  }
+
+  .toastIcon {
+    font-size: 2rem;
+  }
+  .toastMessage {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: $black-color;
+  }
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+  backdrop-filter: blur(2px);
+}
+
+.modalContent {
+  background-color: $white-color;
+  padding: 30px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease-out;
+
+  .modalIcon {
+    font-size: 4.5rem;
+    color: $primary-color;
+    margin-bottom: 15px;
+  }
+
+  .modalTitle {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: $black-color;
+  }
+
+  .modalDesc {
+    font-size: 1.5rem;
+    color: $hide-color;
+    margin-bottom: 25px;
+    line-height: 1.5;
+  }
+}
+
+.modalActions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+
+  button {
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 10px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+
+  .btnCancel {
+    background-color: #f3f4f6;
+    color: $black-color;
+    &:hover {
+      background-color: #e5e7eb;
+    }
+  }
+
+  .btnConfirm {
+    // Nút xác nhận nhận hàng (Màu xanh/cam)
+    background-color: #ee4d2d;
+    color: $white-color;
+    &:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+  }
+
+  .btnDanger {
+    // Nút xác nhận hủy (Màu đỏ)
+    background-color: #ef4444;
+    color: $white-color;
+    &:hover {
+      background-color: #dc2626;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }

@@ -1,33 +1,63 @@
 import styles from "./Order.module.scss";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../util/axios";
+
+const STATUS_COLORS = {
+  Pending: "statusPending",
+  Confirmed: "statusConfirmed",
+  Shipping: "statusShipping",
+  Delivered: "statusDelivered",
+  Cancelled: "statusCancelled",
+};
 
 function Order() {
   const [orders, setOrders] = useState([]);
+  const { type } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const pageSize = 5;
   const navigate = useNavigate();
 
-  const fetchOrder = () => {
+  const fetchOrder = useCallback(() => {
+    setIsLoading(true);
     axios
-      .get("/dashboard/orders")
+      .get(`/dashboard/orders/manage/${type}`)
       .then((res) => {
-        setOrders(res.data.order);
+        const data = Array.isArray(res.data) ? res.data : res.data.order || [];
+        setOrders(data);
       })
-      .catch((err) => console.error("Lỗi fetch:", err));
-  };
+      .catch((err) => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, [type]);
 
   useEffect(() => {
+    setSearchTerm("");
+    setCurrentPage(1);
     fetchOrder();
-  }, []);
+  }, [fetchOrder, type]);
+
+  const handleUpdateStatus = (id, newStatus) => {
+    axios
+      .put(`/dashboard/orders/${id}`, { status: newStatus })
+      .then(() => {
+        setOrders((prev) =>
+          prev.map((order) =>
+            order._id === id ? { ...order, status: newStatus } : order
+          )
+        );
+        setModalMessage(`Updated status to: ${newStatus}`);
+        setShowModal(true);
+      })
+      .catch((err) => console.error(err));
+  };
 
   const handleSort = (key) => {
     let direction = "asc";
@@ -38,11 +68,13 @@ function Order() {
   };
 
   const filteredData = orders.filter((order) => {
+    if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
-      (order.name && order.name.toLowerCase().includes(term)) ||
-      (order.phone && order.phone.includes(term)) ||
-      (order.city && order.city.toLowerCase().includes(term))
+      order.name?.toLowerCase().includes(term) ||
+      order.phone?.includes(term) ||
+      order.city?.toLowerCase().includes(term) ||
+      order._id?.toLowerCase().includes(term)
     );
   });
 
@@ -55,12 +87,8 @@ function Order() {
         ? b[sortConfig.key].toString().toLowerCase()
         : "";
 
-      if (aValue < bValue) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
       return 0;
     });
   }
@@ -107,12 +135,23 @@ function Order() {
     );
   };
 
+  const pageTitle = type === "history" ? "Order History" : "Active Orders";
+  const pageDesc =
+    type === "history"
+      ? "List of delivered and cancelled orders"
+      : "Manage new and shipping orders";
+
   return (
     <div className={clsx("mt-36", styles.tableWrapper)}>
+      <div className={styles.pageHeader}>
+        <h2 className={styles.pageTitle}>{pageTitle}</h2>
+        <p className={styles.pageDesc}>{pageDesc}</p>
+      </div>
+
       <div className={styles.tableControls}>
         <input
           type="text"
-          placeholder="Search by name, phone, city..."
+          placeholder="Search by ID, name, phone..."
           className={styles.searchInput}
           value={searchTerm}
           onChange={(e) => {
@@ -122,125 +161,185 @@ function Order() {
         />
       </div>
 
-      <table className={styles.table}>
-        <thead className={styles.tableTitle}>
-          <tr>
-            <th className={styles.tableHeader}>#</th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("name")}
-            >
-              Name {renderSortIcon("name")}
-            </th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("phone")}
-            >
-              Phone {renderSortIcon("phone")}
-            </th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("city")}
-            >
-              City {renderSortIcon("city")}
-            </th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("paymentMethod")}
-            >
-              Status {renderSortIcon("paymentMethod")}
-            </th>
-            <th className={styles.tableHeader}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentData.length > 0 ? (
-            currentData.map((e, index) => (
-              <tr key={index} className={styles.tableRow}>
-                <td className={styles.tableCell}>{startIndex + index + 1}</td>
-                <td className={styles.tableCell}>
-                  <strong>{e.name}</strong>
-                </td>
-                <td className={styles.tableCell}>{e.phone}</td>
-                <td className={styles.tableCell}>{e.city}</td>
-                <td className={styles.tableCell}>
-                  <span
-                    className={clsx(
-                      styles.tableStatus,
-                      e.paymentMethod === "Momo" && styles.Momo,
-                      e.paymentMethod === "VnPay" && styles.VnPay,
-                      e.paymentMethod === "ShipCod" && styles.ShipCOD
-                    )}
-                  >
-                    {e.paymentMethod}
-                  </span>
-                </td>
-                <td className={styles.tableCell}>
-                  <button
-                    onClick={() => {
-                      navigate(`/dashboard/orders/${e._id}`);
+      {isLoading ? (
+        <div style={{ textAlign: "center", padding: "40px" }}>
+          Loading data...
+        </div>
+      ) : (
+        <>
+          <table className={styles.table}>
+            <thead className={styles.tableTitle}>
+              <tr>
+                <th className={styles.tableHeader}>ID</th>
+                <th
+                  className={clsx(styles.tableHeader, styles.sortable)}
+                  onClick={() => handleSort("name")}
+                >
+                  Customer {renderSortIcon("name")}
+                </th>
+                <th
+                  className={clsx(styles.tableHeader, styles.sortable)}
+                  onClick={() => handleSort("phone")}
+                >
+                  Phone {renderSortIcon("phone")}
+                </th>
+                <th
+                  className={clsx(styles.tableHeader, styles.sortable)}
+                  onClick={() => handleSort("paymentMethod")}
+                >
+                  Payment {renderSortIcon("paymentMethod")}
+                </th>
+                <th
+                  className={clsx(styles.tableHeader, styles.sortable)}
+                  onClick={() => handleSort("status")}
+                >
+                  Status {renderSortIcon("status")}
+                </th>
+                <th className={styles.tableHeader}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentData.length > 0 ? (
+                currentData.map((e, index) => (
+                  <tr key={index} className={styles.tableRow}>
+                    <td className={styles.tableCell}>
+                      #{e._id.slice(-6).toUpperCase()}
+                    </td>
+                    <td className={styles.tableCell}>
+                      <strong>{e.name}</strong>
+                      <div style={{ fontSize: "0.85em", color: "#888" }}>
+                        {e.city}
+                      </div>
+                    </td>
+                    <td className={styles.tableCell}>{e.phone}</td>
+                    <td className={styles.tableCell}>
+                      <span
+                        className={clsx(
+                          styles.paymentBadge,
+                          styles[e.paymentMethod]
+                        )}
+                      >
+                        {e.paymentMethod}
+                      </span>
+                    </td>
+                    <td className={styles.tableCell}>
+                      <span
+                        className={clsx(
+                          styles.statusBadge,
+                          styles[STATUS_COLORS[e.status || "Pending"]]
+                        )}
+                      >
+                        {e.status || "Pending"}
+                      </span>
+                    </td>
+                    <td className={styles.tableCell}>
+                      <div className={styles.actionButtons}>
+                        {type !== "history" && (
+                          <>
+                            {(e.status === "Pending" || !e.status) && (
+                              <button
+                                className={styles.btnConfirm}
+                                onClick={() =>
+                                  handleUpdateStatus(e._id, "Confirmed")
+                                }
+                              >
+                                <i className="fa-solid fa-check"></i>
+                              </button>
+                            )}
+                            {e.status === "Confirmed" && (
+                              <button
+                                className={styles.btnShip}
+                                onClick={() =>
+                                  handleUpdateStatus(e._id, "Shipping")
+                                }
+                              >
+                                <i className="fa-solid fa-truck-fast"></i>
+                              </button>
+                            )}
+                          </>
+                        )}
+                        <button
+                          className={styles.btnDetail}
+                          onClick={() => navigate(`/dashboard/orders/${e._id}`)}
+                        >
+                          <i className="fa-solid fa-eye"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="6"
+                    style={{
+                      textAlign: "center",
+                      padding: "40px",
+                      color: "#888",
                     }}
                   >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
-                No orders found matching "{searchTerm}"
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                    <i
+                      className="fa-solid fa-inbox"
+                      style={{
+                        fontSize: "2rem",
+                        marginBottom: "10px",
+                        display: "block",
+                      }}
+                    ></i>
+                    No orders found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
 
-      {totalPages > 0 && (
-        <div className={styles.pagination}>
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => p - 1)}
-          >
-            <i className="fa-solid fa-caret-left"></i>
-          </button>
-
-          {getPageNumbers().map((p, i) =>
-            p === "..." ? (
-              <span key={i} className={styles.ellipsis}>
-                ...
-              </span>
-            ) : (
+          {totalPages > 0 && (
+            <div className={styles.pagination}>
               <button
-                key={i}
-                className={clsx(currentPage === p && styles.activePage)}
-                onClick={() => setCurrentPage(p)}
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => p - 1)}
               >
-                {p}
+                <i className="fa-solid fa-caret-left"></i>
               </button>
-            )
+              {getPageNumbers().map((p, i) =>
+                p === "..." ? (
+                  <span key={i} className={styles.ellipsis}>
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={i}
+                    className={clsx(currentPage === p && styles.activePage)}
+                    onClick={() => setCurrentPage(p)}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                <i className="fa-solid fa-caret-right"></i>
+              </button>
+            </div>
           )}
-
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => p + 1)}
-          >
-            <i className="fa-solid fa-caret-right"></i>
-          </button>
-        </div>
+        </>
       )}
 
       {showModal && (
         <div className={styles.overlay}>
           <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                setShowModal(false);
+            <i
+              className="fa-solid fa-circle-check"
+              style={{
+                color: "#28a745",
+                fontSize: "2rem",
+                marginBottom: "10px",
               }}
-            >
-              Close
-            </button>
+            ></i>
+            <p>{modalMessage}</p>
+            <button onClick={() => setShowModal(false)}>Close</button>
           </div>
         </div>
       )}

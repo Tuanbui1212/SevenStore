@@ -284,7 +284,13 @@ function ProductDetail() {
                 </button>
                 <button
                   className={clsx(styles.buy__now)}
-                  onClick={() => handleGoToPayment()}
+                  onClick={() => {
+                    if (localStorage.getItem("success") !== "true") {
+                      navigate("/login");
+                      return;
+                    }
+                    handleGoToPayment();
+                  }}
                 >
                   <i className="fa-solid fa-bag-shopping"></i> Buy Now
                 </button>

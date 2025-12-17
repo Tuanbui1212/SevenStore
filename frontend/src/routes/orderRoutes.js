@@ -6,7 +6,7 @@ import OnlyHeader from "../components/Layout/OnlyHeader";
 
 export const orderRoutes = [
   {
-    path: "/dashboard/orders",
+    path: "/dashboard/orders/manage/:type",
     component: Order,
     layout: Dashboard,
   },

@@ -3,96 +3,91 @@ import { Link } from "react-router-dom";
 import clsx from "clsx";
 import styles from "./MyOrders.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
-
-// Ảnh giả lập (dùng lại ảnh import hoặc link mạng)
-import noOrder from "../../assets/images/no-item.jpg"; // Nhớ thay đường dẫn đúng
-// Dữ liệu giả lập
-const MOCK_ORDERS = [
-  {
-    id: "ORD-2024-001",
-    date: "2024-03-20",
-    status: "Pending", // Pending, Shipping, Delivered, Cancelled
-    paymentMethod: "ShipCod",
-    total: 5279000,
-    items: [
-      {
-        id: 1,
-        name: "AIR JORDAN 1 LOW",
-        size: "42",
-        quantity: 1,
-        price: 5279000,
-        image:
-          "https://secure-images.nike.com/is/image/DotCom/553558_163_A_PREM?align=0,1&cropN=0,0,0,0&resMode=sharp&bgc=f5f5f5&fmt=jpg",
-      },
-    ],
-  },
-  {
-    id: "ORD-2024-002",
-    date: "2024-03-15",
-    status: "Delivered",
-    paymentMethod: "VnPay",
-    total: 8680000,
-    items: [
-      {
-        id: 2,
-        name: "PUMA SPEEDCAT OG",
-        size: "38",
-        quantity: 2,
-        price: 2500000,
-        image:
-          "https://images.puma.com/image/upload/f_auto,q_auto,b_rgb:fafafa,w_600,h_600/global/398846/01/sv01/fnd/VNM/fmt/png/Gi%C3%A0y-Th%E1%BB%83-Thao-Unisex-Speedcat-OG",
-      },
-      {
-        id: 3,
-        name: "ADIDAS SAMBA OG",
-        size: "40",
-        quantity: 1,
-        price: 3680000,
-        image:
-          "https://assets.adidas.com/images/h_840,f_auto,q_auto,fl_lossy,c_fill,g_auto/b7b2b1a2072e4d308064a8bf0116e026_9366/Giay_Samba_OG_trang_B75806_01_standard.jpg",
-      },
-    ],
-  },
-  {
-    id: "ORD-2024-003",
-    date: "2024-02-28",
-    status: "Cancelled",
-    paymentMethod: "Momo",
-    total: 1840000,
-    items: [
-      {
-        id: 4,
-        name: "VANS OLD SKOOL",
-        size: "39",
-        quantity: 1,
-        price: 1840000,
-        image:
-          "https://images.vans.com/is/image/Vans/VN000D3HY28-HERO?$583x583$",
-      },
-    ],
-  },
-];
+import axios from "../../util/axios";
+import noOrder from "../../assets/images/no-item.jpg";
 
 function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
 
-  // Tabs cấu hình
+  // --- 1. STATE QUẢN LÝ MODAL (CHUNG CHO HỦY & NHẬN) ---
+  const [modal, setModal] = useState({
+    show: false,
+    orderId: null,
+    type: null,
+  });
+
+  // --- 2. STATE QUẢN LÝ THÔNG BÁO (TOAST TỰ CHẾ) ---
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
   const tabs = ["All", "Pending", "Shipping", "Delivered", "Cancelled"];
 
+  // Tự động tắt thông báo sau 3 giây
   useEffect(() => {
-    // Giả lập gọi API lấy đơn hàng
-    // axios.get('/my-orders')...
-    setOrders(MOCK_ORDERS);
+    if (toast.show) {
+      const timer = setTimeout(() => {
+        setToast((prev) => ({ ...prev, show: false }));
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast.show]);
+
+  const fetchMyOrders = () => {
+    const currentUser = localStorage.getItem("user") || "guest";
+    axios
+      .get(`/my-orders?user=${currentUser}`)
+      .then((res) => setOrders(res.data.order))
+      .catch((err) => console.error(err));
+  };
+
+  useEffect(() => {
+    fetchMyOrders();
   }, []);
 
-  // Lọc đơn hàng theo Tab
-  const filteredOrders =
-    activeTab === "All"
-      ? orders
-      : orders.filter((order) => order.status === activeTab);
+  // --- CÁC HÀM XỬ LÝ ---
+  const openModal = (orderId, type) => {
+    setModal({ show: true, orderId, type });
+  };
 
-  // Helper function để hiển thị màu trạng thái
+  const closeModal = () => {
+    setModal({ show: false, orderId: null, type: null });
+  };
+
+  const handleAction = () => {
+    if (!modal.orderId || !modal.type) return;
+
+    const isReceive = modal.type === "receive";
+    const newStatus = isReceive ? "Delivered" : "Cancelled";
+    const successMsg = isReceive
+      ? "Order received successfully! Thank you ❤️"
+      : "Order cancelled successfully.";
+
+    axios
+      .put(`/dashboard/orders/${modal.orderId}`, { status: newStatus })
+      .then(() => {
+        closeModal();
+        fetchMyOrders();
+        setToast({ show: true, message: successMsg, type: "success" });
+      })
+      .catch((err) => {
+        console.error(err);
+        closeModal();
+        // Hiện thông báo lỗi
+        setToast({
+          show: true,
+          message: "Something went wrong.",
+          type: "error",
+        });
+      });
+  };
+
+  const filteredOrders =
+    activeTab === "All" ? orders : orders.filter((o) => o.status === activeTab);
+
   const getStatusClass = (status) => {
     switch (status) {
       case "Pending":
@@ -108,11 +103,58 @@ function MyOrders() {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const modalContent = {
+    receive: {
+      icon: <i className="fa-solid fa-box-open"></i>,
+      title: "Confirm Receipt",
+      desc: "Have you received this order and checked the items? This action cannot be undone.",
+      btnText: "Yes, Received",
+      btnClass: styles.btnConfirm,
+    },
+    cancel: {
+      icon: (
+        <i
+          className="fa-solid fa-circle-xmark"
+          style={{ color: "#ef4444" }}
+        ></i>
+      ),
+      title: "Cancel Order",
+      desc: "Are you sure you want to cancel this order? This action cannot be undone.",
+      btnText: "Yes, Cancel",
+      btnClass: styles.btnDanger,
+    },
+  };
+  const currentModal = modalContent[modal.type] || {};
+
   return (
     <div className={clsx("container", styles.container)}>
+      {/* --- UI THÔNG BÁO (TOAST) --- */}
+      {toast.show && (
+        <div className={clsx(styles.toast, styles[toast.type])}>
+          <div className={styles.toastIcon}>
+            {toast.type === "success" ? (
+              <i className="fa-solid fa-circle-check"></i>
+            ) : (
+              <i className="fa-solid fa-circle-exclamation"></i>
+            )}
+          </div>
+          <div className={styles.toastMessage}>{toast.message}</div>
+        </div>
+      )}
+
       <h2 className={styles.pageTitle}>MY ORDERS</h2>
 
-      {/* Tabs Navigation */}
       <div className={styles.tabs}>
         {tabs.map((tab) => (
           <button
@@ -125,16 +167,18 @@ function MyOrders() {
         ))}
       </div>
 
-      {/* Orders List */}
       <div className={styles.orderList}>
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
-            <div key={order.id} className={styles.orderCard}>
-              {/* Header: ID, Date, Status */}
+            <div key={order._id} className={styles.orderCard}>
               <div className={styles.orderHeader}>
                 <div className={styles.headerLeft}>
-                  <span className={styles.orderId}>#{order.id}</span>
-                  <span className={styles.orderDate}>{order.date}</span>
+                  <span className={styles.orderId}>
+                    #{order._id.slice(-6).toUpperCase()}
+                  </span>
+                  <span className={styles.orderDate}>
+                    {formatDate(order.createdAt)}
+                  </span>
                 </div>
                 <div
                   className={clsx(
@@ -146,15 +190,19 @@ function MyOrders() {
                 </div>
               </div>
 
-              {/* Body: Product Items */}
               <div className={styles.orderBody}>
                 {order.items.map((item, index) => (
                   <div key={index} className={styles.productItem}>
                     <div className={styles.productImg}>
-                      <img src={item.image} alt={item.name} />
+                      <img
+                        src={item.productId.image.image1}
+                        alt={item.productId.name}
+                      />
                     </div>
                     <div className={styles.productInfo}>
-                      <span className={styles.productName}>{item.name}</span>
+                      <span className={styles.productName}>
+                        {item.productId.name}
+                      </span>
                       <span className={styles.productDetails}>
                         Size: {item.size} x {item.quantity}
                       </span>
@@ -166,18 +214,42 @@ function MyOrders() {
                 ))}
               </div>
 
-              {/* Footer: Total & Actions */}
               <div className={styles.orderFooter}>
                 <div className={styles.totalSection}>
-                  <span>Total Order:</span>
+                  <span>Total:</span>{" "}
                   <span className={styles.totalPrice}>
-                    {order.total.toLocaleString("vi-VN")}₫
+                    {order.totalPrice.toLocaleString("vi-VN")}₫
                   </span>
                 </div>
+
                 <div className={styles.actionButtons}>
-                  <Link to={`/order/${order.id}`} className={styles.btnDetail}>
+                  <Link
+                    to={`/dashboard/orders/${order._id}`}
+                    className={styles.btnDetail}
+                  >
                     View Details
                   </Link>
+
+                  {/* Nút Hủy Đơn */}
+                  {order.status === "Pending" && (
+                    <button
+                      className={styles.btnCancelOrder}
+                      onClick={() => openModal(order._id, "cancel")}
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+
+                  {/* Nút Nhận Hàng */}
+                  {order.status === "Shipping" && (
+                    <button
+                      className={styles.btnReceived}
+                      onClick={() => openModal(order._id, "receive")}
+                    >
+                      Received Order
+                    </button>
+                  )}
+
                   {order.status === "Delivered" && (
                     <button className={styles.btnReorder}>Buy Again</button>
                   )}
@@ -187,14 +259,31 @@ function MyOrders() {
           ))
         ) : (
           <div className={styles.noOrder}>
-            <img src={noOrder} alt="No orders" />
-            <p>No orders found in this category.</p>
+            <img src={noOrder} alt="" /> <p>No orders found.</p>
             <Link to="/product/all" className={styles.btnShopNow}>
               SHOP NOW
             </Link>
           </div>
         )}
       </div>
+
+      {modal.show && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <div className={styles.modalIcon}>{currentModal.icon}</div>
+            <h3 className={styles.modalTitle}>{currentModal.title}</h3>
+            <p className={styles.modalDesc}>{currentModal.desc}</p>
+            <div className={styles.modalActions}>
+              <button className={styles.btnCancel} onClick={closeModal}>
+                Back
+              </button>
+              <button className={currentModal.btnClass} onClick={handleAction}>
+                {currentModal.btnText}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

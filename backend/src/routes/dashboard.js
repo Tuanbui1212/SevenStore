@@ -6,6 +6,7 @@ const ProductController = require("../app/controllers/ProductController.js");
 const CustomerController = require("../app/controllers/CustomerController.js");
 const AccountController = require("../app/controllers/AccountController.js");
 const PaymentController = require("../app/controllers/PaymentController.js");
+const OrderController = require("../app/controllers/OrderController.js");
 
 // -- Product --
 router.get("/products", ProductController.showList);
@@ -40,6 +41,9 @@ router.post("/account/:id", AccountController.update);
 
 // -- Order --
 router.get("/orders", PaymentController.show);
+router.get("/orders/count-pending", OrderController.countPending);
 router.get("/orders/:id", PaymentController.showDetail);
+router.put("/orders/:id", OrderController.updateStatus);
+router.get("/orders/manage/:type", OrderController.showManage);
 
 module.exports = router;

@@ -9,6 +9,71 @@ import momo from "../../assets/images/momo.png";
 import cod from "../../assets/images/cod.png";
 import vnPay from "../../assets/images/vnPay.png";
 
+const CITIES = [
+  "Hà Nội",
+  "TP. Hồ Chí Minh",
+  "Đà Nẵng",
+  "Hải Phòng",
+  "Cần Thơ",
+  "An Giang",
+  "Bà Rịa - Vũng Tàu",
+  "Bắc Giang",
+  "Bắc Kạn",
+  "Bạc Liêu",
+  "Bắc Ninh",
+  "Bến Tre",
+  "Bình Định",
+  "Bình Dương",
+  "Bình Phước",
+  "Bình Thuận",
+  "Cà Mau",
+  "Cao Bằng",
+  "Đắk Lắk",
+  "Đắk Nông",
+  "Điện Biên",
+  "Đồng Nai",
+  "Đồng Tháp",
+  "Gia Lai",
+  "Hà Giang",
+  "Hà Nam",
+  "Hà Tĩnh",
+  "Hải Dương",
+  "Hậu Giang",
+  "Hòa Bình",
+  "Hưng Yên",
+  "Khánh Hòa",
+  "Kiên Giang",
+  "Kon Tum",
+  "Lai Châu",
+  "Lâm Đồng",
+  "Lạng Sơn",
+  "Lào Cai",
+  "Long An",
+  "Nam Định",
+  "Nghệ An",
+  "Ninh Bình",
+  "Ninh Thuận",
+  "Phú Thọ",
+  "Quảng Bình",
+  "Quảng Nam",
+  "Quảng Ngãi",
+  "Quảng Ninh",
+  "Quảng Trị",
+  "Sóc Trăng",
+  "Sơn La",
+  "Tây Ninh",
+  "Thái Bình",
+  "Thái Nguyên",
+  "Thanh Hóa",
+  "Thừa Thiên Huế",
+  "Tiền Giang",
+  "Trà Vinh",
+  "Tuyên Quang",
+  "Vĩnh Long",
+  "Vĩnh Phúc",
+  "Yên Bái",
+];
+
 function Payment() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -31,21 +96,9 @@ function Payment() {
   });
 
   const methods = [
-    {
-      id: "ShipCod",
-      name: "ShipCod",
-      logo: cod,
-    },
-    {
-      id: "Momo",
-      name: "MOMO",
-      logo: momo,
-    },
-    {
-      id: "VnPay",
-      name: "VNPAY",
-      logo: vnPay,
-    },
+    { id: "ShipCod", name: "ShipCod", logo: cod },
+    { id: "Momo", name: "MOMO", logo: momo },
+    { id: "VnPay", name: "VNPAY", logo: vnPay },
   ];
 
   const [errors, setErrors] = useState({});
@@ -70,16 +123,6 @@ function Payment() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      // console.log("Form hợp lệ:", formData);
-      // console.log("user: ", user);
-      // console.log("item: ", checkedItems);
-
-      // fetch("http://localhost:5000/payment", {
-      //   method: "post",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ formData, user, checkedItems, totalCost }),
-      // })
-      //   .then((res) => res.json())
       axios
         .post("/payment", { formData, user, checkedItems, totalCost })
         .then((res) => {
@@ -88,14 +131,13 @@ function Payment() {
           setShowModal(true);
         })
         .catch((err) => {
-          console.error("Lỗi khi thanh toán:", err);
+          console.error(err);
         });
     }
   };
 
   return (
     <div className={clsx("container")}>
-      {/* Breadcrumb */}
       <div className={clsx("row mt-28", styles.breadcrumb)}>
         <Link className={clsx("opacity-text", styles.breadcrumb__link)} to="/">
           Home
@@ -152,15 +194,20 @@ function Payment() {
 
             <div className={styles.formGroup}>
               <label htmlFor="city">City / Province *</label>
-              <input
+              <select
                 id="city"
-                type="text"
                 name="city"
-                required
                 value={formData.city}
                 onChange={handleChange}
                 className={clsx({ [styles.error]: errors.city })}
-              />
+              >
+                <option value="">Select City / Province</option>
+                {CITIES.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className={styles.formGroup}>

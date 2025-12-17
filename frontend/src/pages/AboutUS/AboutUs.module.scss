@@ -1,73 +1,180 @@
+@import "../../components/GlobalStyles/variables";
+
+$mobile-width: 739px;
+$tablet-width: 1023px;
+
+@mixin mobile {
+  @media (max-width: #{$mobile-width}) {
+    @content;
+  }
+}
+
 .aboutUs {
   width: 100%;
-  padding: 40px 0;
+  padding: 60px 0; // Tăng padding cho thoáng
   background: #ffffff;
+  color: $black-color;
+  margin-top: 40px; // Cách header một chút
+
+  @include mobile {
+    padding: 40px 0;
+    margin-top: 20px;
+  }
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 16px;
-  line-height: 1.6;
-  color: #333;
+  // Container class global đã có width/margin, ở đây chỉ thêm style riêng
 }
 
-.title {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-transform: uppercase;
-  color: #111;
-}
+// --- Phần 1: Hero ---
+.heroSection {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 80px;
 
-.subtitle {
-  font-size: 22px;
-  font-weight: 600;
-  margin: 28px 0 16px;
-  color: #222;
-}
+  @include mobile {
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 50px;
+  }
 
-.desc {
-  font-size: 16px;
-  margin-bottom: 16px;
-}
+  .contentLeft {
+    flex: 1;
 
-.list {
-  margin: 0;
-  padding: 0;
-}
+    .title {
+      font-family: "Puma", sans-serif; // Dùng font custom nếu có
+      font-size: 4.8rem; // Chữ to ấn tượng
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-transform: uppercase;
+      line-height: 1.1;
 
-.textList {
-  list-style: none;
+      @include mobile {
+        font-size: 3.2rem;
+        text-align: center;
+      }
+    }
 
-  li {
-    position: relative;
-    padding-left: 22px;
-    margin-bottom: 10px;
-    font-size: 16px;
+    .desc {
+      font-size: 1.6rem;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      color: #555;
+      text-align: justify;
+    }
+  }
 
-    &::before {
-      content: "•";
-      position: absolute;
-      left: 0;
-      top: 0;
-      font-weight: bold;
-      color: #111;
+  .contentRight {
+    flex: 1;
+
+    .heroImage {
+      width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+      }
     }
   }
 }
 
-@media (max-width: 768px) {
-  .title {
-    font-size: 26px;
+// --- Phần 2: Mission & Vision ---
+.missionSection {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 80px;
+
+  @include mobile {
+    flex-direction: column;
+    margin-bottom: 50px;
   }
+
+  .card {
+    flex: 1;
+    background-color: #f9f9f9;
+    padding: 40px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background-color: $black-color;
+      color: $white-color;
+
+      .subtitle {
+        color: $white-color;
+      }
+      .cardDesc {
+        color: #ddd;
+      }
+    }
+
+    .subtitle {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .cardDesc {
+      font-size: 1.6rem;
+      line-height: 1.5;
+      color: #666;
+    }
+  }
+}
+
+// --- Phần 3: Core Values ---
+.valuesSection {
+  text-align: center;
 
   .subtitle {
-    font-size: 18px;
+    font-size: 3.2rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+
+    @include mobile {
+      font-size: 2.4rem;
+      margin-bottom: 20px;
+    }
   }
 
-  .desc,
-  .textList li {
-    font-size: 15px;
+  .valuesGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+
+    @include mobile {
+      grid-template-columns: repeat(2, 1fr); // Mobile hiển thị 2 cột
+      gap: 20px;
+    }
+
+    .valueItem {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      padding: 20px;
+      border: 1px dashed #ccc;
+      border-radius: 8px;
+
+      i {
+        font-size: 3.6rem;
+        color: $black-color; // Hoặc $primary-color
+        margin-bottom: 10px;
+      }
+
+      h3 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+    }
   }
 }

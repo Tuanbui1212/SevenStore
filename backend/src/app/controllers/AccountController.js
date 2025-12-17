@@ -1,3 +1,4 @@
+const { post } = require("../../routes/site");
 const Account = require("../models/Account");
 
 class AccountController {
@@ -6,6 +7,40 @@ class AccountController {
       .sort({ updatedAt: -1 })
       .lean()
       .then((account) => res.json({ account }))
+      .catch(next);
+  }
+
+  //[GET]/account/:id
+  showInformation(req, res, next) {
+    Account.findById(req.params.id)
+      .lean()
+      .then((account) => {
+        const formData = {
+          user: account.user,
+          name: account.name,
+          role: account.role,
+        };
+
+        res.json(formData);
+      })
+      .catch(next);
+  }
+
+  //[POST]/account/:id
+  updatePassword(req, res, next) {
+    const { oldPassword, newPassword } = req.body;
+    Account.findById(req.params.id)
+      .then((account) => {
+        if (account.password !== oldPassword) {
+          return res
+            .status(400)
+            .json({ message: "Current password is incorrect" });
+        }
+
+        account.password = newPassword;
+        return account.save();
+      })
+      .then(() => res.json({ message: "Password updated successfully" }))
       .catch(next);
   }
 
