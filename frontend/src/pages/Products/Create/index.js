@@ -42,7 +42,7 @@ function CreateProduct() {
     size: Object.fromEntries(
       Array.from({ length: 10 }, (_, i) => [`size${36 + i}`, ""])
     ),
-    status: "",
+    status: "null",
     cost: "",
     description: "",
     color: "",

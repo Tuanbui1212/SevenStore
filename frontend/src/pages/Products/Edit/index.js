@@ -49,7 +49,7 @@ function EditProduct() {
     image: Object.fromEntries(
       Array.from({ length: 6 }, (_, i) => [`image${i + 1}`, ""])
     ),
-    status: "",
+    status: "null",
     cost: "",
     description: "",
     color: "",

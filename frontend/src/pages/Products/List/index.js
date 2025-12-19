@@ -210,7 +210,7 @@ function Products() {
             currentData.map((product, index) => (
               <tr key={product._id} className={styles.tableRow}>
                 <td className={styles.tableCell}>{startIndex + index + 1}</td>
-                <td className={styles.tableCell}>
+                <td className={clsx(styles.tableCell, styles.productNameCell)}>
                   <strong>{product.name}</strong>
                 </td>
                 <td className={styles.tableCell}>
