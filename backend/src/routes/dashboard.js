@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
 
 const EmployeeController = require("../app/controllers/EmployeeController.js");
 const ProductController = require("../app/controllers/ProductController.js");
@@ -7,6 +9,7 @@ const CustomerController = require("../app/controllers/CustomerController.js");
 const AccountController = require("../app/controllers/AccountController.js");
 const PaymentController = require("../app/controllers/PaymentController.js");
 const OrderController = require("../app/controllers/OrderController.js");
+const UploadController = require("../app/controllers/UploadController.js");
 
 // -- Product --
 router.get("/products", ProductController.showList);
@@ -46,4 +49,6 @@ router.get("/orders/:id", PaymentController.showDetail);
 router.put("/orders/:id", OrderController.updateStatus);
 router.get("/orders/manage/:type", OrderController.showManage);
 
+// -- Upload --
+router.get("/upload-auth", UploadController.getAuth);
 module.exports = router;

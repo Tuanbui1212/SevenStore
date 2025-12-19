@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
+import axiosUpload from "axios";
 
 const BRAND_SUGGESTIONS = [
   "Puma",
@@ -19,7 +20,8 @@ const BRAND_SUGGESTIONS = [
   "Salomon",
 ];
 
-const IMGBB_API_KEY = process.env.REACT_APP_IMGBB_API_KEY;
+const IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload";
+const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY || "";
 
 function EditProduct() {
   const navigate = useNavigate();
@@ -78,7 +80,6 @@ function EditProduct() {
         setSelectedFiles(existingImages);
       })
       .catch((err) => {
-        console.error("Lỗi fetch:", err);
         setModalMessage("Failed to load product data");
         setIsSuccess(false);
         setShowModal(true);
@@ -131,16 +132,9 @@ function EditProduct() {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
 
     if (name.startsWith("size")) {
-      // --- LOGIC MỚI: CHẶN SỐ ÂM ---
-      // Nếu giá trị không rỗng VÀ nhỏ hơn 0 thì return luôn (không cho nhập)
-      if (value !== "" && Number(value) < 0) return;
-
       setFormData((prev) => ({
         ...prev,
-        size: {
-          ...prev.size,
-          [name]: value === "" ? "" : Number(value),
-        },
+        size: { ...prev.size, [name]: value },
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -177,18 +171,35 @@ function EditProduct() {
     setPreviewUrls(newPreviews);
   };
 
-  const uploadToImgBB = async (file) => {
-    const form = new FormData();
-    form.append("image", file);
+  const getSignature = async () => {
     try {
-      const res = await fetch(
-        `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
-        { method: "POST", body: form }
-      );
-      const data = await res.json();
-      return data.success ? data.data.url : null;
+      const res = await axios.get("/dashboard/upload-auth");
+      return res.data;
     } catch (err) {
-      console.error("Upload error:", err);
+      return null;
+    }
+  };
+
+  const uploadToImageKit = async (file) => {
+    const authData = await getSignature();
+    if (!authData) return null;
+
+    const form = new FormData();
+    form.append("file", file);
+    form.append("fileName", file.name);
+    form.append("folder", "/SeventStore_Products");
+
+    form.append("publicKey", PUBLIC_KEY);
+    form.append("signature", authData.signature);
+    form.append("expire", authData.expire);
+    form.append("token", authData.token);
+
+    try {
+      const res = await axiosUpload.post(IMAGEKIT_UPLOAD_URL, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data.url;
+    } catch (err) {
       return null;
     }
   };
@@ -239,19 +250,18 @@ function EditProduct() {
     setIsUploading(true);
 
     try {
-      const uploadedURLs = [];
-
-      for (const file of selectedFiles) {
+      const uploadPromises = selectedFiles.map((file) => {
         if (file.isExisting) {
-          uploadedURLs.push(file.url);
-        } else {
-          const url = await uploadToImgBB(file);
-          if (url) uploadedURLs.push(url);
+          return Promise.resolve(file.url);
         }
-      }
+        return uploadToImageKit(file);
+      });
 
-      if (uploadedURLs.length === 0) {
-        throw new Error("Image upload failed");
+      const results = await Promise.all(uploadPromises);
+      const uploadedURLs = results.filter((url) => url !== null);
+
+      if (uploadedURLs.length !== selectedFiles.length) {
+        throw new Error("Some images failed to upload.");
       }
 
       setIsUploading(false);
@@ -281,8 +291,7 @@ function EditProduct() {
       setIsSuccess(true);
       setShowModal(true);
     } catch (error) {
-      console.error(error);
-      setModalMessage("❌ Error occurred during update process");
+      setModalMessage("❌ Error: " + (error.message || "Something went wrong"));
       setIsSuccess(false);
       setShowModal(true);
     } finally {
@@ -464,7 +473,7 @@ function EditProduct() {
                   <span>{size}</span>
                   <input
                     type="number"
-                    min={0} // Thêm min=0 cho thẻ input HTML
+                    min={0}
                     name={`size${size}`}
                     value={formData.size[`size${size}`]}
                     onChange={handleChange}

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
+import axiosUpload from "axios";
 
 const BRAND_SUGGESTIONS = [
   "Puma",
@@ -19,8 +20,8 @@ const BRAND_SUGGESTIONS = [
   "Salomon",
 ];
 
-// Lấy Key từ biến môi trường
-const IMGBB_API_KEY = process.env.REACT_APP_IMGBB_API_KEY;
+const IMAGEKIT_UPLOAD_URL = "https://upload.imagekit.io/api/v1/files/upload";
+const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY || "";
 
 function CreateProduct() {
   const navigate = useNavigate();
@@ -48,17 +49,6 @@ function CreateProduct() {
     color: "",
   });
 
-  // Log kiểm tra Key khi component load
-  useEffect(() => {
-    console.log("Current ImgBB Key:", IMGBB_API_KEY);
-    if (!IMGBB_API_KEY) {
-      alert(
-        "Chưa cấu hình API Key! Hãy kiểm tra file .env và khởi động lại Server."
-      );
-    }
-  }, []);
-
-  // Đóng gợi ý khi click ra ngoài
   useEffect(() => {
     function handleClickOutside(event) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
@@ -71,13 +61,11 @@ function CreateProduct() {
     };
   }, [wrapperRef]);
 
-  // --- SỬA LỖI BLOB: Chỉ revoke khi component unmount hẳn ---
   useEffect(() => {
     return () => {
       previewUrls.forEach((url) => URL.revokeObjectURL(url));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Truyền mảng rỗng để chỉ chạy khi thoát trang
+  }, []);
 
   const handleBrandChange = (e) => {
     const value = e.target.value;
@@ -120,7 +108,6 @@ function CreateProduct() {
     setPreviewUrls((prev) => [...prev, ...newPreviews]);
     if (errors.images) setErrors((prev) => ({ ...prev, images: "" }));
 
-    // Reset input value để cho phép chọn lại cùng 1 file nếu lỡ xóa
     e.target.value = null;
   };
 
@@ -128,7 +115,6 @@ function CreateProduct() {
     const newFiles = [...selectedFiles];
     const newPreviews = [...previewUrls];
 
-    // Revoke URL của ảnh bị xóa để giải phóng bộ nhớ
     URL.revokeObjectURL(newPreviews[index]);
 
     newFiles.splice(index, 1);
@@ -138,25 +124,35 @@ function CreateProduct() {
     setPreviewUrls(newPreviews);
   };
 
-  const uploadToImgBB = async (file) => {
-    const form = new FormData();
-    form.append("image", file);
+  const getSignature = async () => {
     try {
-      // Log để debug nếu lỗi 400
-      console.log("Uploading with key:", IMGBB_API_KEY);
-
-      const res = await fetch(
-        `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`,
-        { method: "POST", body: form }
-      );
-      const data = await res.json();
-      if (!data.success) {
-        console.error("ImgBB Error:", data.error);
-        return null;
-      }
-      return data.data.url;
+      const res = await axios.get("/dashboard/upload-auth");
+      return res.data;
     } catch (err) {
-      console.error("Upload fetch error:", err);
+      return null;
+    }
+  };
+
+  const uploadToImageKit = async (file) => {
+    const authData = await getSignature();
+    if (!authData) return null;
+
+    const form = new FormData();
+    form.append("file", file);
+    form.append("fileName", file.name);
+    form.append("folder", "/SeventStore_Products");
+
+    form.append("publicKey", PUBLIC_KEY);
+    form.append("signature", authData.signature);
+    form.append("expire", authData.expire);
+    form.append("token", authData.token);
+
+    try {
+      const res = await axiosUpload.post(IMAGEKIT_UPLOAD_URL, form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return res.data.url;
+    } catch (err) {
       return null;
     }
   };
@@ -202,17 +198,15 @@ function CreateProduct() {
     setIsUploading(true);
 
     try {
-      const uploadedURLs = [];
-      for (const file of selectedFiles) {
-        const url = await uploadToImgBB(file);
-        if (url) uploadedURLs.push(url);
-      }
+      const uploadPromises = selectedFiles.map((file) =>
+        uploadToImageKit(file)
+      );
 
-      // Nếu số ảnh upload lên không bằng số ảnh đã chọn -> Lỗi
+      const results = await Promise.all(uploadPromises);
+      const uploadedURLs = results.filter((url) => url !== null);
+
       if (uploadedURLs.length !== selectedFiles.length) {
-        throw new Error(
-          "Some images failed to upload. Check API Key or Image format."
-        );
+        throw new Error("Some images failed to upload.");
       }
 
       setIsUploading(false);
@@ -237,11 +231,11 @@ function CreateProduct() {
       };
 
       await axios.post("/dashboard/products/create", finalData);
+
       setModalMessage("Product created successfully!");
       setIsSuccess(true);
       setShowModal(true);
     } catch (error) {
-      console.error(error);
       setModalMessage("❌ Error: " + (error.message || "Something went wrong"));
       setIsSuccess(false);
       setShowModal(true);
