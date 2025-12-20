@@ -356,6 +356,21 @@ function Product() {
                         <div className={styles.productTop}>
                           <p className={styles.productName}>{product.name}</p>
                           <span className={styles.productPrice}>
+                            {product.status === "Sale" && (
+                              <span
+                                style={{
+                                  textDecoration: "line-through",
+                                  color: "#888",
+                                  marginRight: "8px",
+                                }}
+                              >
+                                {(
+                                  Number(product.cost) *
+                                  (Math.random() * 0.4 + 1.1)
+                                ).toLocaleString("vi-VN")}
+                                ₫
+                              </span>
+                            )}
                             {Number(product.cost).toLocaleString("vi-VN")}₫
                           </span>
                         </div>
