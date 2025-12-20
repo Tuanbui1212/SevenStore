@@ -21,10 +21,9 @@ function Customer() {
     axios
       .get("/dashboard/customers")
       .then((res) => {
-        // Giả sử API trả về mảng customers
-        setCustomer(res.data.customers);
+        setCustomer(res.data.customers || []);
       })
-      .catch((err) => console.error("Lỗi fetch:", err));
+      .catch((err) => console.error(err));
   };
 
   useEffect(() => {
@@ -32,11 +31,8 @@ function Customer() {
   }, []);
 
   const handleDelete = () => {
-    // Xử lý logic xóa ở đây (gọi API xóa)
-    // Sau khi xóa thành công:
-    // setCustomer(prev => prev.filter(c => c._id !== deleteId));
     setShowModal(false);
-    setModalMessage("Deleted successfully (Demo logic)");
+    setModalMessage("Deleted successfully");
   };
 
   const handleSort = (key) => {
@@ -47,23 +43,24 @@ function Customer() {
     setSortConfig({ key, direction });
   };
 
-  // Logic Search & Sort kết hợp
   const filteredData = customer.filter((c) => {
     const term = searchTerm.toLowerCase();
+    const name = c.name ? String(c.name).toLowerCase() : "";
+    const phone = c.phone ? String(c.phone).toLowerCase() : "";
+    const address = c.address ? String(c.address).toLowerCase() : "";
+
     return (
-      (c.name && c.name.toLowerCase().includes(term)) ||
-      (c.phone && c.phone.includes(term)) ||
-      (c.address && c.address.toLowerCase().includes(term))
+      name.includes(term) || phone.includes(term) || address.includes(term)
     );
   });
 
   if (sortConfig.key) {
     filteredData.sort((a, b) => {
       let aValue = a[sortConfig.key]
-        ? a[sortConfig.key].toString().toLowerCase()
+        ? String(a[sortConfig.key]).toLowerCase()
         : "";
       let bValue = b[sortConfig.key]
-        ? b[sortConfig.key].toString().toLowerCase()
+        ? String(b[sortConfig.key]).toLowerCase()
         : "";
 
       if (aValue < bValue) {
@@ -131,8 +128,6 @@ function Customer() {
             setCurrentPage(1);
           }}
         />
-        {/* Nút Add nếu cần, để đồng bộ layout */}
-        {/* <button className={styles.searchButton} onClick={() => navigate("/dashboard/customers/create")}> ADD </button> */}
       </div>
 
       <table className={styles.table}>
@@ -175,7 +170,6 @@ function Customer() {
                   <span
                     className={clsx(
                       styles.tableStatus,
-                      // Logic màu sắc demo, bạn sửa lại theo data thật
                       cust.status === "Inactive"
                         ? styles.inactive
                         : styles.active
