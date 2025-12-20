@@ -26,6 +26,16 @@ function Account() {
     fetchAccount();
   }, []);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "--";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  };
+
   const handleSort = (key) => {
     let direction = "asc";
     if (sortConfig.key === key && sortConfig.direction === "asc") {
@@ -143,14 +153,19 @@ function Account() {
             >
               User {renderSortIcon("user")}
             </th>
-            <th className={styles.tableHeader}>Password</th>
             <th
               className={clsx(styles.tableHeader, styles.sortable)}
               onClick={() => handleSort("role")}
             >
               Role {renderSortIcon("role")}
             </th>
-            <th className={styles.tableHeader}></th>
+            <th
+              className={clsx(styles.tableHeader, styles.sortable)}
+              onClick={() => handleSort("createdAt")}
+            >
+              Joined {renderSortIcon("createdAt")}
+            </th>
+            {/* <th className={styles.tableHeader}></th> */}
           </tr>
         </thead>
         <tbody>
@@ -163,9 +178,6 @@ function Account() {
                 </td>
                 <td className={styles.tableCell}>{a.user}</td>
                 <td className={styles.tableCell}>
-                  {"*".repeat(a.password ? a.password.length : 8)}
-                </td>
-                <td className={styles.tableCell}>
                   <span
                     className={clsx(
                       styles.tableStatus,
@@ -177,7 +189,9 @@ function Account() {
                     {a.role}
                   </span>
                 </td>
-                <td className={styles.tableCell}>
+                <td className={styles.tableCell}>{formatDate(a.createdAt)}</td>
+
+                {/* <td className={styles.tableCell}>
                   <button
                     onClick={() => {
                       navigate(`/dashboard/account/${a._id}`);
@@ -185,7 +199,7 @@ function Account() {
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
-                </td>
+                </td> */}
               </tr>
             ))
           ) : (

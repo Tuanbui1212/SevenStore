@@ -44,6 +44,19 @@ function Order() {
     fetchOrder();
   }, [fetchOrder, type]);
 
+  // --- FORMAT NGÀY GIỜ (QUAN TRỌNG CHO ĐƠN HÀNG) ---
+  const formatDate = (dateString) => {
+    if (!dateString) return "--";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date); // Kết quả VD: 08:30 20/12/2025
+  };
+
   const handleUpdateStatus = (id, newStatus) => {
     axios
       .put(`/dashboard/orders/${id}`, { status: newStatus })
@@ -173,6 +186,12 @@ function Order() {
                 <th className={styles.tableHeader}>ID</th>
                 <th
                   className={clsx(styles.tableHeader, styles.sortable)}
+                  onClick={() => handleSort("createdAt")}
+                >
+                  Date {renderSortIcon("createdAt")}
+                </th>
+                <th
+                  className={clsx(styles.tableHeader, styles.sortable)}
                   onClick={() => handleSort("name")}
                 >
                   Customer {renderSortIcon("name")}
@@ -205,6 +224,15 @@ function Order() {
                     <td className={styles.tableCell}>
                       #{e._id.slice(-6).toUpperCase()}
                     </td>
+
+                    {/* --- CỘT DATE --- */}
+                    <td
+                      className={clsx(styles.tableCell)}
+                      style={{ fontSize: "1.4em", color: "#555" }}
+                    >
+                      {formatDate(e.createdAt)}
+                    </td>
+
                     <td className={styles.tableCell}>
                       <strong>{e.name}</strong>
                       <div style={{ fontSize: "0.85em", color: "#888" }}>
@@ -271,7 +299,7 @@ function Order() {
               ) : (
                 <tr>
                   <td
-                    colSpan="6"
+                    colSpan="7"
                     style={{
                       textAlign: "center",
                       padding: "40px",
