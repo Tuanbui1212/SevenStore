@@ -32,7 +32,10 @@ class ProductController {
       filter.color = { $regex: color, $options: "i" };
     }
     if (type) {
-      filter.name = { $regex: type, $options: "i" };
+      filter.$or = [
+        { name: { $regex: type, $options: "i" } },
+        { description: { $regex: type, $options: "i" } },
+      ];
     }
     if (min || max) {
       filter.cost = {};
