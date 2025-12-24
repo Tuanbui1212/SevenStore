@@ -69,7 +69,15 @@ function Home() {
     axios
       .get(`/`)
       .then((response) => {
-        setProducts(response.data.newProduct);
+        let sortedData = [];
+        if (response.data && response.data.newProduct) {
+          sortedData = [...response.data.newProduct];
+
+          sortedData.sort(
+            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+          );
+        }
+        setProducts(sortedData);
       })
       .catch((err) => console.error(err));
   }, []);
