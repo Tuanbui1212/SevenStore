@@ -15,11 +15,12 @@ const port = process.env.PORT || 5000; //Sửa như này để config vơi front
 //app.use(cors());
 app.use(
   cors({
-    origin: "*", // Cho phép tất cả domain (test thử trước)
+    origin: "https://seven-store-steel.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
-  })
+  }),
 );
+
 app.use(morgan("combined"));
 
 // Express doc duoc json
