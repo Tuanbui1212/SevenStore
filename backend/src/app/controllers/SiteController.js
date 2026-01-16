@@ -1,6 +1,6 @@
 const Product = require("../models/Product");
 const Account = require("../models/Account");
-//const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 class SiteController {
   index(req, res, next) {
@@ -14,6 +14,13 @@ class SiteController {
 
   checkLogin(req, res, next) {
     const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Vui lòng nhập tài khoản và mật khẩu",
+      });
+    }
 
     Account.findOne({ user: username })
       .lean()
@@ -31,7 +38,20 @@ class SiteController {
           if (account.role === "admin" || account.role === "staff") {
             Url = "/dashboard";
           }
-          return res.json({
+          // --- PHẦN QUAN TRỌNG: TẠO TOKEN ---
+          const payload = {
+            id: account._id,
+            user: account.user,
+            role: account.role,
+          };
+
+          const accessToken = jwt.sign(
+            payload,
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+          );
+
+          return res.status(200).json({
             id: account._id,
             role: account.role,
             success: true,
@@ -39,9 +59,11 @@ class SiteController {
             message: "Login successful",
             redirectUrl: Url,
             user: account.user,
+            accessToken,
+            username: payload,
           });
         } else {
-          return res.json({
+          return res.status(401).json({
             success: false,
             message: "The password you entered is incorrect",
           });
@@ -49,11 +71,14 @@ class SiteController {
       })
       .catch(next);
   }
-
+  // [POST] /register
   register(req, res, next) {
     const { formData } = req.body; // lấy object formData từ body
+
     if (!formData)
       return res.status(400).json({ message: "Required data is missing" });
+
+    console.log("Received registration data:", formData);
 
     const { name, user, password } = formData;
 
@@ -76,9 +101,33 @@ class SiteController {
 
         return account
           .save()
-          .then(() =>
-            res.status(201).json({ message: "Registration successful" })
-          )
+          .then((savedAccount) => {
+            const payload = {
+              id: savedAccount._id,
+              name: savedAccount.name,
+              user: savedAccount.user,
+              role: savedAccount.role || "customer",
+            };
+
+            const accessToken = jwt.sign(
+              payload,
+              process.env.ACCESS_TOKEN_SECRET,
+              {
+                expiresIn: process.env.JWT_EXPIRES_IN,
+              }
+            );
+
+            res.status(201).json({
+              message: "Registration successful",
+              accessToken,
+              user: {
+                id: savedAccount._id,
+                name: savedAccount.name,
+                user: savedAccount.user,
+                role: savedAccount.role,
+              },
+            });
+          })
           .catch((err) => {
             console.error("Lỗi khi lưu tài khoản:", err);
             res

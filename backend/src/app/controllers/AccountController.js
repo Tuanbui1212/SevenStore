@@ -47,6 +47,9 @@ class AccountController {
   //[POST]
   create(req, res, next) {
     const account = new Account(req.body);
+
+    console.log(account.data);
+
     account
       .save()
       .then(res.status(201).json({ message: "Account created successfully" }))
