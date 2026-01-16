@@ -72,6 +72,8 @@ const AuthForm = () => {
             localStorage.setItem("success", res.data.success);
             localStorage.setItem("role", res.data.role);
             localStorage.setItem("id", res.data.id);
+            localStorage.setItem("accessToken", res.data.accessToken);
+            localStorage.setItem("username", res.data.username);
 
             navigate(res.data.redirectUrl);
           } else {
@@ -129,6 +131,8 @@ const AuthForm = () => {
               cart: [],
             });
           }
+
+          console.log("Response data:", res.data);
         })
         .catch((err) => {
           console.error("Lỗi khi gửi request:", err);

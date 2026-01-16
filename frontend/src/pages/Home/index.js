@@ -4,6 +4,7 @@ import clsx from "clsx";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../util/axios";
+import { getRoleFromToken } from "../../util/auth";
 
 import slider01 from "../../assets/images/slider01.png";
 import slider02 from "../../assets/images/slider02.png";
@@ -104,6 +105,12 @@ function Home() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const showTokenInfo = () => {
+    const roleInfo = getRoleFromToken();
+    console.log("Decoded token info:", roleInfo);
+  };
+  showTokenInfo();
 
   return (
     <div className={clsx("container")}>
