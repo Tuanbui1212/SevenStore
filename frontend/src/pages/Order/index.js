@@ -1,8 +1,10 @@
 import styles from "./Order.module.scss";
 import clsx from "clsx";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../util/axios";
+
+const PAGE_SIZE = 10;
 
 const STATUS_COLORS = {
   Pending: "statusPending",
@@ -17,35 +19,39 @@ function Order() {
   const { type } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const pageSize = 5;
   const navigate = useNavigate();
-
-  const fetchOrder = useCallback(() => {
-    setIsLoading(true);
-    axios
-      .get(`/dashboard/orders/manage/${type}`)
-      .then((res) => {
-        const data = Array.isArray(res.data) ? res.data : res.data.order || [];
-        setOrders(data);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setIsLoading(false));
-  }, [type]);
 
   useEffect(() => {
     setSearchTerm("");
     setCurrentPage(1);
-    fetchOrder();
-  }, [fetchOrder, type]);
+  }, [type]);
 
-  // --- FORMAT NGÀY GIỜ (QUAN TRỌNG CHO ĐƠN HÀNG) ---
-  const formatDate = (dateString) => {
+  useEffect(() => {
+    setIsLoading(true);
+    const params = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
+    if (searchTerm) params.set("search", searchTerm);
+    if (sortConfig.key) {
+      params.set("sortKey", sortConfig.key);
+      params.set("sortDir", sortConfig.direction);
+    }
+    axios
+      .get(`/dashboard/orders/manage/${type}?${params}`)
+      .then((res) => {
+        setOrders(res.data.orders || []);
+        setTotalPages(res.data.totalPages || 1);
+      })
+      .catch((err) => console.error(err))
+      .finally(() => setIsLoading(false));
+  }, [type, currentPage, searchTerm, sortConfig]);
+
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return "--";
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("vi-VN", {
@@ -54,10 +60,10 @@ function Order() {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    }).format(date); // Kết quả VD: 08:30 20/12/2025
-  };
+    }).format(date);
+  }, []);
 
-  const handleUpdateStatus = (id, newStatus) => {
+  const handleUpdateStatus = useCallback((id, newStatus) => {
     axios
       .put(`/dashboard/orders/${id}`, { status: newStatus })
       .then(() => {
@@ -70,47 +76,17 @@ function Order() {
         setShowModal(true);
       })
       .catch((err) => console.error(err));
-  };
+  }, []);
 
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
+  const handleSort = useCallback((key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+    setCurrentPage(1);
+  }, []);
 
-  const filteredData = orders.filter((order) => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      order.name?.toLowerCase().includes(term) ||
-      order.phone?.includes(term) ||
-      order.city?.toLowerCase().includes(term) ||
-      order._id?.toLowerCase().includes(term)
-    );
-  });
-
-  if (sortConfig.key) {
-    filteredData.sort((a, b) => {
-      let aValue = a[sortConfig.key]
-        ? a[sortConfig.key].toString().toLowerCase()
-        : "";
-      let bValue = b[sortConfig.key]
-        ? b[sortConfig.key].toString().toLowerCase()
-        : "";
-
-      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
-  }
-
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentData = filteredData.slice(startIndex, startIndex + pageSize);
-
-  const getPageNumbers = () => {
+  const pageNumbers = useMemo(() => {
     const pages = [];
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -124,35 +100,45 @@ function Order() {
       pages.push(totalPages);
     }
     return pages;
-  };
+  }, [totalPages, currentPage]);
 
-  const renderSortIcon = (columnKey) => {
-    if (sortConfig.key !== columnKey) {
-      return (
+  const renderSortIcon = useCallback(
+    (columnKey) => {
+      if (sortConfig.key !== columnKey)
+        return (
+          <i
+            className="fa-solid fa-sort"
+            style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+          ></i>
+        );
+      return sortConfig.direction === "asc" ? (
         <i
-          className="fa-solid fa-sort"
-          style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+          className="fa-solid fa-sort-up"
+          style={{ fontSize: "12px", marginLeft: "5px" }}
+        ></i>
+      ) : (
+        <i
+          className="fa-solid fa-sort-down"
+          style={{ fontSize: "12px", marginLeft: "5px" }}
         ></i>
       );
-    }
-    return sortConfig.direction === "asc" ? (
-      <i
-        className="fa-solid fa-sort-up"
-        style={{ fontSize: "12px", marginLeft: "5px" }}
-      ></i>
-    ) : (
-      <i
-        className="fa-solid fa-sort-down"
-        style={{ fontSize: "12px", marginLeft: "5px" }}
-      ></i>
-    );
-  };
+    },
+    [sortConfig]
+  );
 
-  const pageTitle = type === "history" ? "Order History" : "Active Orders";
-  const pageDesc =
-    type === "history"
-      ? "List of delivered and cancelled orders"
-      : "Manage new and shipping orders";
+  const pageTitle = useMemo(
+    () => (type === "history" ? "Order History" : "Active Orders"),
+    [type]
+  );
+  const pageDesc = useMemo(
+    () =>
+      type === "history"
+        ? "List of delivered and cancelled orders"
+        : "Manage new and shipping orders",
+    [type]
+  );
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   return (
     <div className={clsx("mt-36", styles.tableWrapper)}>
@@ -218,21 +204,18 @@ function Order() {
               </tr>
             </thead>
             <tbody>
-              {currentData.length > 0 ? (
-                currentData.map((e, index) => (
+              {orders.length > 0 ? (
+                orders.map((e, index) => (
                   <tr key={index} className={styles.tableRow}>
                     <td className={styles.tableCell}>
                       #{e._id.slice(-6).toUpperCase()}
                     </td>
-
-                    {/* --- CỘT DATE --- */}
                     <td
                       className={clsx(styles.tableCell)}
                       style={{ fontSize: "1.4em", color: "#555" }}
                     >
                       {formatDate(e.createdAt)}
                     </td>
-
                     <td className={styles.tableCell}>
                       <strong>{e.name}</strong>
                       <div style={{ fontSize: "0.85em", color: "#888" }}>
@@ -288,7 +271,9 @@ function Order() {
                         )}
                         <button
                           className={styles.btnDetail}
-                          onClick={() => navigate(`/dashboard/orders/${e._id}`)}
+                          onClick={() =>
+                            navigate(`/dashboard/orders/${e._id}`)
+                          }
                         >
                           <i className="fa-solid fa-eye"></i>
                         </button>
@@ -329,7 +314,7 @@ function Order() {
               >
                 <i className="fa-solid fa-caret-left"></i>
               </button>
-              {getPageNumbers().map((p, i) =>
+              {pageNumbers.map((p, i) =>
                 p === "..." ? (
                   <span key={i} className={styles.ellipsis}>
                     ...

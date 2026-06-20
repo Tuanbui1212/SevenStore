@@ -2,14 +2,16 @@ import styles from "./Cart.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 import noItem from "../../assets/images/no-item.jpg";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../util/axios";
+import { useAuth } from "../../contexts/AuthContext";
 
 import no_img from "../../assets/images/no_img.jpg";
 
 function Cart() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [carts, setCarts] = useState([]);
   const [size, setSize] = useState([]);
@@ -20,57 +22,33 @@ function Cart() {
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
 
-  const fetchCart = () => {
-    const user = localStorage.getItem("user");
-
+  const fetchCart = useCallback(() => {
     if (!user) return;
-    let url = `/cart?`;
-
-    if (user) url += `user=${encodeURIComponent(user)}`;
-
-    // fetch(url)
-    //   .then((res) => res.json())
     axios
-      .get(url)
+      .get(`/cart?user=${encodeURIComponent(user)}`)
       .then((res) => {
         setCarts(res.data.cart);
       })
-      .catch((err) => console.log(err));
-  };
+      .catch((err) => console.error(err));
+  }, [user]);
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
-  const handleChane = (data) => {
-    const user = localStorage.getItem("user");
+  const handleChane = useCallback((data) => {
     if (!user) return;
-    let url = `/cart?`;
-    if (user) url += `user=${encodeURIComponent(user)}`;
-    // fetch(url, {
-    //   method: "PUT",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(data),
-    // });
+    axios.put(`/cart?user=${encodeURIComponent(user)}`, data);
+  }, [user]);
 
-    axios.put(url, data);
-  };
-
-  const handleDelete = () => {
-    const user = localStorage.getItem("user");
-
+  const handleDelete = useCallback(() => {
     if (!deleteId) return;
     if (!user) return;
 
-    let url = `/cart?`;
-    if (user) url += `user=${encodeURIComponent(user)}&`;
+    let url = `/cart?user=${encodeURIComponent(user)}&`;
     if (deleteId) url += `deleteId=${encodeURIComponent(deleteId)}&`;
     if (size) url += `size=${encodeURIComponent(size)}&`;
 
-    // fetch(url, {
-    //   method: "DELETE",
-    // })
-    //   .then((res) => res.json())
     axios
       .delete(url)
       .then(() => {
@@ -82,9 +60,9 @@ function Cart() {
         setModalMessage("❌ Failed to delete!");
         setShowModal(true);
       });
-  };
+  }, [deleteId, size, user, fetchCart]);
 
-  const handleCheckItems = (
+  const handleCheckItems = useCallback((
     idItem,
     sizeItem,
     costItem,
@@ -115,28 +93,26 @@ function Cart() {
         ];
       }
     });
-  };
+  }, []);
 
-  const SumCostItems = () => {
-    return checkedItems.reduce(
-      (sum, item) => sum + item.cost * item.quantity,
-      0
-    );
-  };
+  const totalCost = useMemo(
+    () => checkedItems.reduce((sum, item) => sum + item.cost * item.quantity, 0),
+    [checkedItems]
+  );
 
-  const handleGoToPayment = () => {
+  const handleGoToPayment = useCallback(() => {
     if (checkedItems.length >= 1) {
       navigate("/payment", {
         state: {
           checkedItems,
-          totalCost: SumCostItems(),
+          totalCost,
         },
       });
     } else {
       setModalMessage("Please select the product you want to buy.");
       setShowModal(true);
     }
-  };
+  }, [checkedItems, totalCost, navigate]);
 
   return (
     <>
@@ -377,7 +353,7 @@ function Cart() {
           <div className={clsx("row", styles.cartFooter__row)}>
             <div className={clsx("col col-3", styles.cartFooter__left)}>
               <span>Your Cart ({checkedItems.length} product)</span>
-              <span>{SumCostItems().toLocaleString("vi-VN")}₫</span>
+              <span>{totalCost.toLocaleString("vi-VN")}₫</span>
             </div>
             <div className={clsx("col col-2", styles.cartFooter__right)}>
               <button onClick={() => handleGoToPayment()}>PAY</button>

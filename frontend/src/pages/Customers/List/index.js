@@ -1,83 +1,50 @@
 import styles from "./Customer.module.scss";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../util/axios";
+
+const PAGE_SIZE = 10;
 
 function Customer() {
   const [customer, setCustomer] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [deleteId, setDeleteId] = useState(null);
 
-  const pageSize = 5;
   const navigate = useNavigate();
 
-  const fetchCustomer = () => {
+  useEffect(() => {
+    const params = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
+    if (searchTerm) params.set("search", searchTerm);
     axios
-      .get("/dashboard/customers")
+      .get(`/dashboard/customers?${params}`)
       .then((res) => {
         setCustomer(res.data.customers || []);
+        setTotalPages(res.data.totalPages || 1);
       })
       .catch((err) => console.error(err));
-  };
+  }, [currentPage, searchTerm]);
 
-  useEffect(() => {
-    fetchCustomer();
-  }, []);
-
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     setShowModal(false);
     setModalMessage("Deleted successfully");
-  };
+  }, []);
 
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
+  const handleSort = useCallback((key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+    setCurrentPage(1);
+  }, []);
 
-  const filteredData = customer.filter((c) => {
-    const term = searchTerm.toLowerCase();
-    const name = c.name ? String(c.name).toLowerCase() : "";
-    const phone = c.phone ? String(c.phone).toLowerCase() : "";
-    const address = c.address ? String(c.address).toLowerCase() : "";
-
-    return (
-      name.includes(term) || phone.includes(term) || address.includes(term)
-    );
-  });
-
-  if (sortConfig.key) {
-    filteredData.sort((a, b) => {
-      let aValue = a[sortConfig.key]
-        ? String(a[sortConfig.key]).toLowerCase()
-        : "";
-      let bValue = b[sortConfig.key]
-        ? String(b[sortConfig.key]).toLowerCase()
-        : "";
-
-      if (aValue < bValue) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-  }
-
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentData = filteredData.slice(startIndex, startIndex + pageSize);
-
-  const getPageNumbers = () => {
+  const pageNumbers = useMemo(() => {
     const pages = [];
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -91,29 +58,33 @@ function Customer() {
       pages.push(totalPages);
     }
     return pages;
-  };
+  }, [totalPages, currentPage]);
 
-  const renderSortIcon = (columnKey) => {
-    if (sortConfig.key !== columnKey) {
-      return (
+  const renderSortIcon = useCallback(
+    (columnKey) => {
+      if (sortConfig.key !== columnKey)
+        return (
+          <i
+            className="fa-solid fa-sort"
+            style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+          ></i>
+        );
+      return sortConfig.direction === "asc" ? (
         <i
-          className="fa-solid fa-sort"
-          style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+          className="fa-solid fa-sort-up"
+          style={{ fontSize: "12px", marginLeft: "5px" }}
+        ></i>
+      ) : (
+        <i
+          className="fa-solid fa-sort-down"
+          style={{ fontSize: "12px", marginLeft: "5px" }}
         ></i>
       );
-    }
-    return sortConfig.direction === "asc" ? (
-      <i
-        className="fa-solid fa-sort-up"
-        style={{ fontSize: "12px", marginLeft: "5px" }}
-      ></i>
-    ) : (
-      <i
-        className="fa-solid fa-sort-down"
-        style={{ fontSize: "12px", marginLeft: "5px" }}
-      ></i>
-    );
-  };
+    },
+    [sortConfig]
+  );
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   return (
     <div className={clsx("mt-36", styles.tableWrapper)}>
@@ -157,8 +128,8 @@ function Customer() {
           </tr>
         </thead>
         <tbody>
-          {currentData.length > 0 ? (
-            currentData.map((cust, index) => (
+          {customer.length > 0 ? (
+            customer.map((cust, index) => (
               <tr key={cust._id} className={styles.tableRow}>
                 <td className={styles.tableCell}>{startIndex + index + 1}</td>
                 <td className={styles.tableCell}>
@@ -170,9 +141,7 @@ function Customer() {
                   <span
                     className={clsx(
                       styles.tableStatus,
-                      cust.status === "Inactive"
-                        ? styles.inactive
-                        : styles.active
+                      cust.status === "Inactive" ? styles.inactive : styles.active
                     )}
                   >
                     {cust.status || "Active"}
@@ -180,9 +149,7 @@ function Customer() {
                 </td>
                 <td className={styles.tableCell}>
                   <button
-                    onClick={() => {
-                      navigate(`/dashboard/customers/${cust._id}`);
-                    }}
+                    onClick={() => navigate(`/dashboard/customers/${cust._id}`)}
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
@@ -216,8 +183,7 @@ function Customer() {
           >
             <i className="fa-solid fa-caret-left"></i>
           </button>
-
-          {getPageNumbers().map((p, i) =>
+          {pageNumbers.map((p, i) =>
             p === "..." ? (
               <span key={i} className={styles.ellipsis}>
                 ...
@@ -232,7 +198,6 @@ function Customer() {
               </button>
             )
           )}
-
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage((p) => p + 1)}
@@ -247,13 +212,7 @@ function Customer() {
           <div className={styles.modal}>
             <p>{modalMessage}</p>
             <button onClick={handleDelete}>Yes</button>
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-            >
-              No
-            </button>
+            <button onClick={() => setShowModal(false)}>No</button>
           </div>
         </div>
       )}

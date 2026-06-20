@@ -1,104 +1,82 @@
 import styles from "./ListProduct.module.scss";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../util/axios";
 import no_item from "../../../assets/images/no_img.jpg";
+
+const PAGE_SIZE = 10;
 
 function Products() {
   const [products, setProducts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [countDelete, setCountDelete] = useState(0);
   const [deleteId, setDeleteId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const pageSize = 5;
   const navigate = useNavigate();
 
-  const fetchProducts = () => {
+  useEffect(() => {
+    const params = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
+    if (searchTerm) params.set("search", searchTerm);
+    // "total" là computed field — chỉ sort bằng BE cho các field DB thực
+    if (sortConfig.key && sortConfig.key !== "total") {
+      params.set("sortKey", sortConfig.key);
+      params.set("sortDir", sortConfig.direction);
+    }
     axios
-      .get("/dashboard/products")
+      .get(`/dashboard/products?${params}`)
       .then((res) => {
-        const newList = res.data.listProduct.map((product) => {
+        let newList = (res.data.listProduct || []).map((product) => {
           const total = Object.values(product.size).reduce(
             (sum, value) => Number(sum) + Number(value),
             0
           );
           return { ...product, total };
         });
-        setCountDelete(res.data.deletedCount);
+        // Client-side sort riêng cho computed field "total"
+        if (sortConfig.key === "total") {
+          newList = [...newList].sort((a, b) =>
+            sortConfig.direction === "asc" ? a.total - b.total : b.total - a.total
+          );
+        }
+        setCountDelete(res.data.deletedCount || 0);
         setProducts(newList);
+        setTotalPages(res.data.totalPages || 1);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
-  };
+  }, [currentPage, searchTerm, sortConfig, refreshKey]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const handleDeleteSoft = () => {
+  const handleDeleteSoft = useCallback(() => {
     if (!deleteId) return;
     axios
       .delete(`/dashboard/products/${deleteId}`)
       .then((res) => {
         setModalMessage(res.data.message);
         setShowModal(true);
-        fetchProducts();
+        setRefreshKey((k) => k + 1);
       })
       .catch(() => alert("❌ An error occurred while deleting!"))
       .finally(() => {
         setDeleteId(null);
         setShowModal(false);
       });
-  };
+  }, [deleteId]);
 
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
+  const handleSort = useCallback((key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+    setCurrentPage(1);
+  }, []);
 
-  const filteredProducts = products.filter((product) => {
-    const term = searchTerm.toLowerCase();
-    return (
-      product.name.toLowerCase().includes(term) ||
-      product.brand.toLowerCase().includes(term)
-    );
-  });
-
-  if (sortConfig.key) {
-    filteredProducts.sort((a, b) => {
-      let aValue = a[sortConfig.key];
-      let bValue = b[sortConfig.key];
-
-      if (sortConfig.key === "cost" || sortConfig.key === "total") {
-        aValue = Number(aValue);
-        bValue = Number(bValue);
-      } else {
-        aValue = aValue ? aValue.toString().toLowerCase() : "";
-        bValue = bValue ? bValue.toString().toLowerCase() : "";
-      }
-
-      if (aValue < bValue) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-  }
-
-  const totalPages = Math.ceil(filteredProducts.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentData = filteredProducts.slice(startIndex, startIndex + pageSize);
-
-  const getPageNumbers = () => {
+  const pageNumbers = useMemo(() => {
     const pages = [];
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -112,29 +90,33 @@ function Products() {
       pages.push(totalPages);
     }
     return pages;
-  };
+  }, [totalPages, currentPage]);
 
-  const renderSortIcon = (columnKey) => {
-    if (sortConfig.key !== columnKey) {
-      return (
+  const renderSortIcon = useCallback(
+    (columnKey) => {
+      if (sortConfig.key !== columnKey)
+        return (
+          <i
+            className="fa-solid fa-sort"
+            style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+          ></i>
+        );
+      return sortConfig.direction === "asc" ? (
         <i
-          className="fa-solid fa-sort"
-          style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+          className="fa-solid fa-sort-up"
+          style={{ fontSize: "12px", marginLeft: "5px" }}
+        ></i>
+      ) : (
+        <i
+          className="fa-solid fa-sort-down"
+          style={{ fontSize: "12px", marginLeft: "5px" }}
         ></i>
       );
-    }
-    return sortConfig.direction === "asc" ? (
-      <i
-        className="fa-solid fa-sort-up"
-        style={{ fontSize: "12px", marginLeft: "5px" }}
-      ></i>
-    ) : (
-      <i
-        className="fa-solid fa-sort-down"
-        style={{ fontSize: "12px", marginLeft: "5px" }}
-      ></i>
-    );
-  };
+    },
+    [sortConfig]
+  );
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   return (
     <div className={clsx("mt-36", styles.tableWrapper)}>
@@ -206,8 +188,8 @@ function Products() {
           </tr>
         </thead>
         <tbody>
-          {currentData.length > 0 ? (
-            currentData.map((product, index) => (
+          {products.length > 0 ? (
+            products.map((product, index) => (
               <tr key={product._id} className={styles.tableRow}>
                 <td className={styles.tableCell}>{startIndex + index + 1}</td>
                 <td className={clsx(styles.tableCell, styles.productNameCell)}>
@@ -251,9 +233,7 @@ function Products() {
                 </td>
                 <td className={styles.tableCell}>
                   <button
-                    onClick={() => {
-                      navigate(`/dashboard/products/${product._id}`);
-                    }}
+                    onClick={() => navigate(`/dashboard/products/${product._id}`)}
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
@@ -287,8 +267,7 @@ function Products() {
           >
             <i className="fa-solid fa-caret-left"></i>
           </button>
-
-          {getPageNumbers().map((p, i) =>
+          {pageNumbers.map((p, i) =>
             p === "..." ? (
               <span key={i} className={styles.ellipsis}>
                 ...
@@ -303,7 +282,6 @@ function Products() {
               </button>
             )
           )}
-
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage((p) => p + 1)}

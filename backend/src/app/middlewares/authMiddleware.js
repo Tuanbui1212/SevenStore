@@ -5,16 +5,27 @@ function authMiddleware(req, res, next) {
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ message: "Thiếu token, chưa đăng nhập!" });
+    return res.status(401).json({
+      code: "NO_TOKEN",
+      message: "You are not logged in. Please log in to continue.",
+    });
   }
 
-  jwt.verify(token, "secret_key", (err, user) => {
-    if (err)
-      return res
-        .status(403)
-        .json({ message: "Token không hợp lệ hoặc đã hết hạn" });
-    req.user = user; // lưu thông tin user vào req
-    next(); // cho phép đi tiếp
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({
+          code: "TOKEN_EXPIRED",
+          message: "Your session has expired. Please log in again.",
+        });
+      }
+      return res.status(401).json({
+        code: "TOKEN_INVALID",
+        message: "Invalid token. Please log in again.",
+      });
+    }
+    req.user = user;
+    next();
   });
 }
 

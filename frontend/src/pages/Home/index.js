@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./Home.module.scss";
 import clsx from "clsx";
 import "../../components/GlobalStyles/GlobalStyles.scss";
@@ -27,6 +27,21 @@ import asics_img from "../../assets/images/13.png";
 import puma_img from "../../assets/images/14.png";
 import reebok_img from "../../assets/images/15.png";
 
+const SLIDER_IMAGES = [slider01, slider02, slider03];
+
+const BRANDS = [
+  { name: "nike", image: nike_img },
+  { name: "bape", image: bape_img },
+  { name: "new balance", image: newBalance_img },
+  { name: "adidas", image: adidas_img },
+  { name: "tiger", image: tiger_img },
+  { name: "converse", image: converse_img },
+  { name: "vans", image: vans_img },
+  { name: "asics", image: asics_img },
+  { name: "puma", image: puma_img },
+  { name: "reebok", image: reebok_img },
+];
+
 function Home() {
   const [imageIndex, setImageIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
@@ -35,36 +50,34 @@ function Home() {
   const scrollRefBrand = useRef(null);
   const navigate = useNavigate();
 
-  const images = [slider01, slider02, slider03];
-
-  const brands = [
-    { name: "nike", image: nike_img },
-    { name: "bape", image: bape_img },
-    { name: "new balance", image: newBalance_img },
-    { name: "adidas", image: adidas_img },
-    { name: "tiger", image: tiger_img },
-    { name: "converse", image: converse_img },
-    { name: "vans", image: vans_img },
-    { name: "asics", image: asics_img },
-    { name: "puma", image: puma_img },
-    { name: "reebok", image: reebok_img },
-  ];
-
-  const scrollLeft = () => {
+  const scrollLeft = useCallback(() => {
     scrollRef.current.scrollBy({ left: -300, behavior: "smooth" });
-  };
+  }, []);
 
-  const scrollRight = () => {
+  const scrollRight = useCallback(() => {
     scrollRef.current.scrollBy({ left: 300, behavior: "smooth" });
-  };
+  }, []);
 
-  const scrollLeftBrand = () => {
+  const scrollLeftBrand = useCallback(() => {
     scrollRefBrand.current.scrollBy({ left: -300, behavior: "smooth" });
-  };
+  }, []);
 
-  const scrollRightBrand = () => {
+  const scrollRightBrand = useCallback(() => {
     scrollRefBrand.current.scrollBy({ left: 300, behavior: "smooth" });
-  };
+  }, []);
+
+  const changeImage = useCallback((direction) => {
+    setIsFading(true);
+    setTimeout(() => {
+      setImageIndex((prevIndex) => {
+        let newIndex = prevIndex + direction;
+        if (newIndex < 0) newIndex = SLIDER_IMAGES.length - 1;
+        if (newIndex >= SLIDER_IMAGES.length) newIndex = 0;
+        return newIndex;
+      });
+      setIsFading(false);
+    }, 500);
+  }, []);
 
   useEffect(() => {
     axios
@@ -73,9 +86,8 @@ function Home() {
         let sortedData = [];
         if (response.data && response.data.newProduct) {
           sortedData = [...response.data.newProduct];
-
           sortedData.sort(
-            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
           );
         }
         setProducts(sortedData);
@@ -83,34 +95,11 @@ function Home() {
       .catch((err) => console.error(err));
   }, []);
 
-  function changeImage(direction) {
-    setIsFading(true);
-
-    setTimeout(() => {
-      setImageIndex((prevIndex) => {
-        let newIndex = prevIndex + direction;
-        if (newIndex < 0) newIndex = images.length - 1;
-        if (newIndex >= images.length) newIndex = 0;
-        return newIndex;
-      });
-
-      setIsFading(false);
-    }, 500);
-  }
-
   useEffect(() => {
-    const interval = setInterval(() => {
-      changeImage(1);
-    }, 5000);
-
+    const interval = setInterval(() => changeImage(1), 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [changeImage]);
 
-  const showTokenInfo = () => {
-    const roleInfo = getRoleFromToken();
-    console.log("Decoded token info:", roleInfo);
-  };
-  showTokenInfo();
 
   return (
     <div className={clsx("container")}>
@@ -133,7 +122,7 @@ function Home() {
         </button>
         <div className={clsx("col", "col-12", styles.slider_img)}>
           <img
-            src={images[imageIndex]}
+            src={SLIDER_IMAGES[imageIndex]}
             alt="Sneaker"
             className={clsx(styles.sliderImage, isFading && styles.fadeOut)}
           />
@@ -160,7 +149,7 @@ function Home() {
             "slider_btn",
             "slider_btn_pre",
             styles.btn,
-            styles.btn_left
+            styles.btn_left,
           )}
         >
           <i className="fa-solid fa-arrow-left"></i>
@@ -175,7 +164,7 @@ function Home() {
                 "col-3",
                 "col-md-4",
                 "col-sm-5",
-                styles.product_item
+                styles.product_item,
               )}
             >
               <img
@@ -204,7 +193,7 @@ function Home() {
             "slider_btn",
             "slider_btn_next",
             styles.btn,
-            styles.btn_right
+            styles.btn_right,
           )}
         >
           <i className="fa-solid fa-arrow-right"></i>
@@ -220,7 +209,7 @@ function Home() {
               "col-lg-8",
               "col-md-12",
               "col-sm-12",
-              styles.finder__content
+              styles.finder__content,
             )}
           >
             <h3>NIKE RUNNING SHOE FINDER</h3>
@@ -236,7 +225,7 @@ function Home() {
               "col-lg-4",
               "display-md-none",
               "display-sm-none",
-              styles.finder__image
+              styles.finder__image,
             )}
             src={nike}
             alt=""
@@ -292,13 +281,13 @@ function Home() {
             "slider_btn",
             "slider_btn_pre",
             styles.btn,
-            styles.btn_left
+            styles.btn_left,
           )}
         >
           <i className="fa-solid fa-arrow-left"></i>
         </button>
         <div ref={scrollRefBrand} className={clsx(styles.list_new_product)}>
-          {brands.map((img_brand) => (
+          {BRANDS.map((img_brand) => (
             <Link
               to={`/product/${img_brand.name}`}
               key={img_brand.name}
@@ -307,7 +296,7 @@ function Home() {
                 "col-2",
                 "col-md-3",
                 "col-sm-5",
-                styles.product_item
+                styles.product_item,
               )}
             >
               <img
@@ -325,7 +314,7 @@ function Home() {
             "slider_btn",
             "slider_btn_next",
             styles.btn,
-            styles.btn_right
+            styles.btn_right,
           )}
         >
           <i className="fa-solid fa-arrow-right"></i>

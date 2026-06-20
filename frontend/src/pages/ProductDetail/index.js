@@ -1,8 +1,9 @@
 import clsx from "clsx";
 import { Link } from "react-router";
 import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "../../util/axios";
+import { useAuth } from "../../contexts/AuthContext";
 
 import styles from "./ProductDetail.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
@@ -12,6 +13,7 @@ import no_img from "../../assets/images/no_img.jpg";
 function ProductDetail() {
   const { brand, slug } = useParams();
   const navigate = useNavigate();
+  const { success, user } = useAuth();
 
   const [product, setProduct] = useState([]);
   const [products, setProducts] = useState([]);
@@ -55,8 +57,8 @@ function ProductDetail() {
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [brand, slug]);
 
-  const handleAddCrat = () => {
-    if (localStorage.getItem("success") !== "true") navigate("/login");
+  const handleAddCrat = useCallback(() => {
+    if (success !== "true") navigate("/login");
 
     if (!selectedSize) {
       setModalMessage("You need to select a size.");
@@ -74,11 +76,17 @@ function ProductDetail() {
       brand: product.brand,
       slug: product.slug,
     });
-  };
+  }, [success, selectedSize, quantity, product, navigate]);
 
-  const SumCostItems = () => {
-    return checkedItems.cost * checkedItems.quantity;
-  };
+  const totalCost = useMemo(
+    () => checkedItems.cost * checkedItems.quantity,
+    [checkedItems]
+  );
+
+  const sameNameProducts = useMemo(
+    () => products.filter((p) => p.name === product.name),
+    [products, product.name]
+  );
 
   useEffect(() => {
     setCheckedItems({
@@ -91,7 +99,7 @@ function ProductDetail() {
     });
   }, [product, selectedSize, quantity]);
 
-  const handleGoToPayment = () => {
+  const handleGoToPayment = useCallback(() => {
     if (checkedItems.size === null) {
       setModalMessage("Please select a size before purchasing");
       setShowModal(true);
@@ -101,18 +109,15 @@ function ProductDetail() {
     navigate("/payment", {
       state: {
         checkedItems: [checkedItems],
-        totalCost: SumCostItems(),
+        totalCost,
       },
     });
-  };
+  }, [checkedItems, totalCost, navigate]);
 
   useEffect(() => {
     if (!formData.id) return;
 
-    const user = localStorage.getItem("user");
-
     if (!user) return;
-    //let url = `http://localhost:5000/cart?`;
     let url = `/cart?`;
 
     if (user) url += `user=${encodeURIComponent(user)}`;
@@ -178,9 +183,6 @@ function ProductDetail() {
           <div className={clsx("col col-5")}>
             <div className={clsx(styles.info__product)}>
               <span className={clsx(styles.name__product)}>{product.name}</span>
-              <span className={clsx(styles.description__product)}>
-                {product.description}
-              </span>
               <span
                 className={clsx(
                   styles.status__product,
@@ -201,9 +203,7 @@ function ProductDetail() {
                   {product.color}
                 </span>
                 <div className={clsx(styles.color__grid)}>
-                  {products
-                    .filter((p) => p.name === product.name)
-                    .map((p, index) => (
+                  {sameNameProducts.map((p, index) => (
                       <Link key={index} to={`/product/${p.brand}/${p.slug}`}>
                         <img
                           className={clsx(
@@ -285,7 +285,7 @@ function ProductDetail() {
                 <button
                   className={clsx(styles.buy__now)}
                   onClick={() => {
-                    if (localStorage.getItem("success") !== "true") {
+                    if (success !== "true") {
                       navigate("/login");
                       return;
                     }
@@ -311,6 +311,19 @@ function ProductDetail() {
             </div>
           </div>
         </div>
+
+        {product.description && (
+          <div className={clsx("row", styles.descriptionSection)}>
+            <div className="col col-12">
+              <h2 className={styles.descriptionSection__title}>
+                Product Description
+              </h2>
+              <p className={styles.descriptionSection__body}>
+                {product.description}
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className={clsx("row", styles.content)}>
           <span className={clsx("col", "col-12", styles.title)}>

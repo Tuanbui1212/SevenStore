@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import styles from "./Product.module.scss";
 import clsx from "clsx";
@@ -7,25 +7,45 @@ import { Link } from "react-router-dom";
 import axios from "../../util/axios";
 
 import no_img from "../../assets/images/no_img.jpg";
+import Pagination from "../../components/Pagination";
+
+const PAGE_LIMIT = 12;
 
 function Sreach() {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const value = params.get("value") || "";
 
+  // Reset page khi từ khoá tìm kiếm thay đổi
   useEffect(() => {
-    //let url = `http://localhost:5000/search?value=${value}`;
-    let url = `/search?value=${value}`;
-
-    // fetch(url)
-    //   .then((res) => res.json())
-    axios
-      .get(url)
-      .then((res) => setProducts(res.data.product || []))
-      .catch((err) => console.error("Lỗi:", err));
+    setCurrentPage(1);
   }, [value]);
+
+  useEffect(() => {
+    if (!value) return;
+    setLoading(true);
+
+    axios
+      .get(`/search?value=${encodeURIComponent(value)}&page=${currentPage}&limit=${PAGE_LIMIT}`)
+      .then((res) => {
+        setProducts(res.data.product || []);
+        setTotalPages(res.data.totalPages || 1);
+        setTotal(res.data.total || 0);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      })
+      .catch((err) => console.error("Lỗi:", err))
+      .finally(() => setLoading(false));
+  }, [value, currentPage]);
+
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page);
+  }, []);
 
   return (
     <>
@@ -48,10 +68,49 @@ function Sreach() {
         </div>
 
         <div className={clsx("row mt-28", styles.mainRow)}>
-          {/* Danh sách sản phẩm */}
           <div className={clsx("col col-12", styles.productList)}>
+            {/* Header: từ khoá + số kết quả */}
+            <div className={styles.searchHeader}>
+              <h3 className={styles.searchTitle}>
+                Results for:{" "}
+                <span className={styles.searchKeyword}>"{value}"</span>
+              </h3>
+              {!loading && (
+                <span className={styles.searchCount}>
+                  {total} product{total !== 1 ? "s" : ""} found
+                </span>
+              )}
+            </div>
+
             <div className={clsx("row", styles.productGrid)}>
-              {products && products.length > 0 ? (
+              {loading ? (
+                Array(8)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div
+                      key={i}
+                      className={clsx(
+                        "col col-3 col-md-6 col-sm-6",
+                        styles.productCard
+                      )}
+                    >
+                      <div
+                        className={clsx(styles.productImage, styles.skeleton)}
+                        style={{ height: "280px" }}
+                      />
+                      <div className={styles.productInfo}>
+                        <div
+                          className={styles.skeleton}
+                          style={{ height: "16px", width: "80%", marginBottom: "6px" }}
+                        />
+                        <div
+                          className={styles.skeleton}
+                          style={{ height: "16px", width: "40%" }}
+                        />
+                      </div>
+                    </div>
+                  ))
+              ) : products.length > 0 ? (
                 products.map((product) => (
                   <div
                     key={product._id}
@@ -78,7 +137,7 @@ function Sreach() {
                       )}
                       <img
                         src={product.image.image1 || no_img}
-                        alt="Sneaker"
+                        alt={product.name}
                         className={styles.productImage}
                       />
                       <div className={styles.productInfo}>
@@ -98,9 +157,19 @@ function Sreach() {
                   </div>
                 ))
               ) : (
-                <p>No products found</p>
+                <div className={clsx("col col-12", styles.noResult)}>
+                  <i className="fa-solid fa-magnifying-glass"></i>
+                  <p>No products found for "{value}"</p>
+                  <Link to="/product/all">Browse all products</Link>
+                </div>
               )}
             </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
         </div>
       </div>

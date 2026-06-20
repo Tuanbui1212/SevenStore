@@ -3,7 +3,7 @@ import "../../components/GlobalStyles/GlobalStyles.scss";
 import styles from "./Payment.module.scss";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import axios from "../../util/axios";
 import momo from "../../assets/images/momo.png";
 import cod from "../../assets/images/cod.png";
@@ -103,13 +103,13 @@ function Payment() {
 
   const [errors, setErrors] = useState({});
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: false }));
-  };
+  }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
     const user = localStorage.getItem("user");
 
@@ -131,10 +131,11 @@ function Payment() {
           setShowModal(true);
         })
         .catch((err) => {
-          console.error(err);
+          setModalMessage(err.message || "Đặt hàng thất bại. Vui lòng thử lại.");
+          setShowModal(true);
         });
     }
-  };
+  }, [formData, checkedItems, totalCost]);
 
   return (
     <div className={clsx("container")}>

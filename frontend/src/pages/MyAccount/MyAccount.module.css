@@ -1,0 +1,197 @@
+.container {
+  padding: 40px;
+  max-width: 800px;
+  margin: 100px auto 0;
+}
+
+.formCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  animation: slideUp 0.4s ease-out;
+  min-height: 400px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.formTitle {
+  font-size: 2.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+  text-align: center;
+  color: #000;
+  letter-spacing: -0.5px;
+}
+
+.loadingState {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.6rem;
+  color: #9ca3af;
+  gap: 10px;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.sectionHeader {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #000;
+  margin-bottom: 20px;
+  padding-left: 10px;
+  border-left: 4px solid #000;
+  text-transform: uppercase;
+}
+
+.divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 10px 0;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+.formGroup label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #000;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.formGroup input {
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  transition: all 0.3s;
+  outline: none;
+  width: 100%;
+}
+.formGroup input:focus {
+  border-color: #000;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+}
+.formGroup input::-moz-placeholder {
+  color: #ccc;
+}
+.formGroup input::placeholder {
+  color: #ccc;
+}
+.formGroup .inputReadOnly {
+  background-color: #f9f9f9;
+  color: #777;
+  border-color: transparent;
+  cursor: default;
+}
+.formGroup .inputReadOnly:focus {
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.rowGroup {
+  display: flex;
+  gap: 20px;
+}
+.rowGroup .formGroup {
+  flex: 1;
+}
+@media (max-width: 768px) {
+  .rowGroup {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.showPassOption {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.showPassOption input[type=checkbox] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+.showPassOption label {
+  font-size: 1.4rem;
+  color: #9ca3af;
+  cursor: pointer;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+
+.message {
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.message.error {
+  background-color: #fff2f0;
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
+}
+.message.success {
+  background-color: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 14px;
+  background: #000;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.6rem;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s;
+  letter-spacing: 1px;
+}
+.submitBtn:hover:not(.disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+.submitBtn.disabled {
+  background: #e0e0e0;
+  color: #a0a0a0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}/*# sourceMappingURL=MyAccount.module.css.map */

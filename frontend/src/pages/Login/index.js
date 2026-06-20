@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import styles from "./AuthForm.module.scss"; // SCSS module riêng
@@ -23,6 +23,16 @@ const AuthForm = () => {
   const [password, setPassword] = useState("");
 
   const [errors, setErrors] = useState({});
+
+  // Hiển thị lỗi auth được truyền từ interceptor (vd: token hết hạn)
+  useEffect(() => {
+    const authError = sessionStorage.getItem("authError");
+    if (authError) {
+      setModalMessage(authError);
+      setShowModal(true);
+      sessionStorage.removeItem("authError");
+    }
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,7 +92,7 @@ const AuthForm = () => {
           }
         })
         .catch((err) => {
-          setModalMessage("Xay ra loi" + err);
+          setModalMessage(err.message || "Đã xảy ra lỗi, vui lòng thử lại.");
           setShowModal(true);
         });
     }
@@ -132,7 +142,6 @@ const AuthForm = () => {
             });
           }
 
-          console.log("Response data:", res.data);
         })
         .catch((err) => {
           console.error("Lỗi khi gửi request:", err);

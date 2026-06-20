@@ -28,7 +28,6 @@ function MyAccount() {
           `/account/${localStorage.getItem("id")}`
         );
 
-        console.log("User info response:", response);
         if (response.data) {
           setUserInfo({
             user: response.data.user || "",

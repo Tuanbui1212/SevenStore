@@ -2,37 +2,32 @@ import styles from "./Header.module.scss";
 import clsx from "clsx";
 import "../../../GlobalStyles/GlobalStyles.scss";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import noItem from "../../../../assets/images/no-item.jpg";
 import axios from "../../../../util/axios";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 function Header() {
   const navigate = useNavigate();
   const fullUrl = window.location.href;
+  const { success, role, user } = useAuth();
 
   const [openMenu, setOpenMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [carts, setCarts] = useState([]);
   const [search, setSearch] = useState("");
 
-  const success = localStorage.getItem("success");
-  const role = localStorage.getItem("role");
-
   const searchInputRef = useRef(null);
 
-  const fetchCart = () => {
-    const user = localStorage.getItem("user");
+  const fetchCart = useCallback(() => {
     if (!user) return;
-
-    let url = `/cart?user=${encodeURIComponent(user)}`;
-
     axios
-      .get(url)
+      .get(`/cart?user=${encodeURIComponent(user)}`)
       .then((res) => {
         setCarts(res.data.cart || []);
       })
-      .catch((err) => console.log(err));
-  };
+      .catch((err) => console.error(err));
+  }, [user]);
 
   useEffect(() => {
     setOpenMenu(false);
@@ -41,7 +36,7 @@ function Header() {
 
   useEffect(() => {
     fetchCart();
-  }, []);
+  }, [fetchCart]);
 
   useEffect(() => {
     if (showSearch && searchInputRef.current) {
@@ -49,12 +44,12 @@ function Header() {
     }
   }, [showSearch]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (!search) return;
     navigate(`/search?value=${search}`);
     setSearch("");
     setShowSearch(false);
-  };
+  }, [search, navigate]);
 
   return (
     <>

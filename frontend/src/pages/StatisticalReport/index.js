@@ -4,14 +4,6 @@ import { useEffect, useState } from "react";
 import axios from "../../util/axios";
 
 function StatisticalReport() {
-  // State lưu dữ liệu thô
-  const [rawData, setRawData] = useState({
-    orders: [],
-    products: [],
-    customers: [],
-  });
-
-  // State hiển thị
   const [summary, setSummary] = useState({
     totalRevenue: 0,
     totalOrders: 0,
@@ -31,79 +23,20 @@ function StatisticalReport() {
   const pageSize = 6;
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const [resOrder, resProduct, resCustomer] = await Promise.all([
-          axios.get("/dashboard/orders"), // Cần trả về array orders
-          axios.get("/dashboard/products"), // Cần trả về array products
-          axios.get("/dashboard/customers"), // Cần trả về array customers
-        ]);
-
-        const orders = resOrder.data.order || []; // Sửa theo structure API thực của bạn
-        const products = resProduct.data.listProduct || [];
-        const customers = resCustomer.data.customers || [];
-
-        setRawData({ orders, products, customers });
-
-        // --- BẮT ĐẦU TÍNH TOÁN (LOGIC CHÍNH) ---
-
-        // A. Tính Summary
-        const totalRev = orders.reduce(
-          (sum, order) => sum + Number(order.totalPrice || 0),
-          0
-        );
-        // Lưu ý: totalPrice là trường giả định, bạn cần thay bằng tên trường thật trong DB (ví dụ: order.cost, order.total...)
-
-        setSummary({
-          totalRevenue: totalRev,
-          totalOrders: orders.length,
-          totalProducts: products.length,
-          totalCustomers: customers.length,
-        });
-
-        // B. Tính bảng theo tháng (Group by Month)
-        const statsMap = {};
-
-        orders.forEach((order) => {
-          // Giả sử order có trường createdAt hoặc date
-          const date = new Date(order.createdAt || order.date || Date.now());
-          const monthKey = `${date.getMonth() + 1}/${date.getFullYear()}`; // VD: 12/2025
-
-          if (!statsMap[monthKey]) {
-            statsMap[monthKey] = {
-              month: monthKey,
-              orders: 0,
-              revenue: 0,
-              profit: 0, // Cái này khó tính nếu không có giá nhập, tạm lấy 30% doanh thu
-              dateObj: date, // Dùng để sort
-            };
-          }
-
-          statsMap[monthKey].orders += 1;
-          statsMap[monthKey].revenue += Number(order.totalPrice || 0);
-          statsMap[monthKey].profit += Number(order.totalPrice || 0) * 0.3; // Giả định lãi 30%
-        });
-
-        // Chuyển object thành array
-        let statsArray = Object.values(statsMap);
-
-        // Tính Growth (Tăng trưởng so với tháng trước - Logic nâng cao, tạm thời để random hoặc 0)
-        statsArray = statsArray.map((item) => ({
+    setIsLoading(true);
+    axios
+      .get("/dashboard/orders/stats")
+      .then((res) => {
+        const { stats, totalRevenue, totalOrders, totalProducts, totalCustomers } = res.data;
+        setSummary({ totalRevenue, totalOrders, totalProducts, totalCustomers });
+        const statsWithDateObj = (stats || []).map((item) => ({
           ...item,
-          growth: (Math.random() * 20 - 5).toFixed(1), // Giả lập, tính thật khá phức tạp
-          status: item.revenue > 5000000 ? "High" : "Medium", // Logic set status
+          dateObj: new Date(item.year, item.monthNum - 1, 1),
         }));
-
-        setMonthlyStats(statsArray);
-      } catch (err) {
-        console.error("Lỗi tính toán thống kê:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
+        setMonthlyStats(statsWithDateObj);
+      })
+      .catch((err) => console.error("Lỗi tải thống kê:", err))
+      .finally(() => setIsLoading(false));
   }, []);
 
   // --- CÁC PHẦN DƯỚI GIỮ NGUYÊN GIAO DIỆN CŨ ---
@@ -140,8 +73,6 @@ function StatisticalReport() {
   const totalPages = Math.ceil(filteredData.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const currentData = filteredData.slice(startIndex, startIndex + pageSize);
-
-  console.log("Rendered currentData:", currentData);
 
   const getPageNumbers = () => {
     const pages = [];

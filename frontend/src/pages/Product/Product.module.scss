@@ -274,19 +274,35 @@ $tablet-width: 1023px;
     padding: 0;
   }
 
+  &Header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
   &Title {
     font-family: "Puma", sans-serif;
     font-size: 8rem;
     font-weight: 600;
     margin-top: 10px;
-    margin-bottom: 56px;
+    margin-bottom: 48px;
     text-transform: uppercase;
     text-align: center;
+    flex: 1;
 
     @include mobile {
       font-size: 4rem;
       margin-bottom: 30px;
     }
+  }
+
+  &Count {
+    font-size: 1.4rem;
+    color: #888;
+    white-space: nowrap;
   }
 
   & .productGrid {

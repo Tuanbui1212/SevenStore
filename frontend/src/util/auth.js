@@ -3,7 +3,7 @@ import { jwtDecode } from "jwt-decode";
 export const getRoleFromToken = () => {
   const token = localStorage.getItem("accessToken");
 
-  if (!token) return null; // Chưa đăng nhập
+  if (!token) return null;
 
   try {
     // Giải mã token ra thành Object

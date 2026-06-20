@@ -6,15 +6,19 @@ const {
 
 class EmployeeController {
   show(req, res, next) {
+    const { page = 1, limit = 10, search = "", sortKey = "updatedAt", sortDir = "desc" } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.max(1, parseInt(limit, 10));
+    const skip = (pageNum - 1) * limitNum;
+    const filter = search ? { name: { $regex: search, $options: "i" } } : {};
+    const sortBy = { [sortKey]: sortDir === "asc" ? 1 : -1 };
     Promise.all([
-      Employee.find().sort({ updatedAt: -1 }).lean(),
+      Employee.find(filter).sort(sortBy).skip(skip).limit(limitNum).lean(),
+      Employee.countDocuments(filter),
       Employee.countDocumentsWithDeleted({ deleted: true }),
     ])
-      .then(([employees, deletedCount]) =>
-        res.json({
-          deletedCount,
-          employees,
-        })
+      .then(([employees, total, deletedCount]) =>
+        res.json({ employees, deletedCount, total, currentPage: pageNum, totalPages: Math.ceil(total / limitNum) })
       )
       .catch(next);
   }

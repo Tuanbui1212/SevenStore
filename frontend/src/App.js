@@ -4,10 +4,12 @@ import { publicRoutes, privateRoutes } from "./routes";
 import DefaultLayout from "./components/Layout/DefaultLayout";
 import { Fragment } from "react";
 import PrivateRoute from "./components/PrivateRoute";
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <ScrollToTop />
       <div className="App">
         <Routes>
@@ -62,6 +64,7 @@ function App() {
           })}
         </Routes>
       </div>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

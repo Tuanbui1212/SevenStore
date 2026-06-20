@@ -1,13 +1,31 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import styles from "./Product.module.scss";
 import clsx from "clsx";
 import "../../components/GlobalStyles/GlobalStyles.scss";
-import { Link } from "react-router-dom";
 import axios from "../../util/axios";
 
 import no_img from "../../assets/images/no_img.jpg";
-import ScrollToTop from "../../components/ScrollToTop";
+import Pagination from "../../components/Pagination";
+
+const ProductSkeleton = () => (
+  <div className={clsx("col col-4 col-md-6 col-sm-6", styles.productCard)}>
+    <div
+      className={clsx(styles.productImage, styles.skeleton)}
+      style={{ height: "300px" }}
+    ></div>
+    <div className={clsx(styles.productInfo)}>
+      <div
+        className={clsx(styles.skeleton)}
+        style={{ height: "20px", width: "80%", marginBottom: "5px" }}
+      ></div>
+      <div
+        className={clsx(styles.skeleton)}
+        style={{ height: "20px", width: "40%" }}
+      ></div>
+    </div>
+  </div>
+);
 
 const sorts = [
   "Best Sellers",
@@ -39,6 +57,8 @@ const priceOptions = [
 
 function Product() {
   const { brand } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showMobileFilter, setShowMobileFilter] = useState(false);
@@ -55,11 +75,33 @@ function Product() {
   const [openColor, setOpenColor] = useState(false);
   const [openPrice, setOpenPrice] = useState(false);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setLoading(true);
-    let url = `/product/${brand}?`;
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
 
+  const currentPage = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+
+  const handlePageChange = (page) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("page", page);
+      return next;
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Reset về trang 1 khi filter thay đổi
+  useEffect(() => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set("page", "1");
+      return next;
+    });
+  }, [brand, selectedColor, selectedType, minPrice, maxPrice, selectedSort]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    setLoading(true);
+
+    let url = `/product/${brand}?page=${currentPage}&limit=12&`;
     if (selectedSort) url += `sort=${selectedSort}&`;
     if (selectedColor) url += `color=${selectedColor}&`;
     if (selectedType) url += `type=${selectedType}&`;
@@ -69,32 +111,15 @@ function Product() {
     axios(url)
       .then((res) => {
         setProducts(res.data.newProduct || []);
+        setTotalPages(res.data.totalPages || 1);
+        setTotalProducts(res.data.total || 0);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Lỗi:", err);
         setLoading(false);
       });
-  }, [brand, selectedColor, selectedType, minPrice, maxPrice, selectedSort]);
-
-  const ProductSkeleton = () => (
-    <div className={clsx("col col-4 col-md-6 col-sm-6", styles.productCard)}>
-      <div
-        className={clsx(styles.productImage, styles.skeleton)}
-        style={{ height: "300px" }}
-      ></div>
-      <div className={clsx(styles.productInfo)}>
-        <div
-          className={clsx(styles.skeleton)}
-          style={{ height: "20px", width: "80%", marginBottom: "5px" }}
-        ></div>
-        <div
-          className={clsx(styles.skeleton)}
-          style={{ height: "20px", width: "40%" }}
-        ></div>
-      </div>
-    </div>
-  );
+  }, [brand, selectedColor, selectedType, minPrice, maxPrice, selectedSort, currentPage]);
 
   return (
     <>
@@ -315,7 +340,14 @@ function Product() {
 
           {/* --- Danh sách sản phẩm (Về lại col-9) --- */}
           <div className={clsx("col col-9 col-sm-12", styles.productList)}>
-            <h3 className={styles.productListTitle}>{brand}</h3>
+            <div className={styles.productListHeader}>
+              <h3 className={styles.productListTitle}>{brand}</h3>
+              {!loading && (
+                <span className={styles.productCount}>
+                  {totalProducts} products
+                </span>
+              )}
+            </div>
             <div className={clsx("row", styles.productGrid)}>
               {loading ? (
                 Array(6)
@@ -395,6 +427,12 @@ function Product() {
                 </div>
               )}
             </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
         </div>
       </div>

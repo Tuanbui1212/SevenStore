@@ -2,10 +2,18 @@ const Customer = require("../models/Customer");
 
 class CustomerController {
   show(req, res, next) {
-    Customer.find({})
-      .sort({ updatedAt: -1 })
-      .lean()
-      .then((customers) => res.json({ customers }))
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.max(1, parseInt(limit, 10));
+    const skip = (pageNum - 1) * limitNum;
+    const filter = search ? { name: { $regex: search, $options: "i" } } : {};
+    Promise.all([
+      Customer.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(limitNum).lean(),
+      Customer.countDocuments(filter),
+    ])
+      .then(([customers, total]) =>
+        res.json({ customers, total, currentPage: pageNum, totalPages: Math.ceil(total / limitNum) })
+      )
       .catch(next);
   }
 

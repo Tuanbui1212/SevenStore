@@ -45,6 +45,7 @@ router.post("/account/:id", AccountController.update);
 // -- Order --
 router.get("/orders", PaymentController.show);
 router.get("/orders/count-pending", OrderController.countPending);
+router.get("/orders/stats", OrderController.getStats);
 router.get("/orders/:id", PaymentController.showDetail);
 router.put("/orders/:id", OrderController.updateStatus);
 router.get("/orders/manage/:type", OrderController.showManage);

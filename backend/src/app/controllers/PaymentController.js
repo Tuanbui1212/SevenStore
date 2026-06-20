@@ -1,116 +1,105 @@
+const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Account = require("../models/Account");
 const Customer = require("../models/Customer");
+const vnpayService = require("../services/vnpayService.js");
+
 class PaymentController {
-  create(req, res) {
+  async create(req, res) {
     const { formData, user, checkedItems, totalCost } = req.body;
 
-    Account.findOne({ user })
-      .then((account) => {
-        if (!account) throw new Error("Account not found");
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-        return checkedItems
-          .reduce((p, item) => {
-            return p.then(() =>
-              Product.findById(item.id).then((product) => {
-                if (!product) throw new Error("Product not found");
+    try {
+      const account = await Account.findOne({ user }).session(session);
+      if (!account) throw new Error("Account not found");
 
-                if (product.size[item.size] < item.quantity) {
-                  throw new Error("Insufficient product quantity available");
-                }
+      // Kiểm tra + trừ tồn kho từng sản phẩm
+      for (const item of checkedItems) {
+        const product = await Product.findById(item.id).session(session);
+        if (!product) throw new Error(`Product not found: ${item.id}`);
 
-                //Xoa sp trong rỏ hàng
-                account.cart = account.cart.filter(
-                  (items) =>
-                    !(
-                      items.id.toString() === item.id.toString() &&
-                      items.size === item.size
-                    )
-                );
+        if (product.size[item.size] < item.quantity) {
+          throw new Error(`Insufficient stock for "${product.name}" size ${item.size}`);
+        }
 
-                //Giảm số lượng khi mua
-                product.size[item.size] -= item.quantity;
-                product.markModified("size");
+        product.size[item.size] -= item.quantity;
+        product.markModified("size");
+        await product.save({ session });
+      }
 
-                return product.save();
-              })
-            );
-          }, Promise.resolve())
-          .then(() => {
-            return account.save();
-          });
-      })
-      .then(() => {
-        const orderData = {
-          user: user,
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email,
-          address: formData.address,
-          city: formData.city,
-          note: formData.note,
-          paymentMethod: formData.payment,
-          totalPrice: totalCost,
-          items: checkedItems.map((item) => ({
-            productId: item.id,
-            quantity: item.quantity,
-            price: item.cost,
-            size: item.size,
-          })),
-        };
+      // Xóa sản phẩm đã mua khỏi giỏ hàng
+      account.cart = account.cart.filter(
+        (cartItem) =>
+          !checkedItems.some(
+            (item) =>
+              item.id.toString() === cartItem.id.toString() &&
+              item.size === cartItem.size
+          )
+      );
+      await account.save({ session });
 
-        const order = new Order(orderData);
-        return order.save();
-      })
-      .then(() => {
-        const phone = formData.phone;
-
-        Customer.findOne({ phone }).then((customer) => {
-          if (customer) return;
-
-          const address = formData.address + ", " + formData.city;
-
-          const customerData = {
-            name: formData.name,
-            phone: formData.phone,
-            address: address,
-          };
-
-          const customerDB = new Customer(customerData);
-          return customerDB.save();
-        });
-      })
-      .then(() => {
-        res.status(201).json({
-          message: "✅ Thank you! Your order has been placed successfully.",
-          url: "/",
-        });
-      })
-      .catch((err) => {
-        res.status(500).json({ message: err.message });
+      // Tạo đơn hàng
+      const order = new Order({
+        user,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        city: formData.city,
+        note: formData.note,
+        paymentMethod: formData.payment,
+        totalPrice: totalCost,
+        items: checkedItems.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+          price: item.cost,
+          size: item.size,
+        })),
       });
+      await order.save({ session });
+
+      await session.commitTransaction();
+
+      // Tạo khách hàng mới (ngoài transaction — không critical, thất bại không sao)
+      const phone = formData.phone;
+      Customer.findOne({ phone }).then((existing) => {
+        if (existing) return;
+        new Customer({
+          name: formData.name,
+          phone,
+          address: `${formData.address}, ${formData.city}`,
+        }).save().catch(() => {});
+      });
+
+      res.status(201).json({
+        message: "✅ Thank you! Your order has been placed successfully.",
+        url: "/",
+      });
+    } catch (err) {
+      await session.abortTransaction();
+      res.status(500).json({ message: err.message });
+    } finally {
+      session.endSession();
+    }
   }
 
   show(req, res, next) {
     Order.find()
       .sort({ createdAt: -1 })
       .lean()
-      .then((order) => {
-        res.json({ order });
-      })
+      .then((order) => res.json({ order }))
       .catch(next);
   }
 
   showDetail(req, res, next) {
     const { id } = req.params;
-
     Order.findById(id)
       .populate("items.productId")
       .lean()
-      .then((order) => {
-        res.json({ order });
-      })
+      .then((order) => res.json({ order }))
       .catch(next);
   }
 }

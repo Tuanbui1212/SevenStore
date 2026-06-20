@@ -28,12 +28,74 @@ $mobile-width: 739px;
   color: $black-color;
 }
 
+// --- Controls (search + tabs) ---
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 30px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fafafa;
+  margin-bottom: 16px;
+
+  i {
+    font-size: 1.4rem;
+    color: #aaa;
+    flex-shrink: 0;
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    color: $black-color;
+    outline: none;
+
+    &::placeholder {
+      color: #bbb;
+    }
+  }
+
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #aaa;
+    font-size: 1.4rem;
+    padding: 2px 4px;
+    line-height: 1;
+    &:hover {
+      color: $black-color;
+    }
+  }
+}
+
+.resultCount {
+  font-size: 1.4rem;
+  color: #888;
+  margin-bottom: 16px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 // --- Tabs ---
 .tabs {
   display: flex;
   justify-content: center;
   border-bottom: 1px solid #eee;
-  margin-bottom: 30px;
   gap: 20px;
 
   .tabItem {

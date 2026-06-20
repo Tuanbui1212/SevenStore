@@ -1,14 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import clsx from "clsx";
 import styles from "./MyOrders.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
 import axios from "../../util/axios";
 import noOrder from "../../assets/images/no-item.jpg";
+import Pagination from "../../components/Pagination";
+
+const PAGE_SIZE = 5;
 
 function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // --- 1. STATE QUẢN LÝ MODAL (CHUNG CHO HỦY & NHẬN) ---
   const [modal, setModal] = useState({
@@ -36,28 +41,28 @@ function MyOrders() {
     }
   }, [toast.show]);
 
-  const fetchMyOrders = () => {
+  const fetchMyOrders = useCallback(() => {
     const currentUser = localStorage.getItem("user") || "guest";
     axios
       .get(`/my-orders?user=${currentUser}`)
       .then((res) => setOrders(res.data.order))
       .catch((err) => console.error(err));
-  };
+  }, []);
 
   useEffect(() => {
     fetchMyOrders();
-  }, []);
+  }, [fetchMyOrders]);
 
   // --- CÁC HÀM XỬ LÝ ---
-  const openModal = (orderId, type) => {
+  const openModal = useCallback((orderId, type) => {
     setModal({ show: true, orderId, type });
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModal({ show: false, orderId: null, type: null });
-  };
+  }, []);
 
-  const handleAction = () => {
+  const handleAction = useCallback(() => {
     if (!modal.orderId || !modal.type) return;
 
     const isReceive = modal.type === "receive";
@@ -76,19 +81,48 @@ function MyOrders() {
       .catch((err) => {
         console.error(err);
         closeModal();
-        // Hiện thông báo lỗi
         setToast({
           show: true,
           message: "Something went wrong.",
           type: "error",
         });
       });
-  };
+  }, [modal, closeModal, fetchMyOrders]);
 
-  const filteredOrders =
-    activeTab === "All" ? orders : orders.filter((o) => o.status === activeTab);
+  // Reset page khi tab hoặc search thay đổi
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchTerm]);
 
-  const getStatusClass = (status) => {
+  const filteredOrders = useMemo(() => {
+    let result =
+      activeTab === "All" ? orders : orders.filter((o) => o.status === activeTab);
+
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        (o) =>
+          o._id.toLowerCase().includes(term) ||
+          o.items?.some((item) =>
+            item.productId?.name?.toLowerCase().includes(term)
+          )
+      );
+    }
+
+    return result;
+  }, [orders, activeTab, searchTerm]);
+
+  const totalPages = useMemo(
+    () => Math.ceil(filteredOrders.length / PAGE_SIZE),
+    [filteredOrders]
+  );
+
+  const currentOrders = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredOrders.slice(start, start + PAGE_SIZE);
+  }, [filteredOrders, currentPage]);
+
+  const getStatusClass = useCallback((status) => {
     switch (status) {
       case "Pending":
         return styles.pending;
@@ -101,18 +135,17 @@ function MyOrders() {
       default:
         return "";
     }
-  };
+  }, []);
 
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-
     return date.toLocaleDateString("vi-VN", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
     });
-  };
+  }, []);
 
   const modalContent = {
     receive: {
@@ -155,21 +188,46 @@ function MyOrders() {
 
       <h2 className={styles.pageTitle}>MY ORDERS</h2>
 
-      <div className={styles.tabs}>
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            className={clsx(styles.tabItem, activeTab === tab && styles.active)}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
+      {/* Search + Tabs */}
+      <div className={styles.controls}>
+        <div className={styles.searchBox}>
+          <i className="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            placeholder="Search by order ID or product name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm("")} aria-label="Clear search">
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+          )}
+        </div>
+
+        <div className={styles.tabs}>
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              className={clsx(styles.tabItem, activeTab === tab && styles.active)}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
       </div>
 
+      {/* Result count */}
+      {(searchTerm || activeTab !== "All") && (
+        <p className={styles.resultCount}>
+          {filteredOrders.length} order{filteredOrders.length !== 1 ? "s" : ""} found
+        </p>
+      )}
+
       <div className={styles.orderList}>
-        {filteredOrders.length > 0 ? (
-          filteredOrders.map((order) => (
+        {currentOrders.length > 0 ? (
+          currentOrders.map((order) => (
             <div key={order._id} className={styles.orderCard}>
               <div className={styles.orderHeader}>
                 <div className={styles.headerLeft}>
@@ -266,6 +324,12 @@ function MyOrders() {
           </div>
         )}
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {modal.show && (
         <div className={styles.modalOverlay}>

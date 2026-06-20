@@ -1,8 +1,10 @@
 import styles from "./Employee.module.scss";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../util/axios";
+
+const PAGE_SIZE = 10;
 
 function Employee() {
   const [employee, setEmployee] = useState([]);
@@ -12,97 +14,58 @@ function Employee() {
   const [deleteId, setDeleteId] = useState(null);
   const [countDelete, setCountDelete] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // State cho chức năng sắp xếp
+  const [totalPages, setTotalPages] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const pageSize = 5;
   const navigate = useNavigate();
 
-  const fetchEmployees = () => {
+  useEffect(() => {
+    const params = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
+    if (searchTerm) params.set("search", searchTerm);
+    if (sortConfig.key) {
+      params.set("sortKey", sortConfig.key);
+      params.set("sortDir", sortConfig.direction);
+    }
     axios
-      .get("/dashboard/employee")
+      .get(`/dashboard/employee?${params}`)
       .then((res) => {
-        const formattedEmployees = res.data.employees.map((employee) => {
-          if (!employee.date) {
-            return employee;
-          }
-          const formattedDate = new Date(employee.date)
-            .toISOString()
-            .split("T")[0];
-          return {
-            ...employee,
-            date: formattedDate,
-          };
+        const formattedEmployees = (res.data.employees || []).map((emp) => {
+          if (!emp.date) return emp;
+          return { ...emp, date: new Date(emp.date).toISOString().split("T")[0] };
         });
-        setCountDelete(res.data.deletedCount);
+        setCountDelete(res.data.deletedCount || 0);
         setEmployee(formattedEmployees);
+        setTotalPages(res.data.totalPages || 1);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
-  };
+  }, [currentPage, searchTerm, sortConfig, refreshKey]);
 
-  useEffect(() => {
-    fetchEmployees();
-  }, []);
-
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     if (!deleteId) return;
     axios
       .delete(`/dashboard/employee/${deleteId}`)
       .then((res) => {
         setModalMessage(res.data.message);
         setShowModal(true);
-        fetchEmployees();
+        setRefreshKey((k) => k + 1);
       })
       .catch(() => alert("❌ An error occurred while deleting!"))
       .finally(() => {
         setDeleteId(null);
         setShowModal(false);
       });
-  };
+  }, [deleteId]);
 
-  // Xử lý logic sắp xếp
-  const handleSort = (key) => {
-    let direction = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
-  };
+  const handleSort = useCallback((key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+    setCurrentPage(1);
+  }, []);
 
-  // Logic lọc dữ liệu theo Search
-  const filteredData = employee.filter((e) => {
-    const term = searchTerm.toLowerCase();
-    return (
-      e.name.toLowerCase().includes(term) || e.role.toLowerCase().includes(term)
-    );
-  });
-
-  // Logic sắp xếp dữ liệu
-  if (sortConfig.key) {
-    filteredData.sort((a, b) => {
-      let aValue = a[sortConfig.key]
-        ? a[sortConfig.key].toString().toLowerCase()
-        : "";
-      let bValue = b[sortConfig.key]
-        ? b[sortConfig.key].toString().toLowerCase()
-        : "";
-
-      if (aValue < bValue) {
-        return sortConfig.direction === "asc" ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-  }
-
-  const totalPages = Math.ceil(filteredData.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const currentData = filteredData.slice(startIndex, startIndex + pageSize);
-
-  const getPageNumbers = () => {
+  const pageNumbers = useMemo(() => {
     const pages = [];
     if (totalPages <= 7) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
@@ -116,29 +79,33 @@ function Employee() {
       pages.push(totalPages);
     }
     return pages;
-  };
+  }, [totalPages, currentPage]);
 
-  // Helper render icon sort
-  const renderSortIcon = (columnKey) => {
-    if (sortConfig.key !== columnKey)
-      return (
+  const renderSortIcon = useCallback(
+    (columnKey) => {
+      if (sortConfig.key !== columnKey)
+        return (
+          <i
+            className="fa-solid fa-sort"
+            style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+          ></i>
+        );
+      return sortConfig.direction === "asc" ? (
         <i
-          className="fa-solid fa-sort"
-          style={{ fontSize: "12px", marginLeft: "5px", opacity: 0.3 }}
+          className="fa-solid fa-sort-up"
+          style={{ fontSize: "12px", marginLeft: "5px" }}
+        ></i>
+      ) : (
+        <i
+          className="fa-solid fa-sort-down"
+          style={{ fontSize: "12px", marginLeft: "5px" }}
         ></i>
       );
-    return sortConfig.direction === "asc" ? (
-      <i
-        className="fa-solid fa-sort-up"
-        style={{ fontSize: "12px", marginLeft: "5px" }}
-      ></i>
-    ) : (
-      <i
-        className="fa-solid fa-sort-down"
-        style={{ fontSize: "12px", marginLeft: "5px" }}
-      ></i>
-    );
-  };
+    },
+    [sortConfig]
+  );
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   return (
     <div className={clsx("mt-36", styles.tableWrapper)}>
@@ -203,8 +170,8 @@ function Employee() {
           </tr>
         </thead>
         <tbody>
-          {currentData.length > 0 ? (
-            currentData.map((e, index) => (
+          {employee.length > 0 ? (
+            employee.map((e, index) => (
               <tr key={index} className={styles.tableRow}>
                 <td className={styles.tableCell}>{startIndex + index + 1}</td>
                 <td className={styles.tableCell}>
@@ -225,9 +192,7 @@ function Employee() {
                 <td className={styles.tableCell}>{e.date}</td>
                 <td className={styles.tableCell}>
                   <button
-                    onClick={() => {
-                      navigate(`/dashboard/employee/${e._id}`);
-                    }}
+                    onClick={() => navigate(`/dashboard/employee/${e._id}`)}
                   >
                     <i className="fa-solid fa-pen-to-square"></i>
                   </button>
@@ -261,8 +226,7 @@ function Employee() {
           >
             <i className="fa-solid fa-caret-left"></i>
           </button>
-
-          {getPageNumbers().map((p, i) =>
+          {pageNumbers.map((p, i) =>
             p === "..." ? (
               <span key={i} className={styles.ellipsis}>
                 ...
@@ -277,7 +241,6 @@ function Employee() {
               </button>
             )
           )}
-
           <button
             disabled={currentPage === totalPages}
             onClick={() => setCurrentPage((p) => p + 1)}
@@ -292,13 +255,7 @@ function Employee() {
           <div className={styles.modal}>
             <p>{modalMessage}</p>
             <button onClick={handleDelete}>Yes</button>
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-            >
-              No
-            </button>
+            <button onClick={() => setShowModal(false)}>No</button>
           </div>
         </div>
       )}

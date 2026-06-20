@@ -20,10 +20,9 @@ function OrderDetail() {
       .get(`/dashboard/orders/${id}`)
       .then((res) => {
         setOrderDetail(res.data.order.items);
-        console.log(res.data.order);
         setBill(res.data.order);
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err));
   };
 
   useEffect(() => {

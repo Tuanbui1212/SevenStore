@@ -304,6 +304,28 @@
   }
 }
 
+.descriptionSection {
+  margin-top: 60px;
+  padding-top: 32px;
+  border-top: 1px solid #e8e8e8;
+
+  &__title {
+    font-size: 2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    color: $black-color;
+  }
+
+  &__body {
+    font-size: 1.6rem;
+    line-height: 1.7;
+    color: #555;
+    max-width: 800px;
+  }
+}
+
 .content {
   display: block;
   margin-top: 80px;

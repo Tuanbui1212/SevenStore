@@ -1,12 +1,22 @@
-const { post } = require("../../routes/site");
 const Account = require("../models/Account");
+const bcrypt = require("bcryptjs");
 
 class AccountController {
   show(req, res, next) {
-    Account.find({})
-      .sort({ updatedAt: -1 })
-      .lean()
-      .then((account) => res.json({ account }))
+    const { page = 1, limit = 10, search = "" } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10));
+    const limitNum = Math.max(1, parseInt(limit, 10));
+    const skip = (pageNum - 1) * limitNum;
+    const filter = search
+      ? { $or: [{ name: { $regex: search, $options: "i" } }, { user: { $regex: search, $options: "i" } }] }
+      : {};
+    Promise.all([
+      Account.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(limitNum).lean(),
+      Account.countDocuments(filter),
+    ])
+      .then(([account, total]) =>
+        res.json({ account, total, currentPage: pageNum, totalPages: Math.ceil(total / limitNum) })
+      )
       .catch(next);
   }
 
@@ -26,34 +36,37 @@ class AccountController {
       .catch(next);
   }
 
-  //[POST]/account/:id
-  updatePassword(req, res, next) {
+  //[PUT]/account/:id
+  async updatePassword(req, res, next) {
     const { oldPassword, newPassword } = req.body;
-    Account.findById(req.params.id)
-      .then((account) => {
-        if (account.password !== oldPassword) {
-          return res
-            .status(400)
-            .json({ message: "Current password is incorrect" });
-        }
+    try {
+      const account = await Account.findById(req.params.id);
+      if (!account) return res.status(404).json({ message: "Account not found" });
 
-        account.password = newPassword;
-        return account.save();
-      })
-      .then(() => res.json({ message: "Password updated successfully" }))
-      .catch(next);
+      const isMatch = await bcrypt.compare(oldPassword, account.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+
+      account.password = await bcrypt.hash(newPassword, 10);
+      await account.save();
+      res.json({ message: "Password updated successfully" });
+    } catch (err) {
+      next(err);
+    }
   }
 
-  //[POST]
-  create(req, res, next) {
-    const account = new Account(req.body);
-
-    console.log(account.data);
-
-    account
-      .save()
-      .then(res.status(201).json({ message: "Account created successfully" }))
-      .catch(next);
+  //[POST] /dashboard/account/create
+  async create(req, res, next) {
+    try {
+      const { password, ...rest } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const account = new Account({ ...rest, password: hashedPassword });
+      await account.save();
+      res.status(201).json({ message: "Account created successfully" });
+    } catch (err) {
+      next(err);
+    }
   }
 
   //[GET]/dashboard/account/:id
