@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../util/axios";
+import { useModal } from "../../../contexts/ModalContext";
 import no_item from "../../../assets/images/no_img.jpg";
 
 function TrashProduct() {
@@ -11,10 +12,8 @@ function TrashProduct() {
   const [currentPage, setCurrentPage] = useState(1);
   const [restoreId, setRestoreId] = useState("");
   const [deleteId, setDeleteId] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+  const { showModal, confirmModal } = useModal();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
-  const [actionType, setActionType] = useState("");
 
   const pageSize = 6;
   const navigate = useNavigate();
@@ -39,36 +38,42 @@ function TrashProduct() {
     fetchProducts();
   }, []);
 
-  const handleDelete = () => {
-    if (!deleteId) return;
+  const handleDelete = (id) => {
+    if (!id) return;
     axios
-      .delete(`/dashboard/products/${deleteId}/force`)
+      .delete(`/dashboard/products/${id}/force`)
       .then((res) => {
-        setModalMessage(res.data.message);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: res.data.message,
+          type: "success"
+        });
         fetchProducts();
       })
-      .catch(() => alert("❌ An error occurred while deleting!"))
-      .finally(() => {
-        setDeleteId(null);
-        setActionType("");
-      });
+      .catch(() => showModal({
+        title: "Error",
+        message: "An error occurred while deleting!",
+        type: "error"
+      }));
   };
 
-  const handleRestore = () => {
-    if (!restoreId) return;
+  const handleRestore = (id) => {
+    if (!id) return;
     axios
-      .patch(`/dashboard/products/${restoreId}/restore`)
+      .patch(`/dashboard/products/${id}/restore`)
       .then((res) => {
-        setModalMessage(res.data.message);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: res.data.message,
+          type: "success"
+        });
         fetchProducts();
       })
-      .catch(() => alert("❌ An error occurred while restoring!"))
-      .finally(() => {
-        setRestoreId(null);
-        setActionType("");
-      });
+      .catch(() => showModal({
+        title: "Error",
+        message: "An error occurred while restoring!",
+        type: "error"
+      }));
   };
 
   const handleSort = (key) => {
@@ -237,10 +242,13 @@ function TrashProduct() {
                   <button
                     className={styles.btnRestore}
                     onClick={() => {
-                      setShowModal(true);
-                      setRestoreId(product._id);
-                      setActionType("restore");
-                      setModalMessage("Are you sure you want to restore?");
+                      confirmModal({
+                        title: "Confirm Restore",
+                        message: "Are you sure you want to restore this product?",
+                        type: "info",
+                        confirmText: "Yes, restore",
+                        onConfirm: () => handleRestore(product._id)
+                      });
                     }}
                   >
                     <i className="fa-solid fa-window-restore"></i>
@@ -248,12 +256,13 @@ function TrashProduct() {
                   <button
                     className={styles.btnDelete}
                     onClick={() => {
-                      setShowModal(true);
-                      setDeleteId(product._id);
-                      setActionType("delete");
-                      setModalMessage(
-                        "Permanently delete this product? This cannot be undone."
-                      );
+                      confirmModal({
+                        title: "Confirm Deletion",
+                        message: "Permanently delete this product? This cannot be undone.",
+                        type: "warning",
+                        confirmText: "Yes, delete",
+                        onConfirm: () => handleDelete(product._id)
+                      });
                     }}
                   >
                     <i className="fa-solid fa-trash"></i>
@@ -305,27 +314,6 @@ function TrashProduct() {
         </div>
       )}
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            {modalMessage.includes("successfully") ? (
-              <button onClick={() => setShowModal(false)}>Close</button>
-            ) : (
-              <>
-                <button
-                  onClick={
-                    actionType === "restore" ? handleRestore : handleDelete
-                  }
-                >
-                  Yes
-                </button>
-                <button onClick={() => setShowModal(false)}>No</button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

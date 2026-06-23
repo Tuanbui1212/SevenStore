@@ -4,16 +4,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
+import { useModal } from "../../../contexts/ModalContext";
 
 function EditEmployee() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const [modalMessage, setModalMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const { showModal } = useModal();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -36,9 +35,11 @@ function EditEmployee() {
       !formData.role ||
       !formData.date
     ) {
-      setModalMessage("Please fill out all fields!");
-      setIsSuccess(false);
-      setShowModal(true);
+      showModal({
+        title: "Error",
+        message: "Please fill out all fields!",
+        type: "error"
+      });
       return;
     }
 
@@ -48,14 +49,20 @@ function EditEmployee() {
     axios
       .put(`/dashboard/employee/${id}`, formData)
       .then((res) => {
-        setModalMessage("Employee updated successfully!");
-        setIsSuccess(true);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: "Employee updated successfully!",
+          type: "success",
+          confirmText: "Go to List",
+          onConfirm: () => navigate("/dashboard/employee")
+        });
       })
       .catch(() => {
-        setModalMessage("❌ Something went wrong while updating the employee!");
-        setIsSuccess(false);
-        setShowModal(true);
+        showModal({
+          title: "Error",
+          message: "Something went wrong while updating the employee!",
+          type: "error"
+        });
       })
       .finally(() => {
         setIsSaving(false);
@@ -83,9 +90,11 @@ function EditEmployee() {
       })
       .catch((err) => {
         console.error("Lỗi fetch:", err);
-        setModalMessage("Cannot load employee data.");
-        setIsSuccess(false);
-        setShowModal(true);
+        showModal({
+          title: "Error",
+          message: "Cannot load employee data.",
+          type: "error"
+        });
       })
       .finally(() => {
         setIsLoading(false);
@@ -184,38 +193,6 @@ function EditEmployee() {
         )}
       </div>
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <div
-              className={clsx(
-                styles.modalIcon,
-                isSuccess ? styles.success : styles.error
-              )}
-            >
-              <i
-                className={
-                  isSuccess
-                    ? "fa-solid fa-check-circle"
-                    : "fa-solid fa-circle-xmark"
-                }
-              ></i>
-            </div>
-            <h3>{isSuccess ? "Success!" : "Error"}</h3>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                setShowModal(false);
-                if (isSuccess) {
-                  navigate("/dashboard/employee");
-                }
-              }}
-            >
-              {isSuccess ? "Go to List" : "Close"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

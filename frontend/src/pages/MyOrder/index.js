@@ -6,40 +6,15 @@ import "../../components/GlobalStyles/GlobalStyles.scss";
 import axios from "../../util/axios";
 import noOrder from "../../assets/images/no-item.jpg";
 import Pagination from "../../components/Pagination";
-
+import { useModal } from "../../contexts/ModalContext";
 const PAGE_SIZE = 5;
 
 function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-
-  // --- 1. STATE QUẢN LÝ MODAL (CHUNG CHO HỦY & NHẬN) ---
-  const [modal, setModal] = useState({
-    show: false,
-    orderId: null,
-    type: null,
-  });
-
-  // --- 2. STATE QUẢN LÝ THÔNG BÁO (TOAST TỰ CHẾ) ---
-  const [toast, setToast] = useState({
-    show: false,
-    message: "",
-    type: "success",
-  });
-
+  const { showModal, confirmModal } = useModal();
   const tabs = ["All", "Pending", "Shipping", "Delivered", "Cancelled"];
-
-  // Tự động tắt thông báo sau 3 giây
-  useEffect(() => {
-    if (toast.show) {
-      const timer = setTimeout(() => {
-        setToast((prev) => ({ ...prev, show: false }));
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast.show]);
 
   const fetchMyOrders = useCallback(() => {
     const currentUser = localStorage.getItem("user") || "guest";
@@ -53,41 +28,26 @@ function MyOrders() {
     fetchMyOrders();
   }, [fetchMyOrders]);
 
-  // --- CÁC HÀM XỬ LÝ ---
-  const openModal = useCallback((orderId, type) => {
-    setModal({ show: true, orderId, type });
-  }, []);
+  const handleAction = useCallback((orderId, type) => {
+    if (!orderId || !type) return;
 
-  const closeModal = useCallback(() => {
-    setModal({ show: false, orderId: null, type: null });
-  }, []);
-
-  const handleAction = useCallback(() => {
-    if (!modal.orderId || !modal.type) return;
-
-    const isReceive = modal.type === "receive";
+    const isReceive = type === "receive";
     const newStatus = isReceive ? "Delivered" : "Cancelled";
     const successMsg = isReceive
       ? "Order received successfully! Thank you ❤️"
       : "Order cancelled successfully.";
 
     axios
-      .put(`/dashboard/orders/${modal.orderId}`, { status: newStatus })
+      .put(`/dashboard/orders/${orderId}`, { status: newStatus })
       .then(() => {
-        closeModal();
         fetchMyOrders();
-        setToast({ show: true, message: successMsg, type: "success" });
+        showModal({ title: "Success", message: successMsg, type: "success" });
       })
       .catch((err) => {
         console.error(err);
-        closeModal();
-        setToast({
-          show: true,
-          message: "Something went wrong.",
-          type: "error",
-        });
+        showModal({ title: "Error", message: "Something went wrong.", type: "error" });
       });
-  }, [modal, closeModal, fetchMyOrders]);
+  }, [fetchMyOrders, showModal]);
 
   // Reset page khi tab hoặc search thay đổi
   useEffect(() => {
@@ -147,45 +107,8 @@ function MyOrders() {
     });
   }, []);
 
-  const modalContent = {
-    receive: {
-      icon: <i className="fa-solid fa-box-open"></i>,
-      title: "Confirm Receipt",
-      desc: "Have you received this order and checked the items? This action cannot be undone.",
-      btnText: "Yes, Received",
-      btnClass: styles.btnConfirm,
-    },
-    cancel: {
-      icon: (
-        <i
-          className="fa-solid fa-circle-xmark"
-          style={{ color: "#ef4444" }}
-        ></i>
-      ),
-      title: "Cancel Order",
-      desc: "Are you sure you want to cancel this order? This action cannot be undone.",
-      btnText: "Yes, Cancel",
-      btnClass: styles.btnDanger,
-    },
-  };
-  const currentModal = modalContent[modal.type] || {};
-
   return (
     <div className={clsx("container", styles.container)}>
-      {/* --- UI THÔNG BÁO (TOAST) --- */}
-      {toast.show && (
-        <div className={clsx(styles.toast, styles[toast.type])}>
-          <div className={styles.toastIcon}>
-            {toast.type === "success" ? (
-              <i className="fa-solid fa-circle-check"></i>
-            ) : (
-              <i className="fa-solid fa-circle-exclamation"></i>
-            )}
-          </div>
-          <div className={styles.toastMessage}>{toast.message}</div>
-        </div>
-      )}
-
       <h2 className={styles.pageTitle}>MY ORDERS</h2>
 
       {/* Search + Tabs */}
@@ -292,7 +215,15 @@ function MyOrders() {
                   {order.status === "Pending" && (
                     <button
                       className={styles.btnCancelOrder}
-                      onClick={() => openModal(order._id, "cancel")}
+                      onClick={() => {
+                        confirmModal({
+                          title: "Cancel Order",
+                          message: "Are you sure you want to cancel this order? This action cannot be undone.",
+                          type: "warning",
+                          confirmText: "Yes, Cancel",
+                          onConfirm: () => handleAction(order._id, "cancel")
+                        });
+                      }}
                     >
                       Cancel Order
                     </button>
@@ -302,7 +233,15 @@ function MyOrders() {
                   {order.status === "Shipping" && (
                     <button
                       className={styles.btnReceived}
-                      onClick={() => openModal(order._id, "receive")}
+                      onClick={() => {
+                        confirmModal({
+                          title: "Confirm Receipt",
+                          message: "Have you received this order and checked the items? This action cannot be undone.",
+                          type: "info",
+                          confirmText: "Yes, Received",
+                          onConfirm: () => handleAction(order._id, "receive")
+                        });
+                      }}
                     >
                       Received Order
                     </button>
@@ -331,23 +270,6 @@ function MyOrders() {
         onPageChange={setCurrentPage}
       />
 
-      {modal.show && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalIcon}>{currentModal.icon}</div>
-            <h3 className={styles.modalTitle}>{currentModal.title}</h3>
-            <p className={styles.modalDesc}>{currentModal.desc}</p>
-            <div className={styles.modalActions}>
-              <button className={styles.btnCancel} onClick={closeModal}>
-                Back
-              </button>
-              <button className={currentModal.btnClass} onClick={handleAction}>
-                {currentModal.btnText}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -3,15 +3,12 @@ import clsx from "clsx";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../util/axios";
+import { useModal } from "../../../contexts/ModalContext";
 
 function TrashEmployee() {
   const [employee, setEmployee] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [modalMessage, setModalMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
-  const [restoreId, setRestoreId] = useState(null);
-  const [actionType, setActionType] = useState("");
+  const { showModal, confirmModal } = useModal();
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
@@ -43,34 +40,42 @@ function TrashEmployee() {
     fetchEmployees();
   }, []);
 
-  const handleRestore = () => {
-    if (!restoreId) return;
+  const handleRestore = (id) => {
+    if (!id) return;
     axios
-      .patch(`/dashboard/employee/trash/${restoreId}/restore`)
+      .patch(`/dashboard/employee/trash/${id}/restore`)
       .then((res) => {
-        setShowModal(false);
+        showModal({
+          title: "Success",
+          message: "Employee restored successfully!",
+          type: "success"
+        });
         fetchEmployees();
       })
-      .catch(() => alert("❌ An error occurred while restoring!"))
-      .finally(() => {
-        setRestoreId(null);
-        setActionType("");
-      });
+      .catch(() => showModal({
+        title: "Error",
+        message: "An error occurred while restoring!",
+        type: "error"
+      }));
   };
 
-  const handleDelete = () => {
-    if (!deleteId) return;
+  const handleDelete = (id) => {
+    if (!id) return;
     axios
-      .delete(`/dashboard/employee/trash/${deleteId}`)
+      .delete(`/dashboard/employee/trash/${id}`)
       .then((res) => {
-        setShowModal(false);
+        showModal({
+          title: "Success",
+          message: "Employee permanently deleted!",
+          type: "success"
+        });
         fetchEmployees();
       })
-      .catch(() => alert("❌ An error occurred while deleting!"))
-      .finally(() => {
-        setDeleteId(null);
-        setActionType("");
-      });
+      .catch(() => showModal({
+        title: "Error",
+        message: "An error occurred while deleting!",
+        type: "error"
+      }));
   };
 
   const handleSort = (key) => {
@@ -227,20 +232,26 @@ function TrashEmployee() {
                 <td className={styles.tableCell}>
                   <button
                     onClick={() => {
-                      setShowModal(true);
-                      setRestoreId(e._id);
-                      setActionType("restore");
-                      setModalMessage("Are you sure you want to restore?");
+                      confirmModal({
+                        title: "Confirm Restore",
+                        message: "Are you sure you want to restore?",
+                        type: "info",
+                        confirmText: "Yes, restore",
+                        onConfirm: () => handleRestore(e._id)
+                      });
                     }}
                   >
                     <i className="fa-solid fa-window-restore"></i>
                   </button>
                   <button
                     onClick={() => {
-                      setShowModal(true);
-                      setDeleteId(e._id);
-                      setActionType("delete");
-                      setModalMessage("Permanently delete this employee?");
+                      confirmModal({
+                        title: "Confirm Deletion",
+                        message: "Permanently delete this employee?",
+                        type: "warning",
+                        confirmText: "Yes, delete",
+                        onConfirm: () => handleDelete(e._id)
+                      });
                     }}
                   >
                     <i className="fa-solid fa-trash"></i>
@@ -292,25 +303,6 @@ function TrashEmployee() {
         </div>
       )}
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            <button
-              onClick={actionType === "restore" ? handleRestore : handleDelete}
-            >
-              Yes
-            </button>
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-            >
-              No
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

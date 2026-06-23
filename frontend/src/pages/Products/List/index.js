@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../util/axios";
+import { useModal } from "../../../contexts/ModalContext";
 import no_item from "../../../assets/images/no_img.jpg";
 
 const PAGE_SIZE = 10;
@@ -13,9 +14,7 @@ function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [countDelete, setCountDelete] = useState(0);
-  const [deleteId, setDeleteId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+  const { showModal, confirmModal } = useModal();
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -52,21 +51,24 @@ function Products() {
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [currentPage, searchTerm, sortConfig, refreshKey]);
 
-  const handleDeleteSoft = useCallback(() => {
-    if (!deleteId) return;
+  const handleDeleteSoft = useCallback((id) => {
+    if (!id) return;
     axios
-      .delete(`/dashboard/products/${deleteId}`)
+      .delete(`/dashboard/products/${id}`)
       .then((res) => {
-        setModalMessage(res.data.message);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: res.data.message,
+          type: "success"
+        });
         setRefreshKey((k) => k + 1);
       })
-      .catch(() => alert("❌ An error occurred while deleting!"))
-      .finally(() => {
-        setDeleteId(null);
-        setShowModal(false);
-      });
-  }, [deleteId]);
+      .catch(() => showModal({
+        title: "Error",
+        message: "An error occurred while deleting!",
+        type: "error"
+      }));
+  }, [showModal]);
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => ({
@@ -239,9 +241,13 @@ function Products() {
                   </button>
                   <button
                     onClick={() => {
-                      setModalMessage("Are you sure you want to delete?");
-                      setShowModal(true);
-                      setDeleteId(product._id);
+                      confirmModal({
+                        title: "Confirm Deletion",
+                        message: "Are you sure you want to delete?",
+                        type: "warning",
+                        confirmText: "Yes, delete",
+                        onConfirm: () => handleDeleteSoft(product._id)
+                      });
                     }}
                   >
                     <i className="fa-solid fa-trash"></i>
@@ -291,21 +297,6 @@ function Products() {
         </div>
       )}
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            {modalMessage.includes("successfully") ? (
-              <button onClick={() => setShowModal(false)}>Close</button>
-            ) : (
-              <>
-                <button onClick={handleDeleteSoft}>Yes</button>
-                <button onClick={() => setShowModal(false)}>No</button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

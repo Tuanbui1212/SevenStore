@@ -3,16 +3,20 @@ import styles from "./Modal.module.scss";
 import clsx from "clsx";
 
 /**
- * Reusable Modal Component
- * 
- * @param {boolean} isOpen - Indicates whether the modal is open
- * @param {string} title - The title of the modal
- * @param {string} message - The message inside the modal
- * @param {string} type - Modal type: 'success', 'error', 'info', 'warning'
- * @param {Function} onClose - Function to call when the modal is closed
- * @param {string} confirmText - Text for the confirm button
+ * Reusable Global Modal Component
  */
-function Modal({ isOpen, title, message, type = "info", onClose, confirmText = "Close" }) {
+function Modal({ 
+  isOpen, 
+  title, 
+  message, 
+  type = "info", 
+  onClose, 
+  confirmText = "Đóng",
+  cancelText = "Hủy",
+  showCancelButton = false,
+  onConfirm,
+  onCancel
+}) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -31,6 +35,16 @@ function Modal({ isOpen, title, message, type = "info", onClose, confirmText = "
   if (type === "error") iconClass = "fa-solid fa-circle-xmark";
   if (type === "warning") iconClass = "fa-solid fa-triangle-exclamation";
 
+  const handleConfirm = () => {
+    if (onConfirm) onConfirm();
+    onClose();
+  };
+
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    onClose();
+  };
+
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
@@ -40,7 +54,15 @@ function Modal({ isOpen, title, message, type = "info", onClose, confirmText = "
         {title && <h3 className={styles.title}>{title}</h3>}
         <p className={styles.message}>{message}</p>
         <div className={styles.buttonContainer}>
-          <button className={clsx(styles.button, styles.primary)} onClick={onClose}>
+          {showCancelButton && (
+            <button className={clsx(styles.button, styles.cancel)} onClick={handleCancel}>
+              {cancelText}
+            </button>
+          )}
+          <button 
+            className={clsx(styles.button, styles.confirm, styles[`btn_${type}`])} 
+            onClick={handleConfirm}
+          >
             {confirmText}
           </button>
         </div>

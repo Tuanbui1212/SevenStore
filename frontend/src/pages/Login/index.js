@@ -4,6 +4,7 @@ import clsx from "clsx";
 import styles from "./AuthForm.module.scss"; // SCSS module riêng
 import "../../components/GlobalStyles/GlobalStyles.scss"; // SCSS global
 import axios from "../../util/axios";
+import { useModal } from "../../contexts/ModalContext";
 
 const AuthForm = () => {
   const navigate = useNavigate();
@@ -16,8 +17,7 @@ const AuthForm = () => {
     cart: [],
   });
 
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+  const { showModal } = useModal();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -28,8 +28,11 @@ const AuthForm = () => {
   useEffect(() => {
     const authError = sessionStorage.getItem("authError");
     if (authError) {
-      setModalMessage(authError);
-      setShowModal(true);
+      showModal({
+        title: "Authentication Error",
+        message: authError,
+        type: "error"
+      });
       sessionStorage.removeItem("authError");
     }
   }, []);
@@ -87,13 +90,19 @@ const AuthForm = () => {
 
             navigate(res.data.redirectUrl);
           } else {
-            setModalMessage(res.data.message);
-            setShowModal(true);
+            showModal({
+              title: "Login Failed",
+              message: res.data.message,
+              type: "error"
+            });
           }
         })
         .catch((err) => {
-          setModalMessage(err.message || "Đã xảy ra lỗi, vui lòng thử lại.");
-          setShowModal(true);
+          showModal({
+            title: "Error",
+            message: err.message || "An error occurred, please try again.",
+            type: "error"
+          });
         });
     }
   };
@@ -129,9 +138,12 @@ const AuthForm = () => {
       axios
         .post("/register", { formData })
         .then((res) => {
-          setModalMessage(res.data.message);
-          setShowModal(true);
-          if (res.data.message.includes("successful")) {
+          if (res.data.message && res.data.message.includes("successful")) {
+            showModal({
+              title: "Success",
+              message: res.data.message,
+              type: "success"
+            });
             setActiveTab("login");
             setFormData({
               name: "",
@@ -140,13 +152,21 @@ const AuthForm = () => {
               role: "customer",
               cart: [],
             });
+          } else {
+            showModal({
+              title: "Information",
+              message: res.data.message,
+              type: "info"
+            });
           }
-
         })
         .catch((err) => {
           console.error("Lỗi khi gửi request:", err);
-          setModalMessage(err.response?.data?.message);
-          setShowModal(true);
+          showModal({
+            title: "Registration Failed",
+            message: err.response?.data?.message || "An error occurred.",
+            type: "error"
+          });
         });
     }
   };
@@ -280,20 +300,6 @@ const AuthForm = () => {
         </div>
       </div>
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

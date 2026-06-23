@@ -4,16 +4,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
+import { useModal } from "../../../contexts/ModalContext";
 
 function EditCustomer() {
   const navigate = useNavigate();
   const { id } = useParams();
 
+  const { showModal } = useModal();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -39,9 +38,11 @@ function EditCustomer() {
       })
       .catch((err) => {
         console.error("Fetch error:", err);
-        setModalMessage("Failed to load customer information.");
-        setIsSuccess(false);
-        setShowModal(true);
+        showModal({
+          title: "Error",
+          message: "Failed to load customer information.",
+          type: "error"
+        });
       })
       .finally(() => {
         setIsLoading(false);
@@ -52,9 +53,11 @@ function EditCustomer() {
     e.preventDefault();
 
     if (!formData.name || !formData.phone) {
-      setModalMessage("Please enter name and phone number!");
-      setIsSuccess(false);
-      setShowModal(true);
+      showModal({
+        title: "Error",
+        message: "Please enter name and phone number!",
+        type: "error"
+      });
       return;
     }
 
@@ -63,14 +66,20 @@ function EditCustomer() {
     axios
       .put(`/dashboard/customers/${id}`, formData)
       .then((res) => {
-        setModalMessage("Customer updated successfully!");
-        setIsSuccess(true);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: "Customer updated successfully!",
+          type: "success",
+          confirmText: "Back to List",
+          onConfirm: () => navigate("/dashboard/customers")
+        });
       })
       .catch(() => {
-        setModalMessage("❌ Update failed. Please try again!");
-        setIsSuccess(false);
-        setShowModal(true);
+        showModal({
+          title: "Error",
+          message: "Update failed. Please try again!",
+          type: "error"
+        });
       })
       .finally(() => {
         setIsSaving(false);
@@ -147,38 +156,6 @@ function EditCustomer() {
         )}
       </div>
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <div
-              className={clsx(
-                styles.modalIcon,
-                isSuccess ? styles.success : styles.error
-              )}
-            >
-              <i
-                className={
-                  isSuccess
-                    ? "fa-solid fa-check-circle"
-                    : "fa-solid fa-circle-xmark"
-                }
-              ></i>
-            </div>
-            <h3>{isSuccess ? "Success!" : "Error"}</h3>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                setShowModal(false);
-                if (isSuccess) {
-                  navigate("/dashboard/customers");
-                }
-              }}
-            >
-              {isSuccess ? "Back to List" : "Close"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

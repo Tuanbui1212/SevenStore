@@ -5,15 +5,15 @@ import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
 
+import { useModal } from "../../../contexts/ModalContext";
+
 function CreateAccount() {
   const navigate = useNavigate();
-  const [modalMessage, setModalMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const { showModal } = useModal();
   const [account, setAccount] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -51,18 +51,22 @@ function CreateAccount() {
       !formData.role ||
       !formData.password
     ) {
-      setModalMessage("Please fill in all required fields!");
-      setIsSuccess(false);
-      setShowModal(true);
+      showModal({
+        title: "Error",
+        message: "Please fill in all required fields!",
+        type: "error",
+      });
       return;
     }
 
     const existingUser = account.find((acc) => acc.user === formData.user);
 
     if (existingUser) {
-      setModalMessage("Username already exists!");
-      setIsSuccess(false);
-      setShowModal(true);
+      showModal({
+        title: "Error",
+        message: "Username already exists!",
+        type: "error",
+      });
       return;
     }
 
@@ -71,9 +75,13 @@ function CreateAccount() {
     axios
       .post(`/dashboard/account/create`, formData)
       .then((res) => {
-        setModalMessage("Account created successfully!");
-        setIsSuccess(true);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: "Account created successfully!",
+          type: "success",
+          confirmText: "Go to List",
+          onConfirm: () => navigate("/dashboard/account")
+        });
         setFormData({
           name: "",
           user: "",
@@ -83,9 +91,11 @@ function CreateAccount() {
         });
       })
       .catch(() => {
-        setModalMessage("❌ An error occurred while creating account.");
-        setIsSuccess(false);
-        setShowModal(true);
+        showModal({
+          title: "Error",
+          message: "An error occurred while creating account.",
+          type: "error",
+        });
       })
       .finally(() => {
         setIsSaving(false);
@@ -180,38 +190,6 @@ function CreateAccount() {
         </form>
       </div>
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <div
-              className={clsx(
-                styles.modalIcon,
-                isSuccess ? styles.success : styles.error
-              )}
-            >
-              <i
-                className={
-                  isSuccess
-                    ? "fa-solid fa-check-circle"
-                    : "fa-solid fa-circle-xmark"
-                }
-              ></i>
-            </div>
-            <h3>{isSuccess ? "Success!" : "Error"}</h3>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                setShowModal(false);
-                if (isSuccess) {
-                  navigate("/dashboard/account");
-                }
-              }}
-            >
-              {isSuccess ? "Go to List" : "Close"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

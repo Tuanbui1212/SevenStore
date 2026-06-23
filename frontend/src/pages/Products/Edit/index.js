@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
+import { useModal } from "../../../contexts/ModalContext";
 import axiosUpload from "axios";
 
 const BRAND_SUGGESTIONS = [
@@ -26,12 +27,9 @@ const PUBLIC_KEY = process.env.REACT_APP_PUBLIC_KEY || "";
 function EditProduct() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const [modalMessage, setModalMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
-
+  const { showModal } = useModal();
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
@@ -80,9 +78,11 @@ function EditProduct() {
         setSelectedFiles(existingImages);
       })
       .catch((err) => {
-        setModalMessage("Failed to load product data");
-        setIsSuccess(false);
-        setShowModal(true);
+        showModal({
+          title: "Error",
+          message: "Failed to load product data",
+          type: "error"
+        });
       })
       .finally(() => setIsLoading(false));
   }, [id]);
@@ -144,7 +144,11 @@ function EditProduct() {
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
     if (files.length + selectedFiles.length > 6) {
-      alert("You can only upload a maximum of 6 images.");
+      showModal({
+        title: "Warning",
+        message: "You can only upload a maximum of 6 images.",
+        type: "warning"
+      });
       return;
     }
 
@@ -287,13 +291,19 @@ function EditProduct() {
 
       await axios.put(`/dashboard/products/${id}`, finalData);
 
-      setModalMessage("Product updated successfully!");
-      setIsSuccess(true);
-      setShowModal(true);
+      showModal({
+        title: "Success",
+        message: "Product updated successfully!",
+        type: "success",
+        confirmText: "Go to List",
+        onConfirm: () => navigate("/dashboard/products")
+      });
     } catch (error) {
-      setModalMessage("❌ Error: " + (error.message || "Something went wrong"));
-      setIsSuccess(false);
-      setShowModal(true);
+      showModal({
+        title: "Error",
+        message: "Error: " + (error.message || "Something went wrong"),
+        type: "error"
+      });
     } finally {
       setIsLoading(false);
       setIsUploading(false);
@@ -507,38 +517,6 @@ function EditProduct() {
         </form>
       </div>
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <div
-              className={clsx(
-                styles.modalIcon,
-                isSuccess ? styles.success : styles.error
-              )}
-            >
-              <i
-                className={
-                  isSuccess
-                    ? "fa-solid fa-check-circle"
-                    : "fa-solid fa-circle-xmark"
-                }
-              ></i>
-            </div>
-            <h3>{isSuccess ? "Success!" : "Error"}</h3>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                setShowModal(false);
-                if (isSuccess) {
-                  navigate("/dashboard/products");
-                }
-              }}
-            >
-              {isSuccess ? "Go to List" : "Close"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import axios from "../../util/axios";
 import { useAuth } from "../../contexts/AuthContext";
+import { useModal } from "../../contexts/ModalContext";
 
 import styles from "./ProductDetail.module.scss";
 import "../../components/GlobalStyles/GlobalStyles.scss";
@@ -23,8 +24,7 @@ function ProductDetail() {
 
   const [checkedItems, setCheckedItems] = useState([]);
 
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+  const { showModal } = useModal();
 
   const [formData, setFormData] = useState({
     id: "",
@@ -61,8 +61,11 @@ function ProductDetail() {
     if (success !== "true") navigate("/login");
 
     if (!selectedSize) {
-      setModalMessage("You need to select a size.");
-      setShowModal(true);
+      showModal({
+        title: "Warning",
+        message: "You need to select a size.",
+        type: "warning"
+      });
       return;
     }
 
@@ -101,8 +104,11 @@ function ProductDetail() {
 
   const handleGoToPayment = useCallback(() => {
     if (checkedItems.size === null) {
-      setModalMessage("Please select a size before purchasing");
-      setShowModal(true);
+      showModal({
+        title: "Warning",
+        message: "Please select a size before purchasing",
+        type: "warning"
+      });
       return;
     }
 
@@ -131,8 +137,11 @@ function ProductDetail() {
     axios
       .post(url, formData)
       .then((res) => {
-        setModalMessage(res.data.message);
-        setShowModal(true);
+        showModal({
+          title: "Information",
+          message: res.data.message,
+          type: "info"
+        });
       })
       .catch((err) => {
         console.error("Lỗi khi thêm vào giỏ:", err);
@@ -361,21 +370,6 @@ function ProductDetail() {
         </div>
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                setShowModal(false);
-              }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

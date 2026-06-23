@@ -19,8 +19,7 @@ function Cart() {
 
   const [checkedItems, setCheckedItems] = useState([]);
 
-  const [modalMessage, setModalMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const { showModal, confirmModal } = useModal();
 
   const fetchCart = useCallback(() => {
     if (!user) return;
@@ -52,13 +51,19 @@ function Cart() {
     axios
       .delete(url)
       .then(() => {
-        setModalMessage("✅ Successfully deleted!");
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: "Successfully deleted!",
+          type: "success"
+        });
         fetchCart();
       })
       .catch(() => {
-        setModalMessage("❌ Failed to delete!");
-        setShowModal(true);
+        showModal({
+          title: "Error",
+          message: "Failed to delete!",
+          type: "error"
+        });
       });
   }, [deleteId, size, user, fetchCart]);
 
@@ -109,8 +114,11 @@ function Cart() {
         },
       });
     } else {
-      setModalMessage("Please select the product you want to buy.");
-      setShowModal(true);
+      showModal({
+        title: "Warning",
+        message: "Please select the product you want to buy.",
+        type: "warning"
+      });
     }
   }, [checkedItems, totalCost, navigate]);
 
@@ -269,12 +277,23 @@ function Cart() {
                       </div>
                       <button
                         onClick={() => {
-                          setDeleteId(items.id);
-                          setSize(items.size);
-                          setModalMessage(
-                            "Are you sure you want to delete this item?"
-                          );
-                          setShowModal(true);
+                          confirmModal({
+                            title: "Confirm Deletion",
+                            message: "Are you sure you want to delete this item?",
+                            type: "warning",
+                            confirmText: "Yes, delete",
+                            onConfirm: () => {
+                              let url = `/cart?user=${encodeURIComponent(user)}&deleteId=${encodeURIComponent(items.id)}&size=${encodeURIComponent(items.size)}&`;
+                              axios.delete(url)
+                                .then(() => {
+                                  showModal({ title: "Success", message: "Successfully deleted!", type: "success" });
+                                  fetchCart();
+                                })
+                                .catch(() => {
+                                  showModal({ title: "Error", message: "Failed to delete!", type: "error" });
+                                });
+                            }
+                          });
                         }}
                         className={styles.deleteBtn}
                       >
@@ -293,59 +312,6 @@ function Cart() {
           )}
         </div>
 
-        {/* Modal */}
-        {showModal && (
-          <div className={styles.overlay}>
-            <div className={styles.modal}>
-              <p>{modalMessage}</p>
-              {!modalMessage.includes("Successfully") &&
-                (modalMessage.includes(
-                  "Please select the product you want to buy."
-                ) ? (
-                  <>
-                    <button
-                      className={clsx(styles.danger)}
-                      onClick={() => {
-                        setShowModal(false);
-                      }}
-                    >
-                      Close
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className={clsx(styles.success)}
-                      onClick={() => handleDelete()}
-                    >
-                      Yes
-                    </button>
-                    <button
-                      className={clsx(styles.danger)}
-                      onClick={() => {
-                        setShowModal(false);
-                      }}
-                    >
-                      No
-                    </button>
-                  </>
-                ))}
-
-              {modalMessage.includes("Successfully") && (
-                <>
-                  <button
-                    onClick={() => {
-                      setShowModal(false);
-                    }}
-                    className={clsx(styles.success)}
-                  >
-                    Oke
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       <div className={clsx(styles.cartFooter)}>

@@ -5,12 +5,12 @@ import clsx from "clsx";
 import { Link } from "react-router-dom";
 import axios from "../../../util/axios";
 
+import { useModal } from "../../../contexts/ModalContext";
+
 function CreateEmployee() {
   const navigate = useNavigate();
-  const [modalMessage, setModalMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const { showModal } = useModal();
   const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -33,9 +33,11 @@ function CreateEmployee() {
       !formData.role ||
       !formData.date
     ) {
-      setModalMessage("Please fill in all required fields!");
-      setIsSuccess(false);
-      setShowModal(true);
+      showModal({
+        title: "Error",
+        message: "Please fill in all required fields!",
+        type: "error",
+      });
       return;
     }
 
@@ -44,15 +46,21 @@ function CreateEmployee() {
     axios
       .post("/dashboard/employee/create", formData)
       .then((res) => {
-        setModalMessage("Employee created successfully!");
-        setIsSuccess(true);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: "Employee created successfully!",
+          type: "success",
+          confirmText: "Go to List",
+          onConfirm: () => navigate("/dashboard/employee")
+        });
         setFormData({ name: "", role: "", status: "Full-Time", date: "" });
       })
       .catch(() => {
-        setModalMessage("❌ An error occurred while adding the employee.");
-        setIsSuccess(false);
-        setShowModal(true);
+        showModal({
+          title: "Error",
+          message: "An error occurred while adding the employee.",
+          type: "error",
+        });
       })
       .finally(() => {
         setIsLoading(false);
@@ -145,38 +153,6 @@ function CreateEmployee() {
         </form>
       </div>
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <div
-              className={clsx(
-                styles.modalIcon,
-                isSuccess ? styles.success : styles.error
-              )}
-            >
-              <i
-                className={
-                  isSuccess
-                    ? "fa-solid fa-check-circle"
-                    : "fa-solid fa-circle-xmark"
-                }
-              ></i>
-            </div>
-            <h3>{isSuccess ? "Success!" : "Error"}</h3>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                setShowModal(false);
-                if (isSuccess) {
-                  navigate("/dashboard/employee");
-                }
-              }}
-            >
-              {isSuccess ? "Go to List" : "Try Again"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

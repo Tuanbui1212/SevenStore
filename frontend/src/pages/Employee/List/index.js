@@ -3,15 +3,13 @@ import clsx from "clsx";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../util/axios";
-
+import { useModal } from "../../../contexts/ModalContext";
 const PAGE_SIZE = 10;
 
 function Employee() {
   const [employee, setEmployee] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [modalMessage, setModalMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [deleteId, setDeleteId] = useState(null);
+  const { showModal, confirmModal } = useModal();
   const [countDelete, setCountDelete] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -41,21 +39,26 @@ function Employee() {
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [currentPage, searchTerm, sortConfig, refreshKey]);
 
-  const handleDelete = useCallback(() => {
-    if (!deleteId) return;
+  const handleDelete = useCallback((id) => {
+    if (!id) return;
     axios
-      .delete(`/dashboard/employee/${deleteId}`)
+      .delete(`/dashboard/employee/${id}`)
       .then((res) => {
-        setModalMessage(res.data.message);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: res.data.message,
+          type: "success"
+        });
         setRefreshKey((k) => k + 1);
       })
-      .catch(() => alert("❌ An error occurred while deleting!"))
-      .finally(() => {
-        setDeleteId(null);
-        setShowModal(false);
+      .catch(() => {
+        showModal({
+          title: "Error",
+          message: "An error occurred while deleting!",
+          type: "error"
+        });
       });
-  }, [deleteId]);
+  }, [showModal]);
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => ({
@@ -198,9 +201,13 @@ function Employee() {
                   </button>
                   <button
                     onClick={() => {
-                      setShowModal(true);
-                      setDeleteId(e._id);
-                      setModalMessage("Are you sure you want to delete this?");
+                      confirmModal({
+                        title: "Confirm Deletion",
+                        message: "Are you sure you want to delete this?",
+                        type: "warning",
+                        confirmText: "Yes, delete",
+                        onConfirm: () => handleDelete(e._id)
+                      });
                     }}
                   >
                     <i className="fa-solid fa-trash"></i>
@@ -250,15 +257,6 @@ function Employee() {
         </div>
       )}
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            <button onClick={handleDelete}>Yes</button>
-            <button onClick={() => setShowModal(false)}>No</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

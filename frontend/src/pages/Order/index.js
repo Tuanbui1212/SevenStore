@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../util/axios";
+import { useModal } from "../../contexts/ModalContext";
 
 const PAGE_SIZE = 10;
 
@@ -22,8 +23,7 @@ function Order() {
   const [totalPages, setTotalPages] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  const [modalMessage, setModalMessage] = useState("");
-  const [showModal, setShowModal] = useState(false);
+  const { showModal } = useModal();
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -72,8 +72,11 @@ function Order() {
             order._id === id ? { ...order, status: newStatus } : order
           )
         );
-        setModalMessage(`Updated status to: ${newStatus}`);
-        setShowModal(true);
+        showModal({
+          title: "Success",
+          message: `Updated status to: ${newStatus}`,
+          type: "success"
+        });
       })
       .catch((err) => console.error(err));
   }, []);
@@ -340,22 +343,6 @@ function Order() {
         </>
       )}
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <i
-              className="fa-solid fa-circle-check"
-              style={{
-                color: "#28a745",
-                fontSize: "2rem",
-                marginBottom: "10px",
-              }}
-            ></i>
-            <p>{modalMessage}</p>
-            <button onClick={() => setShowModal(false)}>Close</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

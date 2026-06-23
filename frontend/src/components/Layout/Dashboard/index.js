@@ -1,29 +1,26 @@
 import "../../GlobalStyles/GlobalStyles.scss";
-import clsx from "clsx";
-
 import Sidebar from "./Sidebar";
 import { useState } from "react";
 
 function Dashboard({ children }) {
+  // isCollapsed = 2 (expanded), 0 (collapsed)
   const [isCollapsed, setIsCollapsed] = useState(2);
 
   return (
-    <div>
-      <div className={clsx("container")}>
-        <div className={clsx("row")}>
-          <div
-            className={clsx(
-              `col col-${isCollapsed} col-lg-3 col-md-3 display-sm-none`
-            )}
-          >
-            <Sidebar onToggle={(val) => setIsCollapsed(val)} />
-          </div>
-          <div
-            className={clsx(`col col-${12 - isCollapsed} col-lg-9 col-md-9`)}
-          >
-            {children}
-          </div>
-        </div>
+    <div style={{ display: "flex", minHeight: "100vh", backgroundColor: "#f4f7f6" }}>
+      <Sidebar onToggle={(val) => setIsCollapsed(val)} />
+      
+      <div
+        style={{
+          flexGrow: 1,
+          marginLeft: isCollapsed === 2 ? "260px" : "80px",
+          transition: "margin-left 0.3s ease-in-out",
+          width: `calc(100% - ${isCollapsed === 2 ? '260px' : '80px'})`,
+          padding: "20px",
+          boxSizing: "border-box"
+        }}
+      >
+        {children}
       </div>
     </div>
   );

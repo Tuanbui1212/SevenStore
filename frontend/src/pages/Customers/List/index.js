@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../../util/axios";
+import { useModal } from "../../../contexts/ModalContext";
 
 const PAGE_SIZE = 10;
 
@@ -13,8 +14,7 @@ function Customer() {
   const [totalPages, setTotalPages] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+  const { showModal, confirmModal } = useModal();
   const [deleteId, setDeleteId] = useState(null);
 
   const navigate = useNavigate();
@@ -32,9 +32,12 @@ function Customer() {
   }, [currentPage, searchTerm]);
 
   const handleDelete = useCallback(() => {
-    setShowModal(false);
-    setModalMessage("Deleted successfully");
-  }, []);
+    showModal({
+      title: "Success",
+      message: "Deleted successfully",
+      type: "success"
+    });
+  }, [showModal]);
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => ({
@@ -155,9 +158,16 @@ function Customer() {
                   </button>
                   <button
                     onClick={() => {
-                      setDeleteId(cust._id);
-                      setModalMessage("Are you sure you want to delete?");
-                      setShowModal(true);
+                      confirmModal({
+                        title: "Confirm Deletion",
+                        message: "Are you sure you want to delete?",
+                        type: "warning",
+                        confirmText: "Yes, delete",
+                        onConfirm: () => {
+                          setDeleteId(cust._id);
+                          handleDelete();
+                        }
+                      });
                     }}
                   >
                     <i className="fa-solid fa-trash"></i>
@@ -207,15 +217,6 @@ function Customer() {
         </div>
       )}
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            <button onClick={handleDelete}>Yes</button>
-            <button onClick={() => setShowModal(false)}>No</button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

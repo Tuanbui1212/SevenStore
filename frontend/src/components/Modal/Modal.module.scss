@@ -80,23 +80,47 @@
   transition: all 0.2s ease;
 }
 
-.button.primary {
+.button.confirm {
   background: #000;
   color: #fff;
 }
 
-.button.primary:hover {
+.button.confirm:hover {
   background: #333;
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.button.secondary {
-  background: #f1f1f1;
-  color: #333;
+/* Các biến thể màu sắc cho nút Confirm tùy theo Modal Type */
+.button.confirm.btn_success {
+  background: #28a745;
+}
+.button.confirm.btn_success:hover {
+  background: #218838;
 }
 
-.button.secondary:hover {
+.button.confirm.btn_error {
+  background: #dc3545;
+}
+.button.confirm.btn_error:hover {
+  background: #c82333;
+}
+
+.button.confirm.btn_warning {
+  background: #ffc107;
+  color: #212529;
+}
+.button.confirm.btn_warning:hover {
+  background: #e0a800;
+}
+
+.button.cancel {
+  background: #f1f1f1;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.button.cancel:hover {
   background: #e2e2e2;
   transform: translateY(-2px);
 }
