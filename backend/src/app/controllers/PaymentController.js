@@ -74,9 +74,25 @@ class PaymentController {
         }).save().catch(() => {});
       });
 
+      let paymentUrl = "/";
+      if (formData.payment === "VnPay") {
+        const ipAddr =
+          req.headers["x-forwarded-for"] ||
+          req.connection?.remoteAddress ||
+          req.socket?.remoteAddress ||
+          "127.0.0.1";
+
+        paymentUrl = vnpayService.createPaymentUrl({
+          amount: totalCost,
+          ipAddr,
+          txnRef: order._id.toString(),
+          orderInfo: `Thanh toan don hang ${order._id}`,
+        });
+      }
+
       res.status(201).json({
-        message: "✅ Thank you! Your order has been placed successfully.",
-        url: "/",
+        message: "Đơn hàng đã được tạo thành công!",
+        url: paymentUrl,
       });
     } catch (err) {
       await session.abortTransaction();

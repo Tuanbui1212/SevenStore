@@ -4,6 +4,7 @@ import styles from "./Payment.module.scss";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 import { useState, useCallback } from "react";
+import Modal from "../../components/Modal";
 import axios from "../../util/axios";
 import momo from "../../assets/images/momo.png";
 import cod from "../../assets/images/cod.png";
@@ -80,8 +81,10 @@ function Payment() {
   const { checkedItems = [], totalCost = 0 } = location.state || {};
   const [selected, setSelected] = useState("");
 
+  const [modalTitle, setModalTitle] = useState("");
   const [modalMessage, setModalMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState("info");
 
   const [url, setUrl] = useState("");
 
@@ -127,11 +130,15 @@ function Payment() {
         .post("/payment", { formData, user, checkedItems, totalCost })
         .then((res) => {
           setUrl(res.data.url);
+          setModalTitle("Thành công!");
           setModalMessage(res.data.message);
+          setModalType("success");
           setShowModal(true);
         })
         .catch((err) => {
+          setModalTitle("Lỗi");
           setModalMessage(err.message || "Đặt hàng thất bại. Vui lòng thử lại.");
+          setModalType("error");
           setShowModal(true);
         });
     }
@@ -310,20 +317,21 @@ function Payment() {
         </div>
       </div>
 
-      {showModal && (
-        <div className={styles.overlay}>
-          <div className={styles.modal}>
-            <p>{modalMessage}</p>
-            <button
-              onClick={() => {
-                navigate(url);
-              }}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+      <Modal
+        isOpen={showModal}
+        title={modalTitle}
+        message={modalMessage}
+        type={modalType}
+        confirmText={url && url !== "/" ? "Thanh toán ngay" : "Đóng"}
+        onClose={() => {
+          setShowModal(false);
+          if (url && url.startsWith("http")) {
+            window.location.href = url;
+          } else if (url) {
+            navigate(url);
+          }
+        }}
+      />
     </div>
   );
 }

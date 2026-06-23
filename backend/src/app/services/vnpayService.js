@@ -1,24 +1,18 @@
-import moment from "moment";
-import qs from "qs";
-import crypto from "crypto";
+const moment = require("moment");
+const qs = require("qs");
+const crypto = require("crypto");
 
-// Cấu hình (Nên để trong file .env)
+// Cấu hình từ file .env
 const config = {
-  tmnCode: "45Z02A87", // <--- Thay mã của bạn
-  secretKey: "PH48F4C8S7Z3GM2UJCWIODKW3HJ7MQPR", // <--- Thay key của bạn
-  vnpUrl: "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
-  returnUrl: "http://localhost:3000/payment-result", // Link frontend nhận kết quả
+  tmnCode: process.env.VNP_TMNCODE || "45Z02A87",
+  secretKey: process.env.VNP_HASHSECRET || "PH48F4C8S7Z3GM2UJCWIODKW3HJ7MQPR",
+  vnpUrl: process.env.VNP_URL || "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html",
+  returnUrl: process.env.VNP_RETURNURL || "http://localhost:3000/",
 };
 
-const createPaymentUrl = (req) => {
+const createPaymentUrl = ({ amount, ipAddr, txnRef, orderInfo, bankCode }) => {
   let date = new Date();
   let createDate = moment(date).format("YYYYMMDDHHmmss");
-
-  let ipAddr =
-    req.headers["x-forwarded-for"] ||
-    req.connection.remoteAddress ||
-    req.socket.remoteAddress ||
-    req.connection.socket.remoteAddress;
 
   // 1. Tạo tham số
   let vnp_Params = {};
@@ -27,15 +21,15 @@ const createPaymentUrl = (req) => {
   vnp_Params["vnp_TmnCode"] = config.tmnCode;
   vnp_Params["vnp_Locale"] = "vn";
   vnp_Params["vnp_CurrCode"] = "VND";
-  vnp_Params["vnp_TxnRef"] = moment(date).format("DDHHmmss"); // Mã đơn hàng (Unique)
-  vnp_Params["vnp_OrderInfo"] = "Thanh toan don hang test";
+  vnp_Params["vnp_TxnRef"] = txnRef || moment(date).format("DDHHmmss"); // Mã đơn hàng (Unique)
+  vnp_Params["vnp_OrderInfo"] = orderInfo || "Thanh toan don hang";
   vnp_Params["vnp_OrderType"] = "other";
-  vnp_Params["vnp_Amount"] = req.body.amount * 100; // Số tiền (VNPay bắt buộc nhân 100)
+  vnp_Params["vnp_Amount"] = amount * 100; // Số tiền (VNPay bắt buộc nhân 100)
   vnp_Params["vnp_ReturnUrl"] = config.returnUrl;
-  vnp_Params["vnp_IpAddr"] = ipAddr;
+  vnp_Params["vnp_IpAddr"] = ipAddr || "127.0.0.1";
   vnp_Params["vnp_CreateDate"] = createDate;
-  if (req.body.bankCode) {
-    vnp_Params["vnp_BankCode"] = req.body.bankCode;
+  if (bankCode) {
+    vnp_Params["vnp_BankCode"] = bankCode;
   }
 
   // 2. Sắp xếp tham số (QUAN TRỌNG: Không sắp xếp là sai chữ ký)
@@ -44,12 +38,11 @@ const createPaymentUrl = (req) => {
   // 3. Tạo chữ ký bảo mật (Secure Hash)
   let signData = qs.stringify(vnp_Params, { encode: false });
   let hmac = crypto.createHmac("sha512", config.secretKey);
-  let signed = hmac.update(new Buffer.from(signData, "utf-8")).digest("hex");
+  let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
 
   // 4. Gắn chữ ký vào và tạo URL cuối cùng
   vnp_Params["vnp_SecureHash"] = signed;
-  let paymentUrl =
-    config.vnpUrl + "?" + qs.stringify(vnp_Params, { encode: false });
+  let paymentUrl = config.vnpUrl + "?" + qs.stringify(vnp_Params, { encode: false });
 
   return paymentUrl;
 };
@@ -71,4 +64,4 @@ function sortObject(obj) {
   return sorted;
 }
 
-export default { createPaymentUrl };
+module.exports = { createPaymentUrl };
