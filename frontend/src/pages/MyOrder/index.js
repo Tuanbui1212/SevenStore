@@ -13,6 +13,7 @@ function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const { showModal, confirmModal } = useModal();
   const tabs = ["All", "Pending", "Shipping", "Delivered", "Cancelled"];
 

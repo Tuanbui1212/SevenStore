@@ -6,6 +6,8 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../../util/axios";
 import { useAuth } from "../../contexts/AuthContext";
+import { useModal } from "../../contexts/ModalContext";
+
 
 import no_img from "../../assets/images/no_img.jpg";
 
