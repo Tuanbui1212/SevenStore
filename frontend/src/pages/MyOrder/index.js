@@ -177,20 +177,20 @@ function MyOrders() {
                   <div key={index} className={styles.productItem}>
                     <div className={styles.productImg}>
                       <img
-                        src={item.productId.image.image1}
-                        alt={item.productId.name}
+                        src={item.productId?.image?.image1}
+                        alt={item.productId?.name || "Deleted Product"}
                       />
                     </div>
                     <div className={styles.productInfo}>
                       <span className={styles.productName}>
-                        {item.productId.name}
+                        {item.productId?.name || "Deleted Product"}
                       </span>
                       <span className={styles.productDetails}>
                         Size: {item.size} x {item.quantity}
                       </span>
                     </div>
                     <div className={styles.productPrice}>
-                      {item.price.toLocaleString("vi-VN")}₫
+                      {item.price?.toLocaleString("vi-VN") || 0}₫
                     </div>
                   </div>
                 ))}

@@ -61,7 +61,7 @@ function OrderDetail() {
                     <div className={styles.itemLeft}>
                       <Link
                         to={`/product/${items.productId?.brand || "No Brand"}/${
-                          items.productId?.slug
+                          items.productId?.slug || ""
                         }`}
                         className={clsx(
                           "col col-2 col-md-3 col-sm-4",
@@ -69,28 +69,28 @@ function OrderDetail() {
                         )}
                       >
                         <img
-                          src={items.productId.image.image1 || no_img}
+                          src={items.productId?.image?.image1 || no_img}
                           alt=""
                         />
                       </Link>
                       <Link
                         to={`/product/${items.productId?.brand || "No Brand"}/${
-                          items.productId?.slug
+                          items.productId?.slug || ""
                         }`}
                         className={styles.itemInfo}
                       >
                         <p className={styles.itemName}>
-                          {items.productId.name}
+                          {items.productId?.name || "Deleted Product"}
                         </p>
                         <p className={styles.itemType}>
-                          Size: {items.size.replace("size", "")}
+                          Size: {items.size?.replace("size", "") || ""}
                         </p>
 
                         <p className={styles.itemQuantity}>
                           Quantity: {items.quantity}
                         </p>
                         <p className={styles.itemPrice}>
-                          {items.productId.cost.toLocaleString("vi-VN")} đ
+                          {items.productId?.cost ? items.productId.cost.toLocaleString("vi-VN") : 0} đ
                         </p>
                       </Link>
                     </div>
