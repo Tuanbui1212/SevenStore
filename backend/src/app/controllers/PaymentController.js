@@ -26,8 +26,11 @@ class PaymentController {
         }
 
         product.size[item.size] -= item.quantity;
-        product.markModified("size");
-        await product.save({ session });
+        await Product.updateOne(
+          { _id: product._id },
+          { $set: { size: product.size } },
+          { session }
+        );
       }
 
       // Xóa sản phẩm đã mua khỏi giỏ hàng
@@ -39,7 +42,11 @@ class PaymentController {
               item.size === cartItem.size
           )
       );
-      await account.save({ session });
+      await Account.updateOne(
+        { _id: account._id },
+        { $set: { cart: account.cart } },
+        { session }
+      );
 
       // Tạo đơn hàng
       const order = new Order({
