@@ -21,7 +21,10 @@ class CustomerController {
   edit(req, res, next) {
     Customer.findById(req.params.id)
       .lean()
-      .then((customer) => res.json({ customer }))
+      .then((customer) => {
+        if (!customer) return res.status(404).json({ message: "Customer not found" });
+        res.json({ customer });
+      })
       .catch(next);
   }
 

@@ -11,7 +11,9 @@ function authMiddleware(req, res, next) {
     });
   }
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+  const secret = process.env.ACCESS_TOKEN_SECRET || "default_seventstore_jwt_secret";
+
+  jwt.verify(token, secret, (err, user) => {
     if (err) {
       if (err.name === "TokenExpiredError") {
         return res.status(401).json({

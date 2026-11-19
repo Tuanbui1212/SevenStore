@@ -9,11 +9,13 @@ const customerRoutes = [
     path: "/dashboard/customers",
     component: ListCustomer,
     layout: Dashboard,
+    roles: ["admin", "staff"],
   },
   {
     path: "/dashboard/customers/:id",
     component: EditCustomer,
     layout: OnlyHeader,
+    roles: ["admin", "staff"],
   },
 ];
 

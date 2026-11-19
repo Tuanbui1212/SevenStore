@@ -11,7 +11,7 @@ import Pagination from "../../components/Pagination";
 
 const PAGE_LIMIT = 12;
 
-function Sreach() {
+function Search() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -177,4 +177,4 @@ function Sreach() {
   );
 }
 
-export default Sreach;
+export default Search;

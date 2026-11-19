@@ -10,20 +10,24 @@ export const employeeRoutes = [
     path: "/dashboard/employee",
     component: Employee,
     layout: Dashboard,
+    roles: ["admin"],
   },
   {
     path: "/dashboard/employee/create",
     component: CreateEmployee,
     layout: null,
+    roles: ["admin"],
   },
   {
     path: "/dashboard/employee/trash",
     component: TrashEmployee,
     layout: null,
+    roles: ["admin"],
   },
   {
     path: "/dashboard/employee/:id",
     component: EditEmployee,
     layout: null,
+    roles: ["admin"],
   },
 ];

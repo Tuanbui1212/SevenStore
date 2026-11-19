@@ -37,10 +37,40 @@ function Cart() {
     fetchCart();
   }, [fetchCart]);
 
-  const handleChane = useCallback((data) => {
-    if (!user) return;
-    axios.put(`/cart?user=${encodeURIComponent(user)}`, data);
-  }, [user]);
+  const handleUpdateQuantity = useCallback(
+    (item, newQuantity) => {
+      if (!user || newQuantity < 1) return;
+
+      setCarts((prevCarts) =>
+        prevCarts.map((c) =>
+          c.id === item.id && c.size === item.size
+            ? { ...c, quantity: newQuantity }
+            : c
+        )
+      );
+
+      setCheckedItems((prevChecked) =>
+        prevChecked.map((c) =>
+          c.id === item.id && c.size === item.size
+            ? { ...c, quantity: newQuantity }
+            : c
+        )
+      );
+
+      axios
+        .put(`/cart?user=${encodeURIComponent(user)}`, {
+          id: item.id,
+          size: item.size,
+          quantity: newQuantity,
+          cost: item.cost,
+        })
+        .catch((err) => {
+          console.error("Failed to update cart quantity:", err);
+          fetchCart();
+        });
+    },
+    [user, fetchCart]
+  );
 
   const handleDelete = useCallback(() => {
     if (!deleteId) return;
@@ -205,74 +235,24 @@ function Cart() {
                     <div className={styles.itemRight}>
                       <div className={styles.quantityBox}>
                         <button
-                          disabled={items.quantity < 1}
-                          onClick={() => {
-                            const val = items.quantity - 1;
-                            if (val >= 0) {
-                              setCarts((prevCarts) =>
-                                prevCarts.map((cart, i) =>
-                                  i === index
-                                    ? { ...cart, quantity: val }
-                                    : cart
-                                )
-                              );
-                            }
-                            setCheckedItems([]);
-                            handleChane({
-                              id: items.id,
-                              size: items.size,
-                              quantity: val,
-                              cost: items.cost,
-                            });
-                          }}
+                          disabled={items.quantity <= 1}
+                          onClick={() => handleUpdateQuantity(items, items.quantity - 1)}
                         >
                           -
                         </button>
                         <input
+                          type="number"
+                          min="1"
                           value={items.quantity}
                           onChange={(e) => {
-                            setCheckedItems([]);
-                            const val = Number(e.target.value);
-                            if (val >= 0) {
-                              setCarts((prevCarts) =>
-                                prevCarts.map((cart, i) =>
-                                  i === index
-                                    ? { ...cart, quantity: val }
-                                    : cart
-                                )
-                              );
+                            const val = parseInt(e.target.value, 10);
+                            if (val >= 1) {
+                              handleUpdateQuantity(items, val);
                             }
-
-                            handleChane({
-                              id: items.id,
-                              size: items.size,
-                              quantity: val,
-                              cost: items.cost,
-                            });
                           }}
-                        ></input>
+                        />
                         <button
-                          disabled={items.quantity < 1}
-                          onClick={() => {
-                            setCheckedItems([]);
-                            const val = items.quantity + 1;
-                            if (val >= 0) {
-                              setCarts((prevCarts) =>
-                                prevCarts.map((cart, i) =>
-                                  i === index
-                                    ? { ...cart, quantity: val }
-                                    : cart
-                                )
-                              );
-                            }
-
-                            handleChane({
-                              id: items.id,
-                              size: items.size,
-                              quantity: val,
-                              cost: items.cost,
-                            });
-                          }}
+                          onClick={() => handleUpdateQuantity(items, items.quantity + 1)}
                         >
                           +
                         </button>

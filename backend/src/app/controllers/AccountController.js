@@ -25,6 +25,9 @@ class AccountController {
     Account.findById(req.params.id)
       .lean()
       .then((account) => {
+        if (!account) {
+          return res.status(404).json({ message: "Account not found" });
+        }
         const formData = {
           user: account.user,
           name: account.name,
@@ -59,9 +62,16 @@ class AccountController {
   //[POST] /dashboard/account/create
   async create(req, res, next) {
     try {
-      const { password, ...rest } = req.body;
+      const { password, user, ...rest } = req.body;
+      if (!user || !password) {
+        return res.status(400).json({ message: "Username and password are required" });
+      }
+      const existing = await Account.findOne({ user });
+      if (existing) {
+        return res.status(400).json({ message: "Username is already in use" });
+      }
       const hashedPassword = await bcrypt.hash(password, 10);
-      const account = new Account({ ...rest, password: hashedPassword });
+      const account = new Account({ ...rest, user, password: hashedPassword });
       await account.save();
       res.status(201).json({ message: "Account created successfully" });
     } catch (err) {
@@ -71,17 +81,30 @@ class AccountController {
 
   //[GET]/dashboard/account/:id
   edit(req, res, next) {
-    Account.findId(req.params.id)
+    Account.findById(req.params.id)
       .lean()
-      .then((account) => res.json({ account }))
+      .then((account) => {
+        if (!account) return res.status(404).json({ message: "Account not found" });
+        res.json({ account });
+      })
       .catch(next);
   }
 
   //[POST]/dashboard/account/:id
-  update(req, res, next) {
-    Account.updateOne({ _id: req.params.id }, req.body)
-      .then(() => res.status(200).json({ message: "updated successfully" }))
-      .catch(next);
+  async update(req, res, next) {
+    try {
+      const updateData = { ...req.body };
+      if (updateData.password && updateData.password.trim()) {
+        updateData.password = await bcrypt.hash(updateData.password, 10);
+      } else {
+        delete updateData.password;
+      }
+      const updated = await Account.findByIdAndUpdate(req.params.id, updateData, { new: true });
+      if (!updated) return res.status(404).json({ message: "Account not found" });
+      res.status(200).json({ message: "updated successfully", account: updated });
+    } catch (err) {
+      next(err);
+    }
   }
 }
 

@@ -74,23 +74,21 @@ function OrderDetail() {
                         />
                       </Link>
                       <Link
-                        to={`/product/${items.productId?.brand || "No Brand"}/${
-                          items.productId?.slug || ""
-                        }`}
+                        to={items.productId ? `/product/${items.productId?.brand || "No Brand"}/${items.productId?.slug || ""}` : "#"}
                         className={styles.itemInfo}
                       >
                         <p className={styles.itemName}>
                           {items.productId?.name || "Deleted Product"}
                         </p>
                         <p className={styles.itemType}>
-                          Size: {items.size?.replace("size", "") || ""}
+                          Size: {items.size ? items.size.replace("size", "") : "-"}
                         </p>
 
                         <p className={styles.itemQuantity}>
                           Quantity: {items.quantity}
                         </p>
                         <p className={styles.itemPrice}>
-                          {items.productId?.cost ? items.productId.cost.toLocaleString("vi-VN") : 0} đ
+                          {((items.price || items.productId?.cost || 0)).toLocaleString("vi-VN")} đ
                         </p>
                       </Link>
                     </div>

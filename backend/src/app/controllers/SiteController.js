@@ -3,6 +3,9 @@ const Account = require("../models/Account");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
+const JWT_SECRET = process.env.ACCESS_TOKEN_SECRET || "default_seventstore_jwt_secret";
+const JWT_EXPIRES = process.env.JWT_EXPIRES_IN || "1d";
+
 class SiteController {
   //[GET] /
   index(req, res, next) {
@@ -29,7 +32,7 @@ class SiteController {
       const account = await Account.findOne({ user: username }).lean();
 
       if (!account) {
-        return res.json({ success: false, message: "Account not found" });
+        return res.status(401).json({ success: false, message: "Account not found" });
       }
 
       const isMatch = await bcrypt.compare(password, account.password);
@@ -43,8 +46,10 @@ class SiteController {
       const Url = account.role === "admin" || account.role === "staff" ? "/dashboard" : "/";
 
       const payload = { id: account._id, user: account.user, role: account.role };
-      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN,
+      const secret = process.env.ACCESS_TOKEN_SECRET || "default_seventstore_jwt_secret";
+      const expiresIn = process.env.JWT_EXPIRES_IN || "1d";
+      const accessToken = jwt.sign(payload, secret, {
+        expiresIn,
       });
 
       return res.status(200).json({
@@ -61,6 +66,7 @@ class SiteController {
       next(err);
     }
   }
+
   // [POST] /register
   async register(req, res, next) {
     const { formData } = req.body;
@@ -81,7 +87,7 @@ class SiteController {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const account = new Account({ ...formData, password: hashedPassword });
+      const account = new Account({ ...formData, role: formData.role || "customer", password: hashedPassword });
       const savedAccount = await account.save();
 
       const payload = {
@@ -90,8 +96,10 @@ class SiteController {
         user: savedAccount.user,
         role: savedAccount.role || "customer",
       };
-      const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN,
+      const secret = process.env.ACCESS_TOKEN_SECRET || "default_seventstore_jwt_secret";
+      const expiresIn = process.env.JWT_EXPIRES_IN || "1d";
+      const accessToken = jwt.sign(payload, secret, {
+        expiresIn,
       });
 
       res.status(201).json({
@@ -112,7 +120,9 @@ class SiteController {
     const limitNum = Math.max(1, parseInt(limit, 10));
     const skip = (pageNum - 1) * limitNum;
 
-    const filter = { name: { $regex: value, $options: "i" } };
+    const filter = value && value.trim()
+      ? { $or: [{ name: { $regex: value.trim(), $options: "i" } }, { brand: { $regex: value.trim(), $options: "i" } }] }
+      : {};
 
     Promise.all([
       Product.find(filter).skip(skip).limit(limitNum).lean(),

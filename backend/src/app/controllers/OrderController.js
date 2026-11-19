@@ -2,10 +2,25 @@ const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 const Customer = require("../models/Customer");
+
+function canUseTransaction() {
+  try {
+    const topology = mongoose.connection?.client?.topology?.description;
+    return Boolean(
+      topology?.setName ||
+      topology?.type === "ReplicaSetWithPrimary" ||
+      topology?.type === "Sharded"
+    );
+  } catch {
+    return false;
+  }
+}
+
 class OrderController {
   // [GET] /my-orders?user=ten_user
   showByUser(req, res, next) {
-    const { user } = req.query;
+    const isStaffOrAdmin = req.user && (req.user.role === "admin" || req.user.role === "staff");
+    const user = isStaffOrAdmin ? (req.query.user || req.user?.user) : req.user?.user;
 
     if (!user) {
       return res.status(400).json({ message: "User is required" });
@@ -21,25 +36,83 @@ class OrderController {
       .catch(next);
   }
 
-  // [GET] /dashboard/orders/count-pending
-  countPending(req, res, next) {
-    if (!Order) {
-      console.error(
-        "LỖI: Không tìm thấy Model Order. Kiểm tra lại đường dẫn require ở đầu file!"
-      );
-      return res
-        .status(500)
-        .json({ message: "Server Error: Order Model not found" });
+  // [PUT] /my-orders/:id/status (Customer action: Cancel or Confirm Received)
+  async customerUpdateStatus(req, res, next) {
+    const { id } = req.params;
+    const { status } = req.body;
+    const currentUser = req.user?.user;
+
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
     }
 
+    try {
+      const order = await Order.findById(id);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Check ownership
+      const isOwner = order.user === currentUser;
+      const isAdminOrStaff = req.user && (req.user.role === "admin" || req.user.role === "staff");
+
+      if (!isOwner && !isAdminOrStaff) {
+        return res.status(403).json({ message: "You are not authorized to update this order" });
+      }
+
+      // Business rule: Customer can only Cancel if Pending, or mark Delivered if Shipping
+      if (!isAdminOrStaff) {
+        if (status === "Cancelled") {
+          if (order.status !== "Pending") {
+            return res.status(400).json({
+              message: "Cannot cancel order that is already being processed or shipped.",
+            });
+          }
+        } else if (status === "Delivered") {
+          if (order.status !== "Shipping") {
+            return res.status(400).json({
+              message: "Order can only be marked delivered once shipped.",
+            });
+          }
+        } else {
+          return res.status(400).json({
+            message: "Invalid status update requested by customer.",
+          });
+        }
+      }
+
+      // If cancelling: return stock back to inventory
+      if (status === "Cancelled" && order.status !== "Cancelled") {
+        for (const item of order.items) {
+          const product = await Product.findById(item.productId);
+          if (product) {
+            if (!product.size) product.size = {};
+            product.size[item.size] = (product.size[item.size] || 0) + item.quantity;
+            product.markModified("size");
+            await product.save();
+          }
+        }
+      }
+
+      order.status = status;
+      const updatedOrder = await order.save();
+
+      return res.json({
+        message: "Order updated successfully",
+        order: updatedOrder,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // [GET] /dashboard/orders/count-pending
+  countPending(req, res, next) {
     Order.countDocuments({ status: "Pending" })
       .then((count) => {
         res.json({ count });
       })
-      .catch((err) => {
-        console.error("--> LỖI KHI ĐẾM:", err);
-        next(err);
-      });
+      .catch(next);
   }
 
   // [GET] /dashboard/orders/manage/:type
@@ -117,44 +190,89 @@ class OrderController {
       .catch(next);
   }
 
-  // Update order status
+  // Admin / Staff: Update order status
   async updateStatus(req, res, next) {
     const { id } = req.params;
     const { status } = req.body;
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    let session = null;
+    let useTransaction = false;
+    if (canUseTransaction()) {
+      try {
+        session = await mongoose.startSession();
+        session.startTransaction();
+        useTransaction = true;
+      } catch (e) {
+        session = null;
+        useTransaction = false;
+      }
+    }
 
     try {
-      const order = await Order.findById(id).session(session);
+      const orderQuery = Order.findById(id);
+      const order = useTransaction ? await orderQuery.session(session) : await orderQuery;
       if (!order) {
-        await session.abortTransaction();
+        if (useTransaction && session) await session.abortTransaction();
         return res.status(404).json({ message: "Order not found" });
       }
 
       // Nếu huỷ đơn → hoàn lại tồn kho
       if (status === "Cancelled" && order.status !== "Cancelled") {
         for (const item of order.items) {
-          const product = await Product.findById(item.productId).session(session);
+          const prodQuery = Product.findById(item.productId);
+          const product = useTransaction ? await prodQuery.session(session) : await prodQuery;
           if (product) {
-            product.size[item.size] += item.quantity;
+            if (!product.size) product.size = {};
+            product.size[item.size] = (product.size[item.size] || 0) + item.quantity;
             product.markModified("size");
-            await product.save({ session });
+            if (useTransaction) {
+              await product.save({ session });
+            } else {
+              await product.save();
+            }
+          }
+        }
+      }
+
+      // Nếu chuyển từ Cancelled sang trạng thái khác → trừ lại tồn kho
+      if (order.status === "Cancelled" && status !== "Cancelled") {
+        for (const item of order.items) {
+          const prodQuery = Product.findById(item.productId);
+          const product = useTransaction ? await prodQuery.session(session) : await prodQuery;
+          if (product) {
+            const currentStock = (product.size && product.size[item.size]) || 0;
+            if (currentStock < item.quantity) {
+              throw new Error(`Insufficient stock for "${product.name}" size ${item.size} to reactivate order`);
+            }
+            product.size[item.size] = currentStock - item.quantity;
+            product.markModified("size");
+            if (useTransaction) {
+              await product.save({ session });
+            } else {
+              await product.save();
+            }
           }
         }
       }
 
       order.status = status;
-      const updatedOrder = await order.save({ session });
+      const updatedOrder = useTransaction ? await order.save({ session }) : await order.save();
 
-      await session.commitTransaction();
+      if (useTransaction && session) {
+        await session.commitTransaction();
+      }
+
       res.json({ message: "Order updated successfully", order: updatedOrder });
     } catch (err) {
-      await session.abortTransaction();
+      if (useTransaction && session) {
+        await session.abortTransaction();
+      }
       console.error(err);
-      res.status(500).json({ message: "Error updating order" });
+      res.status(500).json({ message: err.message || "Error updating order" });
     } finally {
-      session.endSession();
+      if (session) {
+        session.endSession();
+      }
     }
   }
 }

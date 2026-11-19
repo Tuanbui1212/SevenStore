@@ -27,8 +27,8 @@ class ProductController {
       filter.status = { $regex: "sale", $options: "i" };
     } else if (brand === "NEW ARRIVALS") {
       filter.status = { $regex: "new", $options: "i" };
-    } else if (brand !== "all") {
-      filter.brand = { $regex: brand, $options: "i" };
+    } else if (brand && brand !== "all") {
+      filter.brand = { $regex: `^${brand}$`, $options: "i" };
     }
 
     if (color) {
@@ -65,9 +65,19 @@ class ProductController {
   showDetail(req, res, next) {
     const { slug } = req.params;
 
-    Product.findOne({ slug: { $regex: slug, $options: "i" } })
+    Product.findOne({
+      $or: [
+        { slug: { $regex: `^${slug}$`, $options: "i" } },
+        { slug: slug },
+      ],
+    })
       .lean()
-      .then((productDetail) => res.json({ productDetail }))
+      .then((productDetail) => {
+        if (!productDetail) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+        res.json({ productDetail });
+      })
       .catch(next);
   }
 
@@ -108,7 +118,12 @@ class ProductController {
   edit(req, res, next) {
     Product.findById(req.params.id)
       .lean()
-      .then((product) => res.json({ product }))
+      .then((product) => {
+        if (!product) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+        res.json({ product });
+      })
       .catch(next);
   }
 

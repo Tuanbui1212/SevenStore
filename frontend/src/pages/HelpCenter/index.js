@@ -20,7 +20,7 @@ const supportTopics = [
     title: "Payment Options",
     link: "/help/payment",
   },
-  { icon: "fa-solid fa-user-gear", title: "My Account", link: "/account" },
+  { icon: "fa-solid fa-user-gear", title: "My Account", link: "/myAccount" },
   { icon: "fa-solid fa-tags", title: "Promotions", link: "/help/promos" },
 ];
 

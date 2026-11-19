@@ -53,7 +53,7 @@ function App() {
                 key={index}
                 path={route.path}
                 element={
-                  <PrivateRoute>
+                  <PrivateRoute roles={route.roles}>
                     <Layout>
                       <Page />
                     </Layout>

@@ -266,7 +266,7 @@ function Header() {
                   </li>
                 </>
               )}
-              {success && role === "admin" && (
+              {success && (role === "admin" || role === "staff") && (
                 <li>
                   <Link className={styles.user_item} to="/dashboard">
                     Dashboard

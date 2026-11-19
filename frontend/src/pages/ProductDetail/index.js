@@ -57,8 +57,11 @@ function ProductDetail() {
       .catch((err) => console.error("Lỗi fetch:", err));
   }, [brand, slug]);
 
-  const handleAddCrat = useCallback(() => {
-    if (success !== "true") navigate("/login");
+  const handleAddToCart = useCallback(() => {
+    if (success !== "true") {
+      navigate("/login");
+      return;
+    }
 
     if (!selectedSize) {
       showModal({
@@ -75,14 +78,14 @@ function ProductDetail() {
       quantity: quantity,
       cost: product.cost,
       name: product.name,
-      image: product.image.image1,
+      image: product.image?.image1 || "",
       brand: product.brand,
       slug: product.slug,
     });
   }, [success, selectedSize, quantity, product, navigate]);
 
   const totalCost = useMemo(
-    () => checkedItems.cost * checkedItems.quantity,
+    () => (checkedItems?.cost || 0) * (checkedItems?.quantity || 1),
     [checkedItems]
   );
 
@@ -103,11 +106,15 @@ function ProductDetail() {
   }, [product, selectedSize, quantity]);
 
   const handleGoToPayment = useCallback(() => {
-    if (checkedItems.size === null) {
+    if (success !== "true") {
+      navigate("/login");
+      return;
+    }
+    if (!selectedSize) {
       showModal({
         title: "Warning",
         message: "Please select a size before purchasing",
-        type: "warning"
+        type: "warning",
       });
       return;
     }
@@ -118,7 +125,7 @@ function ProductDetail() {
         totalCost,
       },
     });
-  }, [checkedItems, totalCost, navigate]);
+  }, [success, selectedSize, checkedItems, totalCost, navigate, showModal]);
 
   useEffect(() => {
     if (!formData.id) return;
@@ -287,7 +294,7 @@ function ProductDetail() {
                 </div>
                 <button
                   className={clsx(styles.add__cart)}
-                  onClick={handleAddCrat}
+                  onClick={handleAddToCart}
                 >
                   Add to cart
                 </button>

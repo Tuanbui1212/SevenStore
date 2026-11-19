@@ -2,73 +2,87 @@ const Account = require("../models/Account");
 const Product = require("../models/Product");
 
 class CartController {
-  addCart(req, res, next) {
-    const { user } = req.query;
+  async addCart(req, res, next) {
+    const user = req.query.user || req.user?.user;
     const formData = req.body;
 
     if (!user) {
-      return res.status(400).json({ message: "Missing required data." });
+      return res.status(400).json({ message: "Missing user information." });
     }
 
-    Account.findOne({ user })
-      .then((account) => {
-        if (!account) {
-          return res.status(404).json({ message: "Account not found." });
+    if (!formData || !formData.id || !formData.size) {
+      return res.status(400).json({ message: "Missing product id or size." });
+    }
+
+    const quantity = parseInt(formData.quantity, 10);
+    if (isNaN(quantity) || quantity <= 0) {
+      return res.status(400).json({ message: "Quantity must be at least 1." });
+    }
+
+    try {
+      const account = await Account.findOne({ user });
+      if (!account) {
+        return res.status(404).json({ message: "Account not found." });
+      }
+
+      const product = await Product.findById(formData.id);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found." });
+      }
+
+      const size = formData.size;
+      const availableStock = product.size && product.size[size] !== undefined ? product.size[size] : 0;
+
+      const existingItem = account.cart.find(
+        (item) => item.id.toString() === formData.id.toString() && item.size === size
+      );
+
+      if (existingItem) {
+        const newQuantity = existingItem.quantity + quantity;
+        if (newQuantity > availableStock) {
+          return res.status(400).json({
+            message: "The quantity you selected exceeds available stock.",
+          });
+        }
+        existingItem.quantity = newQuantity;
+      } else {
+        if (quantity > availableStock) {
+          return res.status(400).json({
+            message: "The quantity you selected exceeds available stock.",
+          });
         }
 
-        return Product.findById(formData.id).then((product) => {
-          if (!product) {
-            return res.status(404).json({ message: "Product not found." });
-          }
-
-          const existingItem = account.cart.find(
-            (item) => item.id === formData.id && item.size === formData.size
-          );
-
-          const size = formData.size;
-
-          if (existingItem) {
-            const newQuantity = existingItem.quantity + formData.quantity;
-
-            if (newQuantity > product.size[size]) {
-              return res.status(400).json({
-                message: "The quantity you selected exceeds available stock.",
-              });
-            }
-
-            existingItem.quantity = newQuantity;
-          } else {
-            if (formData.quantity > product.size[size]) {
-              return res.status(400).json({
-                message: "The quantity you selected exceeds available stock.",
-              });
-            }
-
-            account.cart.push(formData);
-          }
-
-          return account.save().then((updatedAccount) => {
-            res.status(200).json({
-              message: "Added to cart.",
-              cart: updatedAccount.cart,
-            });
-          });
+        account.cart.push({
+          id: product._id.toString(),
+          name: product.name,
+          brand: product.brand,
+          slug: product.slug,
+          cost: product.cost,
+          image: product.image?.image1 || formData.image || "",
+          size: size,
+          quantity: quantity,
         });
-      })
-      .catch((err) => {
-        console.error("Error adding to cart:", err);
-        res.status(500).json({
-          message: "Server error while adding to cart.",
-          error: err.message,
-        });
+      }
+
+      const updatedAccount = await account.save();
+      return res.status(200).json({
+        message: "Added to cart.",
+        cart: updatedAccount.cart,
       });
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      return res.status(500).json({
+        message: "Server error while adding to cart.",
+        error: err.message,
+      });
+    }
   }
 
   show(req, res, next) {
-    const { user } = req.query;
+    const user = req.query.user || req.user?.user;
 
     if (!user) {
-      return res.status(400).json({ message: "Account not found" });
+      return res.status(400).json({ message: "User is required" });
     }
 
     Account.findOne({ user })
@@ -85,10 +99,10 @@ class CartController {
           id: item.id,
           name: item.name,
           size: item.size,
-          price: item.price,
+          price: item.cost,
+          cost: item.cost,
           quantity: item.quantity,
           image: item.image,
-          cost: item.cost,
           brand: item.brand,
           slug: item.slug,
         }));
@@ -99,44 +113,89 @@ class CartController {
   }
 
   //[PUT] /cart sửa thông tin
-  updateCart(req, res, next) {
-    const { user } = req.query;
+  async updateCart(req, res, next) {
+    const user = req.query.user || req.user?.user;
     const data = req.body;
 
-    Account.findOne({ user })
-      .then((account) => {
-        if (!account) {
-          return res.status(404).json({ message: "Account not found" });
+    if (!user) {
+      return res.status(400).json({ message: "User is required" });
+    }
+    if (!data || !data.id || !data.size) {
+      return res.status(400).json({ message: "Item id and size are required" });
+    }
+
+    const targetQuantity = parseInt(data.quantity, 10);
+    if (isNaN(targetQuantity)) {
+      return res.status(400).json({ message: "Invalid quantity" });
+    }
+
+    try {
+      const account = await Account.findOne({ user });
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      const existingIndex = account.cart.findIndex(
+        (item) => item.id.toString() === data.id.toString() && item.size === data.size
+      );
+
+      if (existingIndex === -1) {
+        return res.status(404).json({ message: "Item not found in cart" });
+      }
+
+      if (targetQuantity <= 0) {
+        // Remove item if quantity set to 0 or negative
+        account.cart.splice(existingIndex, 1);
+      } else {
+        // Validate stock
+        const product = await Product.findById(data.id);
+        if (product && product.size && product.size[data.size] !== undefined) {
+          if (targetQuantity > product.size[data.size]) {
+            return res.status(400).json({
+              message: "The quantity exceeds available stock.",
+            });
+          }
         }
+        account.cart[existingIndex].quantity = targetQuantity;
+      }
 
-        const existingItem = account.cart.find(
-          (item) => item.id === data.id && item.size === data.size
-        );
-
-        existingItem.quantity = data.quantity;
-
-        return account.save();
-      })
-      .catch(next);
+      const updatedAccount = await account.save();
+      return res.status(200).json({
+        message: "Cart updated successfully.",
+        cart: updatedAccount.cart,
+      });
+    } catch (err) {
+      next(err);
+    }
   }
 
   //[DELETE] /cart xoa thông tin
-  delete(req, res, next) {
-    const { user, deleteId, size } = req.query;
+  async delete(req, res, next) {
+    const user = req.query.user || req.user?.user;
+    const { deleteId, size } = req.query;
 
-    Account.findOne({ user })
-      .then((account) => {
-        if (!account) {
-          return res.status(404).json({ message: "Account not found" });
-        }
-        account.cart = account.cart.filter(
-          (item) => !(item.id === deleteId && item.size === size)
-        );
-        return account.save().then(() => {
-          res.status(200).json({ message: "✅ Successfully deleted!" });
-        });
-      })
-      .catch(next);
+    if (!user) {
+      return res.status(400).json({ message: "User is required" });
+    }
+
+    try {
+      const account = await Account.findOne({ user });
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      account.cart = account.cart.filter(
+        (item) => !(item.id.toString() === deleteId?.toString() && item.size === size)
+      );
+
+      await account.save();
+      return res.status(200).json({
+        message: "Successfully deleted!",
+        cart: account.cart,
+      });
+    } catch (err) {
+      next(err);
+    }
   }
 }
 

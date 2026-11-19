@@ -37,11 +37,12 @@ class EmployeeController {
   //[Get] /dashboard/employee/:id/edit
   edit(req, res, next) {
     Employee.findById(req.params.id)
-      .then((employee) =>
+      .then((employee) => {
+        if (!employee) return res.status(404).json({ message: "Employee not found" });
         res.json({
           employee: mongooseToObject(employee),
-        })
-      )
+        });
+      })
       .catch(next);
   }
 

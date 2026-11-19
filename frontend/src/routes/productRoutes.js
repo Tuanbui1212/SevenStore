@@ -4,27 +4,30 @@ import EditProducts from "../pages/Products/Edit";
 import TrashProduct from "../pages/Products/Trash";
 
 import Dashboard from "../components/Layout/Dashboard";
-import OnlyHeader from "../components/Layout/OnlyHeader";
 
 export const productRoutes = [
   {
     path: "/dashboard/products",
     component: ListProducts,
     layout: Dashboard,
+    roles: ["admin", "staff"],
   },
   {
     path: "/dashboard/products/create",
     component: CreateProducts,
     layout: null,
+    roles: ["admin", "staff"],
   },
   {
     path: "/dashboard/products/trash",
     component: TrashProduct,
     layout: null,
+    roles: ["admin", "staff"],
   },
   {
     path: "/dashboard/products/:id",
     component: EditProducts,
     layout: null,
+    roles: ["admin", "staff"],
   },
 ];

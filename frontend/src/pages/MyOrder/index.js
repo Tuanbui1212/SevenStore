@@ -39,7 +39,7 @@ function MyOrders() {
       : "Order cancelled successfully.";
 
     axios
-      .put(`/dashboard/orders/${orderId}`, { status: newStatus })
+      .put(`/my-orders/${orderId}/status`, { status: newStatus })
       .then(() => {
         fetchMyOrders();
         showModal({ title: "Success", message: successMsg, type: "success" });
