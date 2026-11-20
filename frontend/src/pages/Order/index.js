@@ -15,13 +15,29 @@ const STATUS_COLORS = {
   Cancelled: "statusCancelled",
 };
 
+const ACTIVE_TABS = [
+  { key: "", label: "All Active", tone: "toneAll", countKey: "All" },
+  { key: "Pending", label: "Pending", tone: "tonePending", countKey: "Pending" },
+  { key: "Confirmed", label: "Confirmed", tone: "toneConfirmed", countKey: "Confirmed" },
+  { key: "Shipping", label: "Shipping", tone: "toneShipping", countKey: "Shipping" },
+];
+
+const HISTORY_TABS = [
+  { key: "", label: "All History", tone: "toneAll", countKey: "All" },
+  { key: "Delivered", label: "Delivered", tone: "toneDelivered", countKey: "Delivered" },
+  { key: "Cancelled", label: "Cancelled", tone: "toneCancelled", countKey: "Cancelled" },
+];
+
 function Order() {
   const [orders, setOrders] = useState([]);
   const { type } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [statusCounts, setStatusCounts] = useState({ All: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { showModal } = useModal();
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +46,7 @@ function Order() {
 
   useEffect(() => {
     setSearchTerm("");
+    setStatusFilter("");
     setCurrentPage(1);
   }, [type]);
 
@@ -37,6 +54,7 @@ function Order() {
     setIsLoading(true);
     const params = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
     if (searchTerm) params.set("search", searchTerm);
+    if (statusFilter) params.set("status", statusFilter);
     if (sortConfig.key) {
       params.set("sortKey", sortConfig.key);
       params.set("sortDir", sortConfig.direction);
@@ -46,10 +64,11 @@ function Order() {
       .then((res) => {
         setOrders(res.data.orders || []);
         setTotalPages(res.data.totalPages || 1);
+        if (res.data.statusCounts) setStatusCounts(res.data.statusCounts);
       })
       .catch((err) => console.error(err))
       .finally(() => setIsLoading(false));
-  }, [type, currentPage, searchTerm, sortConfig]);
+  }, [type, currentPage, searchTerm, statusFilter, sortConfig, refreshKey]);
 
   const formatDate = useCallback((dateString) => {
     if (!dateString) return "--";
@@ -63,23 +82,22 @@ function Order() {
     }).format(date);
   }, []);
 
-  const handleUpdateStatus = useCallback((id, newStatus) => {
-    axios
-      .put(`/dashboard/orders/${id}`, { status: newStatus })
-      .then(() => {
-        setOrders((prev) =>
-          prev.map((order) =>
-            order._id === id ? { ...order, status: newStatus } : order
-          )
-        );
-        showModal({
-          title: "Success",
-          message: `Updated status to: ${newStatus}`,
-          type: "success"
-        });
-      })
-      .catch((err) => console.error(err));
-  }, []);
+  const handleUpdateStatus = useCallback(
+    (id, newStatus) => {
+      axios
+        .put(`/dashboard/orders/${id}`, { status: newStatus })
+        .then(() => {
+          showModal({
+            title: "Success",
+            message: `Updated order status to: ${newStatus}`,
+            type: "success",
+          });
+          setRefreshKey((k) => k + 1);
+        })
+        .catch((err) => console.error(err));
+    },
+    [showModal]
+  );
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => ({
@@ -136,178 +154,228 @@ function Order() {
   const pageDesc = useMemo(
     () =>
       type === "history"
-        ? "List of delivered and cancelled orders"
-        : "Manage new and shipping orders",
+        ? "Completed and cancelled customer orders"
+        : "Track, confirm, and dispatch active orders in real time",
     [type]
   );
 
-  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const tabs = type === "history" ? HISTORY_TABS : ACTIVE_TABS;
 
   return (
-    <div className={clsx("mt-36", styles.tableWrapper)}>
+    <div className={styles.tableWrapper}>
       <div className={styles.pageHeader}>
-        <h2 className={styles.pageTitle}>{pageTitle}</h2>
-        <p className={styles.pageDesc}>{pageDesc}</p>
+        <div>
+          <h2 className={styles.pageTitle}>{pageTitle}</h2>
+          <p className={styles.pageDesc}>{pageDesc}</p>
+        </div>
+      </div>
+
+      {/* Color-coded Status Filter Pills */}
+      <div className={styles.statusFilterBar}>
+        {tabs.map((tab) => {
+          const isActive = statusFilter === tab.key;
+          const count = statusCounts[tab.countKey] ?? 0;
+          return (
+            <button
+              key={tab.key || "all"}
+              type="button"
+              className={clsx(
+                styles.statusFilterPill,
+                styles[tab.tone],
+                isActive && styles.pillActive
+              )}
+              onClick={() => {
+                setStatusFilter(tab.key);
+                setCurrentPage(1);
+              }}
+            >
+              <span className={styles.pillDot} />
+              <span>{tab.label}</span>
+              <span className={styles.pillCount}>{count}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className={styles.tableControls}>
-        <input
-          type="text"
-          placeholder="Search by ID, name, phone..."
-          className={styles.searchInput}
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }}
-        />
+        <div className={styles.searchBox}>
+          <i className="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            placeholder="Search by customer name, phone, city..."
+            className={styles.searchInput}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
       </div>
 
       {isLoading ? (
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          Loading data...
+        <div style={{ textAlign: "center", padding: "40px", fontSize: "1.5rem", color: "#6b7280" }}>
+          Loading orders...
         </div>
       ) : (
         <>
-          <table className={styles.table}>
-            <thead className={styles.tableTitle}>
-              <tr>
-                <th className={styles.tableHeader}>ID</th>
-                <th
-                  className={clsx(styles.tableHeader, styles.sortable)}
-                  onClick={() => handleSort("createdAt")}
-                >
-                  Date {renderSortIcon("createdAt")}
-                </th>
-                <th
-                  className={clsx(styles.tableHeader, styles.sortable)}
-                  onClick={() => handleSort("name")}
-                >
-                  Customer {renderSortIcon("name")}
-                </th>
-                <th
-                  className={clsx(styles.tableHeader, styles.sortable)}
-                  onClick={() => handleSort("phone")}
-                >
-                  Phone {renderSortIcon("phone")}
-                </th>
-                <th
-                  className={clsx(styles.tableHeader, styles.sortable)}
-                  onClick={() => handleSort("paymentMethod")}
-                >
-                  Payment {renderSortIcon("paymentMethod")}
-                </th>
-                <th
-                  className={clsx(styles.tableHeader, styles.sortable)}
-                  onClick={() => handleSort("status")}
-                >
-                  Status {renderSortIcon("status")}
-                </th>
-                <th className={styles.tableHeader}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.length > 0 ? (
-                orders.map((e, index) => (
-                  <tr key={index} className={styles.tableRow}>
-                    <td className={styles.tableCell}>
-                      #{e._id.slice(-6).toUpperCase()}
-                    </td>
-                    <td
-                      className={clsx(styles.tableCell)}
-                      style={{ fontSize: "1.4em", color: "#555" }}
-                    >
-                      {formatDate(e.createdAt)}
-                    </td>
-                    <td className={styles.tableCell}>
-                      <strong>{e.name}</strong>
-                      <div style={{ fontSize: "0.85em", color: "#888" }}>
-                        {e.city}
-                      </div>
-                    </td>
-                    <td className={styles.tableCell}>{e.phone}</td>
-                    <td className={styles.tableCell}>
-                      <span
-                        className={clsx(
-                          styles.paymentBadge,
-                          styles[e.paymentMethod]
-                        )}
-                      >
-                        {e.paymentMethod}
-                      </span>
-                    </td>
-                    <td className={styles.tableCell}>
-                      <span
-                        className={clsx(
-                          styles.statusBadge,
-                          styles[STATUS_COLORS[e.status || "Pending"]]
-                        )}
-                      >
-                        {e.status || "Pending"}
-                      </span>
-                    </td>
-                    <td className={styles.tableCell}>
-                      <div className={styles.actionButtons}>
-                        {type !== "history" && (
-                          <>
-                            {(e.status === "Pending" || !e.status) && (
-                              <button
-                                className={styles.btnConfirm}
-                                onClick={() =>
-                                  handleUpdateStatus(e._id, "Confirmed")
-                                }
-                              >
-                                <i className="fa-solid fa-check"></i>
-                              </button>
-                            )}
-                            {e.status === "Confirmed" && (
-                              <button
-                                className={styles.btnShip}
-                                onClick={() =>
-                                  handleUpdateStatus(e._id, "Shipping")
-                                }
-                              >
-                                <i className="fa-solid fa-truck-fast"></i>
-                              </button>
-                            )}
-                          </>
-                        )}
-                        <button
-                          className={styles.btnDetail}
-                          onClick={() =>
-                            navigate(`/dashboard/orders/${e._id}`)
-                          }
+          <div className={styles.tableResponsive}>
+            <table className={styles.table}>
+              <thead className={styles.tableTitle}>
+                <tr>
+                  <th className={styles.tableHeader}>Order ID</th>
+                  <th
+                    className={clsx(styles.tableHeader, styles.sortable)}
+                    onClick={() => handleSort("createdAt")}
+                  >
+                    Date {renderSortIcon("createdAt")}
+                  </th>
+                  <th
+                    className={clsx(styles.tableHeader, styles.sortable)}
+                    onClick={() => handleSort("name")}
+                  >
+                    Customer {renderSortIcon("name")}
+                  </th>
+                  <th
+                    className={clsx(styles.tableHeader, styles.sortable)}
+                    onClick={() => handleSort("phone")}
+                  >
+                    Phone {renderSortIcon("phone")}
+                  </th>
+                  <th
+                    className={clsx(styles.tableHeader, styles.sortable)}
+                    onClick={() => handleSort("paymentMethod")}
+                  >
+                    Payment {renderSortIcon("paymentMethod")}
+                  </th>
+                  <th
+                    className={clsx(styles.tableHeader, styles.sortable)}
+                    onClick={() => handleSort("status")}
+                  >
+                    Status {renderSortIcon("status")}
+                  </th>
+                  <th className={styles.tableHeader}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.length > 0 ? (
+                  orders.map((e, index) => (
+                    <tr key={e._id || index} className={styles.tableRow}>
+                      <td className={clsx(styles.tableCell, styles.idCell)}>
+                        #{e._id.slice(-6).toUpperCase()}
+                      </td>
+                      <td className={clsx(styles.tableCell, styles.dateCell)}>
+                        {formatDate(e.createdAt)}
+                      </td>
+                      <td className={styles.tableCell}>
+                        <strong>{e.name}</strong>
+                        <div className={styles.subText}>{e.city}</div>
+                      </td>
+                      <td className={styles.tableCell}>{e.phone}</td>
+                      <td className={styles.tableCell}>
+                        <span
+                          className={clsx(
+                            styles.paymentBadge,
+                            styles[e.paymentMethod]
+                          )}
                         >
-                          <i className="fa-solid fa-eye"></i>
-                        </button>
-                      </div>
+                          {e.paymentMethod}
+                        </span>
+                      </td>
+                      <td className={styles.tableCell}>
+                        <span
+                          className={clsx(
+                            styles.statusBadge,
+                            styles[STATUS_COLORS[e.status || "Pending"]]
+                          )}
+                        >
+                          <span className={styles.statusDot} />
+                          {e.status || "Pending"}
+                        </span>
+                      </td>
+                      <td className={styles.tableCell}>
+                        <div className={styles.actionButtons}>
+                          {type !== "history" && (
+                            <>
+                              {(e.status === "Pending" || !e.status) && (
+                                <button
+                                  type="button"
+                                  title="Confirm Order"
+                                  className={styles.btnConfirm}
+                                  onClick={() =>
+                                    handleUpdateStatus(e._id, "Confirmed")
+                                  }
+                                >
+                                  <i className="fa-solid fa-check"></i>
+                                </button>
+                              )}
+                              {e.status === "Confirmed" && (
+                                <button
+                                  type="button"
+                                  title="Dispatch / Start Shipping"
+                                  className={styles.btnShip}
+                                  onClick={() =>
+                                    handleUpdateStatus(e._id, "Shipping")
+                                  }
+                                >
+                                  <i className="fa-solid fa-truck-fast"></i>
+                                </button>
+                              )}
+                              {e.status === "Shipping" && (
+                                <button
+                                  type="button"
+                                  title="Mark Delivered"
+                                  className={styles.btnDeliver}
+                                  onClick={() =>
+                                    handleUpdateStatus(e._id, "Delivered")
+                                  }
+                                >
+                                  <i className="fa-solid fa-box-check fa-solid fa-circle-check"></i>
+                                </button>
+                              )}
+                            </>
+                          )}
+                          <button
+                            type="button"
+                            title="View Details"
+                            className={styles.btnDetail}
+                            onClick={() =>
+                              navigate(`/dashboard/orders/${e._id}`)
+                            }
+                          >
+                            <i className="fa-solid fa-eye"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      style={{
+                        textAlign: "center",
+                        padding: "48px 20px",
+                        color: "#888",
+                        fontSize: "1.5rem",
+                      }}
+                    >
+                      <i
+                        className="fa-solid fa-inbox"
+                        style={{
+                          fontSize: "2.6rem",
+                          marginBottom: "10px",
+                          display: "block",
+                          color: "#d1d5db",
+                        }}
+                      ></i>
+                      No orders found
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan="7"
-                    style={{
-                      textAlign: "center",
-                      padding: "40px",
-                      color: "#888",
-                    }}
-                  >
-                    <i
-                      className="fa-solid fa-inbox"
-                      style={{
-                        fontSize: "2rem",
-                        marginBottom: "10px",
-                        display: "block",
-                      }}
-                    ></i>
-                    No orders found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {totalPages > 0 && (
             <div className={styles.pagination}>
@@ -342,7 +410,6 @@ function Order() {
           )}
         </>
       )}
-
     </div>
   );
 }

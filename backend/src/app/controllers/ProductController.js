@@ -81,25 +81,74 @@ class ProductController {
       .catch(next);
   }
 
-  //[GET]/dashboard/products/:brand/:slug
+  //[GET]/dashboard/products
   showList(req, res, next) {
-    const { page = 1, limit = 10, search = "", sortKey = "updatedAt", sortDir = "desc" } = req.query;
+    const { page = 1, limit = 10, search = "", status = "", sortKey = "updatedAt", sortDir = "desc" } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10));
     const limitNum = Math.max(1, parseInt(limit, 10));
     const skip = (pageNum - 1) * limitNum;
-    const filter = search
+
+    const baseSearch = search
       ? { $or: [{ name: { $regex: search, $options: "i" } }, { brand: { $regex: search, $options: "i" } }] }
       : {};
+
     const VALID_SORT = ["name", "brand", "cost", "status", "updatedAt", "createdAt"];
     const sortBy = { [VALID_SORT.includes(sortKey) ? sortKey : "updatedAt"]: sortDir === "asc" ? 1 : -1 };
+
     Promise.all([
-      Product.find(filter).sort(sortBy).skip(skip).limit(limitNum).lean(),
-      Product.countDocuments(filter),
+      Product.find(baseSearch).sort(sortBy).lean(),
       Product.countDocumentsWithDeleted({ deleted: true }),
     ])
-      .then(([listProduct, total, deletedCount]) =>
-        res.json({ listProduct, deletedCount, total, currentPage: pageNum, totalPages: Math.ceil(total / limitNum) })
-      )
+      .then(([allMatching, deletedCount]) => {
+        const statusCounts = {
+          All: allMatching.length,
+          Available: 0,
+          New: 0,
+          BestSeller: 0,
+          Sale: 0,
+          Out: 0,
+        };
+
+        const computed = allMatching.map((p) => {
+          const totalQty = Object.values(p.size || {}).reduce(
+            (sum, v) => Number(sum) + Number(v || 0),
+            0
+          );
+          if (totalQty === 0) {
+            statusCounts.Out += 1;
+          } else if (p.status === "New") {
+            statusCounts.New += 1;
+          } else if (p.status === "BestSeller") {
+            statusCounts.BestSeller += 1;
+          } else if (p.status === "Sale") {
+            statusCounts.Sale += 1;
+          } else {
+            statusCounts.Available += 1;
+          }
+          return { ...p, _computedTotal: totalQty };
+        });
+
+        const filtered = status
+          ? computed.filter((p) => {
+              if (status === "Out") return p._computedTotal === 0;
+              if (p._computedTotal === 0) return false;
+              if (status === "Available") return !p.status || p.status === "null";
+              return p.status === status;
+            })
+          : computed;
+
+        const total = filtered.length;
+        const listProduct = filtered.slice(skip, skip + limitNum);
+
+        res.json({
+          listProduct,
+          deletedCount,
+          total,
+          statusCounts,
+          currentPage: pageNum,
+          totalPages: Math.ceil(total / limitNum),
+        });
+      })
       .catch(next);
   }
 

@@ -15,7 +15,7 @@ function MyOrders() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const { showModal, confirmModal } = useModal();
-  const tabs = ["All", "Pending", "Shipping", "Delivered", "Cancelled"];
+  const tabs = ["All", "Pending", "Confirmed", "Shipping", "Delivered", "Cancelled"];
 
   const fetchMyOrders = useCallback(() => {
     const currentUser = localStorage.getItem("user") || "guest";
@@ -87,6 +87,8 @@ function MyOrders() {
     switch (status) {
       case "Pending":
         return styles.pending;
+      case "Confirmed":
+        return styles.confirmed;
       case "Shipping":
         return styles.shipping;
       case "Delivered":

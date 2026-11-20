@@ -1,87 +1,226 @@
 @import "../../../components/GlobalStyles/variables";
 
 .tableWrapper {
-  padding: 20px;
+  padding: 24px;
+  background-color: $white-color;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+
+  @media (max-width: 739px) {
+    padding: 16px;
+  }
+}
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 20px;
+
+  .pageTitle {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: $black-color;
+    margin: 0;
+  }
+  .pageDesc {
+    font-size: 1.4rem;
+    color: #6b7280;
+    margin: 4px 0 0;
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border-radius: 10px;
+  background-color: $black-color;
+  color: $white-color;
+  border: 1px solid $black-color;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.statusFilterBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.statusFilterPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  .pillDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+  }
+
+  .pillCount {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    background-color: rgba(0, 0, 0, 0.07);
+  }
+
+  &.toneAll {
+    color: #1e293b;
+    &.pillActive {
+      background-color: #111827;
+      border-color: #111827;
+      color: #ffffff;
+      .pillCount {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+      }
+    }
+  }
+
+  &.toneAdmin {
+    color: #dc2626;
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    &.pillActive {
+      background-color: #dc2626;
+      border-color: #dc2626;
+      color: #ffffff;
+      .pillCount {
+        background-color: rgba(255, 255, 255, 0.22);
+        color: #fff;
+      }
+    }
+  }
+
+  &.toneStaff {
+    color: #16a34a;
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+    &.pillActive {
+      background-color: #16a34a;
+      border-color: #16a34a;
+      color: #ffffff;
+      .pillCount {
+        background-color: rgba(255, 255, 255, 0.22);
+        color: #fff;
+      }
+    }
+  }
+
+  &.toneCustomer {
+    color: #2563eb;
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+    &.pillActive {
+      background-color: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+      .pillCount {
+        background-color: rgba(255, 255, 255, 0.22);
+        color: #fff;
+      }
+    }
+  }
 }
 
 .tableControls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.searchBox {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+
+  i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 1.4rem;
+  }
 
   input {
-    font-size: 1.6rem;
-    padding: 10px 16px;
-    width: 370px;
-    border-radius: 8px;
-    border: 1px solid $text-color;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1.45rem;
+    padding: 10px 16px 10px 38px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
     outline: none;
-
     &:focus {
       border-color: $black-color;
     }
   }
+}
 
-  button {
-    padding: 10px 24px;
-    background-color: $black-color;
-    color: $white-color;
-    font-size: 1.6rem;
-    border: 0px;
-    border-radius: 8px;
-    margin-left: 6px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-
-    i {
-      margin-right: 8px;
-    }
-
-    &:hover {
-      opacity: 0.9;
-    }
-  }
+.tableResponsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
-  margin-top: 24px;
   width: 100%;
+  min-width: 640px;
   border-collapse: separate;
-  border-spacing: 0 12px;
-}
-
-.tableTitle {
-  background-color: transparent;
-
-  th {
-    border: none;
-  }
+  border-spacing: 0 10px;
 }
 
 .tableHeader {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  padding: 16px;
+  padding: 12px 16px;
   text-align: left;
-  color: $description-color;
+  color: #6b7280;
   text-transform: uppercase;
+  letter-spacing: 0.4px;
   user-select: none;
-
-  &:first-child {
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
-  }
-  &:last-child {
-    border-top-right-radius: 8px;
-    border-bottom-right-radius: 8px;
-  }
+  white-space: nowrap;
 
   &.sortable {
     cursor: pointer;
-    transition: color 0.2s;
-
     &:hover {
       color: $black-color;
     }
@@ -89,26 +228,28 @@
 }
 
 .tableRow {
-  background-color: $white-color;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
   transition: all 0.2s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
   }
 
   td {
-    padding: 16px;
+    padding: 14px 16px;
     vertical-align: middle;
-    border-top: 1px solid transparent;
-    border-bottom: 1px solid transparent;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
 
     &:first-child {
+      border-left: 1px solid #f1f5f9;
       border-top-left-radius: 12px;
       border-bottom-left-radius: 12px;
     }
     &:last-child {
+      border-right: 1px solid #f1f5f9;
       border-top-right-radius: 12px;
       border-bottom-right-radius: 12px;
     }
@@ -116,56 +257,46 @@
 }
 
 .tableCell {
-  font-size: 1.6rem;
-  color: $black-color;
-
-  button {
-    padding: 8px;
-    margin-left: 8px;
-    background-color: transparent;
-    border: none;
-    color: #666;
-    font-size: 1.6rem;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      color: $black-color;
-      transform: scale(1.1);
-    }
-  }
+  font-size: 1.45rem;
+  color: #111827;
+  white-space: nowrap;
 }
 
 .tableStatus {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 6px 16px;
-  font-size: 1.3rem;
-  font-weight: 600;
-  border-radius: 20px;
-  margin: 0;
-  min-width: 90px;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 999px;
   cursor: default;
   white-space: nowrap;
   text-transform: uppercase;
 
+  .statusDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: currentColor;
+  }
+
   &.staff {
-    color: #4caf50;
-    background-color: rgba(76, 175, 80, 0.1);
-    border: 1px solid #4caf50;
+    color: #16a34a;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
   }
 
   &.customer {
-    color: #2196f3;
-    background-color: rgba(33, 150, 243, 0.1);
-    border: 1px solid #2196f3;
+    color: #2563eb;
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
   }
 
   &.admin {
-    color: #f44336;
-    background-color: rgba(244, 67, 54, 0.1);
-    border: 1px solid #f44336;
+    color: #dc2626;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
   }
 }
 
@@ -173,22 +304,24 @@
   display: flex;
   margin-top: 20px;
   justify-content: flex-end;
-  gap: 5px;
+  flex-wrap: wrap;
+  gap: 6px;
 
   button {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.4rem;
-    border-radius: 4px;
-    border: 1px solid #ddd;
+    font-size: 1.35rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
     background-color: $white-color;
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      background-color: #f0f0f0;
+      background-color: #f1f5f9;
     }
 
     &.activePage {
@@ -198,7 +331,7 @@
     }
 
     &:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: default;
     }
   }

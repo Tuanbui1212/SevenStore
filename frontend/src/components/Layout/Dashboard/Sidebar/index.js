@@ -9,8 +9,20 @@ import axios from "../../../../util/axios";
 function Sidebar({ onToggle }) {
   const location = useLocation();
   const role = localStorage.getItem("role");
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 1024 : false
+  );
   const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth < 1024) {
+        setIsCollapsed(true);
+      }
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   const isActive = (path) => location.pathname.includes(path);
 
@@ -32,8 +44,9 @@ function Sidebar({ onToggle }) {
         <button
           className={styles.toggleBtn}
           onClick={() => {
-            setIsCollapsed(!isCollapsed);
-            onToggle((val) => (val === 2 ? 0 : 2));
+            const next = !isCollapsed;
+            setIsCollapsed(next);
+            onToggle(next ? 0 : 2);
           }}
         >
           <i

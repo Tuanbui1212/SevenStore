@@ -118,28 +118,59 @@ class OrderController {
   // [GET] /dashboard/orders/manage/:type
   showManage(req, res, next) {
     const { type } = req.params;
-    const { page = 1, limit = 10, search = "", sortKey = "createdAt", sortDir = "desc" } = req.query;
+    const { page = 1, limit = 10, search = "", status = "", sortKey = "createdAt", sortDir = "desc" } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10));
     const limitNum = Math.max(1, parseInt(limit, 10));
     const skip = (pageNum - 1) * limitNum;
 
-    const baseFilter = type === "active"
-      ? { status: { $in: ["Pending", "Confirmed", "Shipping"] } }
-      : { status: { $in: ["Delivered", "Cancelled"] } };
+    const allowedStatuses = type === "active"
+      ? ["Pending", "Confirmed", "Shipping"]
+      : ["Delivered", "Cancelled"];
+
+    const baseFilter = { status: { $in: allowedStatuses } };
+    const statusFilter = status && allowedStatuses.includes(status)
+      ? { status }
+      : baseFilter;
 
     const filter = search
-      ? { ...baseFilter, $or: [{ name: { $regex: search, $options: "i" } }, { phone: { $regex: search } }, { city: { $regex: search, $options: "i" } }] }
-      : baseFilter;
+      ? {
+          ...statusFilter,
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { phone: { $regex: search } },
+            { city: { $regex: search, $options: "i" } },
+          ],
+        }
+      : statusFilter;
 
     const sortBy = { [sortKey]: sortDir === "asc" ? 1 : -1 };
 
     Promise.all([
       Order.find(filter).sort(sortBy).skip(skip).limit(limitNum),
       Order.countDocuments(filter),
+      Order.aggregate([
+        { $match: baseFilter },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+      ]),
     ])
-      .then(([orders, total]) =>
-        res.json({ orders, total, currentPage: pageNum, totalPages: Math.ceil(total / limitNum) })
-      )
+      .then(([orders, total, rawCounts]) => {
+        const statusCounts = { All: 0 };
+        allowedStatuses.forEach((s) => {
+          statusCounts[s] = 0;
+        });
+        (rawCounts || []).forEach((item) => {
+          const key = item._id || "Pending";
+          statusCounts[key] = (statusCounts[key] || 0) + item.count;
+          statusCounts.All += item.count;
+        });
+        res.json({
+          orders,
+          total,
+          statusCounts,
+          currentPage: pageNum,
+          totalPages: Math.ceil(total / limitNum),
+        });
+      })
       .catch(next);
   }
 

@@ -188,7 +188,7 @@ function ProductDetail() {
         </div>
 
         <div className="row mt-28">
-          <div className={clsx("col col-7", styles.list__img__detail)}>
+          <div className={clsx("col col-7 col-md-12 col-sm-12", styles.list__img__detail)}>
             {product.image &&
               Object.values(product.image).map((src, index) => (
                 <div key={index} className={clsx(styles.item__img__detail)}>
@@ -196,7 +196,7 @@ function ProductDetail() {
                 </div>
               ))}
           </div>
-          <div className={clsx("col col-5")}>
+          <div className={clsx("col col-5 col-md-12 col-sm-12")}>
             <div className={clsx(styles.info__product)}>
               <span className={clsx(styles.name__product)}>{product.name}</span>
               <span

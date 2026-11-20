@@ -159,7 +159,7 @@ function Cart() {
       <div className={clsx("container", styles.cartContainer)}>
         <div className="row">
           {carts.length > 0 ? (
-            <div className="col col-9">
+            <div className="col col-12">
               <div className={styles.selectAll}>
                 <input
                   type="checkbox"
@@ -299,12 +299,12 @@ function Cart() {
       <div className={clsx(styles.cartFooter)}>
         <div className={clsx("container", styles.cartFooter__container)}>
           <div className={clsx("row", styles.cartFooter__row)}>
-            <div className={clsx("col col-3", styles.cartFooter__left)}>
+            <div className={clsx("col col-6 col-md-7 col-sm-7", styles.cartFooter__left)}>
               <span>Your Cart ({checkedItems.length} product)</span>
               <span>{totalCost.toLocaleString("vi-VN")}₫</span>
             </div>
-            <div className={clsx("col col-2", styles.cartFooter__right)}>
-              <button onClick={() => handleGoToPayment()}>PAY</button>
+            <div className={clsx("col col-3 col-md-4 col-sm-5", styles.cartFooter__right)}>
+              <button onClick={() => handleGoToPayment()}>PAY NOW</button>
             </div>
           </div>
         </div>

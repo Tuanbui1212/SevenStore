@@ -7,35 +7,43 @@ import { useModal } from "../../../contexts/ModalContext";
 
 const PAGE_SIZE = 10;
 
+const CUSTOMER_TABS = [
+  { key: "", label: "All Customers", tone: "toneAll", countKey: "All" },
+  { key: "Active", label: "Active", tone: "toneActive", countKey: "Active" },
+  { key: "Inactive", label: "Inactive", tone: "toneInactive", countKey: "Inactive" },
+];
+
 function Customer() {
   const [customer, setCustomer] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [statusCounts, setStatusCounts] = useState({ All: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const { showModal, confirmModal } = useModal();
-  const [deleteId, setDeleteId] = useState(null);
-
   const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
     if (searchTerm) params.set("search", searchTerm);
+    if (statusFilter) params.set("status", statusFilter);
     axios
       .get(`/dashboard/customers?${params}`)
       .then((res) => {
         setCustomer(res.data.customers || []);
         setTotalPages(res.data.totalPages || 1);
+        if (res.data.statusCounts) setStatusCounts(res.data.statusCounts);
       })
       .catch((err) => console.error(err));
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, statusFilter]);
 
   const handleDelete = useCallback(() => {
     showModal({
       title: "Success",
       message: "Deleted successfully",
-      type: "success"
+      type: "success",
     });
   }, [showModal]);
 
@@ -90,100 +98,149 @@ function Customer() {
   const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   return (
-    <div className={clsx("mt-36", styles.tableWrapper)}>
-      <div className={styles.tableControls}>
-        <input
-          type="text"
-          placeholder="Search by name, phone, address..."
-          className={styles.searchInput}
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }}
-        />
+    <div className={styles.tableWrapper}>
+      <div className={styles.pageHeader}>
+        <div>
+          <h2 className={styles.pageTitle}>Customer Directory</h2>
+          <p className={styles.pageDesc}>
+            View and manage registered shoppers, contact info, and status
+          </p>
+        </div>
       </div>
 
-      <table className={styles.table}>
-        <thead className={styles.tableTitle}>
-          <tr>
-            <th className={styles.tableHeader}>#</th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("name")}
+      {/* Color-Coded Status Filter Pills */}
+      <div className={styles.statusFilterBar}>
+        {CUSTOMER_TABS.map((tab) => {
+          const isActive = statusFilter === tab.key;
+          const count = statusCounts[tab.countKey] ?? 0;
+          return (
+            <button
+              key={tab.key || "all"}
+              type="button"
+              className={clsx(
+                styles.statusFilterPill,
+                styles[tab.tone],
+                isActive && styles.pillActive
+              )}
+              onClick={() => {
+                setStatusFilter(tab.key);
+                setCurrentPage(1);
+              }}
             >
-              Name {renderSortIcon("name")}
-            </th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("phone")}
-            >
-              Tel {renderSortIcon("phone")}
-            </th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("address")}
-            >
-              Address {renderSortIcon("address")}
-            </th>
-            <th className={styles.tableHeader}>Status</th>
-            <th className={styles.tableHeader}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {customer.length > 0 ? (
-            customer.map((cust, index) => (
-              <tr key={cust._id} className={styles.tableRow}>
-                <td className={styles.tableCell}>{startIndex + index + 1}</td>
-                <td className={styles.tableCell}>
-                  <strong>{cust.name}</strong>
-                </td>
-                <td className={styles.tableCell}>{cust.phone}</td>
-                <td className={styles.tableCell}>{cust.address}</td>
-                <td className={styles.tableCell}>
-                  <span
-                    className={clsx(
-                      styles.tableStatus,
-                      cust.status === "Inactive" ? styles.inactive : styles.active
-                    )}
-                  >
-                    {cust.status || "Active"}
-                  </span>
-                </td>
-                <td className={styles.tableCell}>
-                  <button
-                    onClick={() => navigate(`/dashboard/customers/${cust._id}`)}
-                  >
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </button>
-                  <button
-                    onClick={() => {
-                      confirmModal({
-                        title: "Confirm Deletion",
-                        message: "Are you sure you want to delete?",
-                        type: "warning",
-                        confirmText: "Yes, delete",
-                        onConfirm: () => {
-                          setDeleteId(cust._id);
-                          handleDelete();
-                        }
-                      });
-                    }}
-                  >
-                    <i className="fa-solid fa-trash"></i>
-                  </button>
+              <span className={styles.pillDot} />
+              <span>{tab.label}</span>
+              <span className={styles.pillCount}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className={styles.tableControls}>
+        <div className={styles.searchBox}>
+          <i className="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            placeholder="Search by customer name, phone, address..."
+            className={styles.searchInput}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className={styles.tableResponsive}>
+        <table className={styles.table}>
+          <thead className={styles.tableTitle}>
+            <tr>
+              <th className={styles.tableHeader}>#</th>
+              <th
+                className={clsx(styles.tableHeader, styles.sortable)}
+                onClick={() => handleSort("name")}
+              >
+                Customer {renderSortIcon("name")}
+              </th>
+              <th
+                className={clsx(styles.tableHeader, styles.sortable)}
+                onClick={() => handleSort("phone")}
+              >
+                Phone {renderSortIcon("phone")}
+              </th>
+              <th
+                className={clsx(styles.tableHeader, styles.sortable)}
+                onClick={() => handleSort("address")}
+              >
+                Address {renderSortIcon("address")}
+              </th>
+              <th className={styles.tableHeader}>Status</th>
+              <th className={styles.tableHeader}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {customer.length > 0 ? (
+              customer.map((cust, index) => (
+                <tr key={cust._id} className={styles.tableRow}>
+                  <td className={styles.tableCell}>{startIndex + index + 1}</td>
+                  <td className={styles.tableCell}>
+                    <strong>{cust.name}</strong>
+                  </td>
+                  <td className={styles.tableCell}>{cust.phone}</td>
+                  <td className={clsx(styles.tableCell, styles.addressCell)}>
+                    {cust.address}
+                  </td>
+                  <td className={styles.tableCell}>
+                    <span
+                      className={clsx(
+                        styles.tableStatus,
+                        cust.status === "Inactive" ? styles.inactive : styles.active
+                      )}
+                    >
+                      <span className={styles.statusDot} />
+                      {cust.status || "Active"}
+                    </span>
+                  </td>
+                  <td className={styles.tableCell}>
+                    <div className={styles.actionBtns}>
+                      <button
+                        type="button"
+                        title="Edit Customer"
+                        className={styles.editBtn}
+                        onClick={() => navigate(`/dashboard/customers/${cust._id}`)}
+                      >
+                        <i className="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      <button
+                        type="button"
+                        title="Delete Customer"
+                        className={styles.deleteBtn}
+                        onClick={() => {
+                          confirmModal({
+                            title: "Confirm Deletion",
+                            message: "Are you sure you want to delete?",
+                            type: "warning",
+                            confirmText: "Yes, delete",
+                            onConfirm: () => handleDelete(),
+                          });
+                        }}
+                      >
+                        <i className="fa-solid fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="6" style={{ textAlign: "center", padding: "40px", fontSize: "1.5rem", color: "#6b7280" }}>
+                  No customers found
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
-                No customers found matching "{searchTerm}"
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {totalPages > 0 && (
         <div className={styles.pagination}>
@@ -216,7 +273,6 @@ function Customer() {
           </button>
         </div>
       )}
-
     </div>
   );
 }

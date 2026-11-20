@@ -3,20 +3,37 @@ const bcrypt = require("bcryptjs");
 
 class AccountController {
   show(req, res, next) {
-    const { page = 1, limit = 10, search = "" } = req.query;
+    const { page = 1, limit = 10, search = "", role = "" } = req.query;
     const pageNum = Math.max(1, parseInt(page, 10));
     const limitNum = Math.max(1, parseInt(limit, 10));
     const skip = (pageNum - 1) * limitNum;
-    const filter = search
-      ? { $or: [{ name: { $regex: search, $options: "i" } }, { user: { $regex: search, $options: "i" } }] }
-      : {};
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { user: { $regex: search, $options: "i" } },
+      ];
+    }
+    if (role) filter.role = role;
     Promise.all([
       Account.find(filter).sort({ updatedAt: -1 }).skip(skip).limit(limitNum).lean(),
       Account.countDocuments(filter),
+      Account.aggregate([{ $group: { _id: "$role", count: { $sum: 1 } } }]),
     ])
-      .then(([account, total]) =>
-        res.json({ account, total, currentPage: pageNum, totalPages: Math.ceil(total / limitNum) })
-      )
+      .then(([account, total, rawCounts]) => {
+        const statusCounts = { All: 0, admin: 0, staff: 0, customer: 0 };
+        (rawCounts || []).forEach((item) => {
+          if (item._id) statusCounts[item._id] = item.count;
+          statusCounts.All += item.count;
+        });
+        res.json({
+          account,
+          total,
+          statusCounts,
+          currentPage: pageNum,
+          totalPages: Math.ceil(total / limitNum),
+        });
+      })
       .catch(next);
   }
 

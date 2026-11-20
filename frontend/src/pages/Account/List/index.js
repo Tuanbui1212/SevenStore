@@ -6,9 +6,18 @@ import axios from "../../../util/axios";
 
 const PAGE_SIZE = 10;
 
+const ROLE_TABS = [
+  { key: "", label: "All Accounts", tone: "toneAll", countKey: "All" },
+  { key: "admin", label: "Admins", tone: "toneAdmin", countKey: "admin" },
+  { key: "staff", label: "Staff", tone: "toneStaff", countKey: "staff" },
+  { key: "customer", label: "Customers", tone: "toneCustomer", countKey: "customer" },
+];
+
 function Account() {
   const [account, setAccount] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [statusCounts, setStatusCounts] = useState({ All: 0 });
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
@@ -28,6 +37,7 @@ function Account() {
   useEffect(() => {
     const params = new URLSearchParams({ page: currentPage, limit: PAGE_SIZE });
     if (searchTerm) params.set("search", searchTerm);
+    if (roleFilter) params.set("role", roleFilter);
     if (sortConfig.key) {
       params.set("sortKey", sortConfig.key);
       params.set("sortDir", sortConfig.direction);
@@ -37,9 +47,10 @@ function Account() {
       .then((res) => {
         setAccount(res.data.account || []);
         setTotalPages(res.data.totalPages || 1);
+        if (res.data.statusCounts) setStatusCounts(res.data.statusCounts);
       })
       .catch((err) => console.error("Lỗi fetch:", err));
-  }, [currentPage, searchTerm, sortConfig]);
+  }, [currentPage, searchTerm, roleFilter, sortConfig]);
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => ({
@@ -92,91 +103,135 @@ function Account() {
   const startIndex = (currentPage - 1) * PAGE_SIZE;
 
   return (
-    <div className={clsx("mt-36", styles.tableWrapper)}>
-      <div className={styles.tableControls}>
-        <input
-          type="text"
-          placeholder="Search by name, username, role..."
-          className={styles.searchInput}
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1);
-          }}
-        />
+    <div className={styles.tableWrapper}>
+      <div className={styles.pageHeader}>
         <div>
+          <h2 className={styles.pageTitle}>Accounts & Permissions</h2>
+          <p className={styles.pageDesc}>
+            Manage system accounts, access roles, and staff credentials
+          </p>
+        </div>
+        <div className={styles.headerActions}>
           <button
-            className={styles.searchButton}
+            type="button"
+            className={styles.addButton}
             onClick={() => navigate("/dashboard/account/create")}
           >
-            ADD
+            <i className="fa-solid fa-plus"></i>
+            <span>Add Account</span>
           </button>
         </div>
       </div>
 
-      <table className={styles.table}>
-        <thead className={styles.tableTitle}>
-          <tr>
-            <th className={styles.tableHeader}>#</th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("name")}
+      {/* Color-Coded Role Filter Pills */}
+      <div className={styles.statusFilterBar}>
+        {ROLE_TABS.map((tab) => {
+          const isActive = roleFilter === tab.key;
+          const count = statusCounts[tab.countKey] ?? 0;
+          return (
+            <button
+              key={tab.key || "all"}
+              type="button"
+              className={clsx(
+                styles.statusFilterPill,
+                styles[tab.tone],
+                isActive && styles.pillActive
+              )}
+              onClick={() => {
+                setRoleFilter(tab.key);
+                setCurrentPage(1);
+              }}
             >
-              Name {renderSortIcon("name")}
-            </th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("user")}
-            >
-              User {renderSortIcon("user")}
-            </th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("role")}
-            >
-              Role {renderSortIcon("role")}
-            </th>
-            <th
-              className={clsx(styles.tableHeader, styles.sortable)}
-              onClick={() => handleSort("createdAt")}
-            >
-              Joined {renderSortIcon("createdAt")}
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {account.length > 0 ? (
-            account.map((a, index) => (
-              <tr key={index} className={styles.tableRow}>
-                <td className={styles.tableCell}>{startIndex + index + 1}</td>
-                <td className={styles.tableCell}>
-                  <strong>{a.name}</strong>
-                </td>
-                <td className={styles.tableCell}>{a.user}</td>
-                <td className={styles.tableCell}>
-                  <span
-                    className={clsx(
-                      styles.tableStatus,
-                      a.role === "staff" && styles.staff,
-                      a.role === "customer" && styles.customer,
-                      a.role === "admin" && styles.admin
-                    )}
-                  >
-                    {a.role}
-                  </span>
-                </td>
-                <td className={styles.tableCell}>{formatDate(a.createdAt)}</td>
-              </tr>
-            ))
-          ) : (
+              <span className={styles.pillDot} />
+              <span>{tab.label}</span>
+              <span className={styles.pillCount}>{count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className={styles.tableControls}>
+        <div className={styles.searchBox}>
+          <i className="fa-solid fa-magnifying-glass"></i>
+          <input
+            type="text"
+            placeholder="Search by full name or username..."
+            className={styles.searchInput}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className={styles.tableResponsive}>
+        <table className={styles.table}>
+          <thead className={styles.tableTitle}>
             <tr>
-              <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
-                No accounts found matching "{searchTerm}"
-              </td>
+              <th className={styles.tableHeader}>#</th>
+              <th
+                className={clsx(styles.tableHeader, styles.sortable)}
+                onClick={() => handleSort("name")}
+              >
+                Full Name {renderSortIcon("name")}
+              </th>
+              <th
+                className={clsx(styles.tableHeader, styles.sortable)}
+                onClick={() => handleSort("user")}
+              >
+                Username {renderSortIcon("user")}
+              </th>
+              <th
+                className={clsx(styles.tableHeader, styles.sortable)}
+                onClick={() => handleSort("role")}
+              >
+                Role {renderSortIcon("role")}
+              </th>
+              <th
+                className={clsx(styles.tableHeader, styles.sortable)}
+                onClick={() => handleSort("createdAt")}
+              >
+                Joined {renderSortIcon("createdAt")}
+              </th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {account.length > 0 ? (
+              account.map((a, index) => (
+                <tr key={a._id || index} className={styles.tableRow}>
+                  <td className={styles.tableCell}>{startIndex + index + 1}</td>
+                  <td className={styles.tableCell}>
+                    <strong>{a.name}</strong>
+                  </td>
+                  <td className={styles.tableCell}>{a.user}</td>
+                  <td className={styles.tableCell}>
+                    <span
+                      className={clsx(
+                        styles.tableStatus,
+                        a.role === "staff" && styles.staff,
+                        a.role === "customer" && styles.customer,
+                        a.role === "admin" && styles.admin
+                      )}
+                    >
+                      <span className={styles.statusDot} />
+                      {a.role}
+                    </span>
+                  </td>
+                  <td className={styles.tableCell}>{formatDate(a.createdAt)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" style={{ textAlign: "center", padding: "40px", fontSize: "1.5rem", color: "#6b7280" }}>
+                  No accounts found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {totalPages > 0 && (
         <div className={styles.pagination}>
